@@ -1,0 +1,19 @@
+.Rproj.user
+.Rhistory
+.RData
+
+# Ignore all automatically generated markdown file except README.md
+*.md
+!README.md
+
+# Ignore all automatically generated documents
+*.html
+*.log
+*.png
+*.pdf
+*.rdb
+*.rdx
+*.synctex.gz
+*.tex
+*.toc
+*.swp

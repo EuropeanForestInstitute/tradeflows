@@ -1,0 +1,15 @@
+Package: tradeflows
+Title: Process forest products trade flow data from COMTRADE and COMEXT
+Version: 0.1
+Authors@R: "Paul Rougieux<paul.rougieux@gmail.com> [aut, cre]"
+Description: What the package does (one paragraph)
+    Procedures to automatically grab data from the
+    COMTRADE and COMEXT system, feed it through algorithms to compare
+    and amend unit values and mirror export and
+    import values, and then to deliver to the online user-interface.
+Depends: R (>= 3.1.1)
+License: GNU GPLV3
+LazyData: true
+Imports:
+    dplyr
+Suggests: ggplot2
