@@ -23,16 +23,15 @@ Data from the comtrade API
 Tools
 -----
 #### This is a package
-Created with instructions from Hadley:
-http://r-pkgs.had.co.nz/
+Created based on [instructions from Hadley](http://r-pkgs.had.co.nz/).
 `devtools::load_all()` or __Cmd + Shift + L__, reloads all code in the package.
 Add packages to the list of required packages
-devtools::use_package("dplyr")
-devtools::use_package("ggplot2", "suggests")
+`devtools::use_package("dplyr")`
+`devtools::use_package("ggplot2", "suggests")`
 For data I followed his recommendations in r-pkgs/data.rmd
-devtools::use_data(mtcars)
-devtools::use_data_raw() # create a data-raw/ folder and add it to .Rbuildignore
-
+`devtools::use_data(mtcars)`
+`devtools::use_data_raw()` # To create a data-raw/ folder and add it to .Rbuildignore
+    
 ## Version tracking system with git
 The .git repository is backed on bitbucket.
 Use devtools::install_bitbucket() to install the package.
