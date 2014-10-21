@@ -1,4 +1,4 @@
 # Ignore all files except R scrips that load the data
 *
 !.gitignore
-!.R
+!*.R

@@ -1,0 +1,41 @@
+---
+title: "Development scrap concerning input data"
+output:
+  html_document:
+    toc: true
+---
+
+
+## data-raw/Load_comtrade.R
+```{r packages}
+require(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+require(RJSONIO)
+require(plyr)
+require(dplyr)
+```
+
+```{r load_comtrade}
+# Load plyr first to avoid this message:
+# -------------------------------------------------------------------------------
+#     You have loaded plyr after dplyr - this is likely to cause problems.
+# If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+#     library(plyr); library(dplyr)
+# -------------------------------------------------------------------------------
+
+
+json <- fromJSON(paste(readLines("data-raw/UNCOMTRADE_exp.JSON"), collapse=""), nullValue = NA)
+stopifnot(json$validation$status$name == "Ok") # Check status
+# keep only the first few lines
+swd <- as.data.frame(do.call("rbind", head(json$dataset)))
+
+# I replaced ldply by do.call,
+# Wheather I use ldply or do.call, the
+# structure of the data frame looks bizarre, more like a list than a dataframe.
+str(swd)
+swd2 <- ldply(head(json$dataset), function(l) data.frame(l))
+str(swd2)
+
+swd_exp <- filter(swd, rgDesc == "Export")
+swd_imp <- filter(swd, rgDesc == "Import")
+``` 
