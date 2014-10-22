@@ -3,23 +3,31 @@
 require(RJSONIO)
 require(dplyr)
 
-loadcomtrade_bycode <- function(productcode, reportercode, year){
-    #'@description load a JSON file from comtrade in the temp directory
-    #'              Converts the file to a dataframe
-    #'@param reportercode : geographical area or country code
-    #'@param productcode : code of the product
-    #'@param year
-    #'@return a dataframe
-    jsonfile <- tempfile()
-    url <- paste0("http://comtrade.un.org/api/get?px=HS&ps=",
-                    year,"&r=",reportercode,
-                    "&p=all&rg=all&cc=", productcode)
-    download.file(url, destfile=jsonfile)
-    json <- fromJSON(paste(readLines(jsonfile), collapse=""), nullValue = NA)
-    unlink(jsonfile)
-    stopifnot(json$validation$status$name == "Ok") # Check status
-    dtf <- as.data.frame(do.call("rbind", json$dataset))
-    return(dtf)
+loadcomtrade_bycode <- function(productcode, reportercode, year, px="HS", max=50000){
+    #'@description load a JSON file from the comtrade API in the temp directory
+      #' The API is documented at http://comtrade.un.org/data/doc/api/
+      #' Converts the file to a dataframe
+      #'@param reportercode : geographical area or country code
+      #'@param productcode : code of the product
+      #'@param year
+      #'@param px Trade data classification scheme
+      #'@param max maximum records returned
+      #'@return a dataframe
+      jsonfile <- tempfile(fileext = ".json")
+      url <- paste0("http://comtrade.un.org/api/get",
+                    "?cc=", productcode,
+                    "&r=", reportercode, "&p=all&rg=all", # All partners and flows
+                    "&ps=", year,
+                    "&px=", px,
+                    "&max=", max, "&fmt=json")
+      download.file(url, destfile=jsonfile)
+      json <- fromJSON(paste(readLines(jsonfile), collapse=""), nullValue = NA)
+      if (json$validation$status$name != "Ok"){ # Check status
+          stop(json$validation)
+      }
+      dtf <- as.data.frame(do.call("rbind", json$dataset))
+      unlink(jsonfile)
+      return(dtf)
 }
 
 

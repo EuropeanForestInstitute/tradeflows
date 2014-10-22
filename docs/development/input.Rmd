@@ -1,0 +1,110 @@
+---
+title: "Development scrap concerning the input data"
+output:
+  html_document:
+    toc: true
+---
+
+
+```{r packages}
+require(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+require(tradeflows)
+require(RJSONIO) # Why are the plyr and dplyr packages not loaded whith treadeflows?
+require(plyr)
+require(dplyr)
+# Load plyr first to avoid this message:
+# -------------------------------------------------------------------------------
+#     You have loaded plyr after dplyr - this is likely to cause problems.
+# If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+#     library(plyr); library(dplyr)
+# -------------------------------------------------------------------------------
+```
+
+
+## UN comtrade API parameters
+The [UN Comtrade API](http://comtrade.un.org/data/doc/api/) has a limit of 50 000 records per request. But the max parameter is set by default to get only 500 records see for example, the time period below.
+
+
+### ps Time Period
+To download many years at once, paste them in a character string, separated by commas.
+The max parameter defaults to 500. 
+Illustration of a problem encountered as I had forgotten to set the max limit.
+```{r time_period}
+swd89101112 <- tradeflows::loadcomtrade_bycode(4407, 276, "2012,2011,2010,2009,2008", max=500)
+# Year 2010 and 2011 are not in this table.
+unique(swd89101112$yr)
+# But 2010 and 2011 are available in the comtrade API.
+swd10_11 <- loadcomtrade_bycode(4407, 276, "2011,2010")
+unique(swd10_11$yr)
+```
+
+
+### px Classification
+```{r classification}
+
+```
+
+
+### r Reporting Area
+Try to load for all countries
+```{r reporter, eval=FALSE}
+swd <- loadcomtrade_bycode(4407, "all", 2013)
+
+
+trying URL 'http://comtrade.un.org/api/get?cc=4407&r=all&p=all&rg=all&ps=2013&px=HS&max=50000&fmt=json'
+
+Content type 'application/json; charset=utf-8' length 405 bytes
+opened URL
+==================================================
+downloaded 405 bytes
+
+Quitting from lines 50-51 (input.Rmd) 
+Error in loadcomtrade_bycode(4407, "all", 2013) : 
+  list(name = "Query complexity", value = 5002, category = 0, description = "your query is too complex. Please simplify.", helpUrl = "")Both 'all' reporters and 'all' partners may not be selected. Select a different reporter or partner.list(value = 0, started = "0001-01-01T00:00:00", finished = "0001-01-01T00:00:00", durationSeconds = 0)NA
+Calls: <Anonymous> ... withCallingHandlers -> withVisible -> eval -> eval -> loadcomtrade_bycode
+In addition: Warning messages:
+1: In readLines(jsonfile) :
+  incomplete final line found on '/tmp/RtmpvEcVJY/file408723f36faa.json'
+2: In readLines(jsonfile) :
+  incomplete final line found on '/tmp/RtmpvEcVJY/file4087782fc43a.json'
+3: In readLines(jsonfile) :
+  incomplete final line found on '/tmp/RtmpvEcVJY/file40872cea00f9.json'
+Execution halted
+``` 
+
+
+## Converting JSON data to a data.frame
+```{r load_comtrade}
+json <- fromJSON(paste(readLines("data-raw/UNCOMTRADE_exp.JSON"), collapse=""), nullValue = NA)
+stopifnot(json$validation$status$name == "Ok") # Check status
+
+
+# Convert to a data.frame using do.call
+# head() keeps only the first few lines
+swd <- as.data.frame(do.call("rbind", head(json$dataset)))
+# When I use do.call, the
+# structure of the data frame looks bizarre, more like a list than a dataframe.
+str(swd)
+# Structure of this binded list created by do.call
+str(do.call("rbind", head(json$dataset)))
+
+
+# Convert to a data frame using a loop
+# Use a loop to create data frame first then bind them together
+swd2 <- data.frame()
+system.time(
+    for (obs in json$dataset){
+        swd2 <- rbind(swd2,data.frame(obs))
+        })
+str(swd2)
+
+
+# Convert to a data.frame using ldply
+system.time(swd3 <- ldply(json$dataset, function(l) data.frame(l)))
+str(swd3)
+
+
+swd_exp <- filter(swd, rgDesc == "Export")
+swd_imp <- filter(swd, rgDesc == "Import")
+``` 
