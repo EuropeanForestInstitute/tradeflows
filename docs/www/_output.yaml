@@ -1,0 +1,6 @@
+html_document:
+  toc: true
+  self_contained: false
+  lib_dir: libs
+  includes:
+    in_header: include/in_header.html

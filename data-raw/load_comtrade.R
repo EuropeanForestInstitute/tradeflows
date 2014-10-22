@@ -1,4 +1,5 @@
-# This will call functions from load.R, no need to source that file as it is loaded within the package already
+# This will call functions from load.R,
+# no need to source that file as it is loaded within the package already
 # to actually load the data from comtrade
 # This script will run on a development system
 # On a production system raw data might be storred in a database
