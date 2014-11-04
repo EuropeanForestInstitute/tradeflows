@@ -3,30 +3,33 @@
 #'@description load a JSON file from the comtrade API in the temp directory
 #' The API is documented at http://comtrade.un.org/data/doc/api/
 #' Converts the file to a dataframe
-#'@import dplyr
 #'@param reportercode : geographical area or country code
 #'@param productcode : code of the product
-#'@param year
+#'@param year: a string of year separated by commas
 #'@param px Trade data classification scheme
 #'@param max maximum records returned
 #'@return a dataframe
 #'@export
-loadcomtrade_bycode <- function(productcode, reportercode, year, px="HS", max=50000){
+loadcomtrade_bycode <- function(productcode, reportercode, year,
+                                px="HS", max=50000){
     jsonfile <- tempfile(fileext = ".json")
     url <- paste0("http://comtrade.un.org/api/get",
                   "?cc=", productcode,
-                  "&r=", reportercode, "&p=all&rg=all", # All partners and flows
-                  "&ps=", year,
+                  "&r=", reportercode,
+                  "&p=all&rg=all", # All partners and flows
+                  "&ps=", paste0(year, collapse = ","),
                   "&px=", px,
-                  "&max=", max, "&fmt=json")
+                  "&max=", max,
+                  "&fmt=json")
     download.file(url, destfile=jsonfile)
-    json <- RJSONIO::fromJSON(jsonfile, nullValue = NA)
-    if (json$validation$status$name != "Ok"){ # Check status
+    json <- jsonlite::fromJSON(jsonfile)
+    if (json$validation$status$name != "Ok"){
+        # If there was an error,
+        # write it to a log file and give an error message
         stop(json$validation)
     }
-    dtf <- as.data.frame(do.call("rbind", json$dataset))
     unlink(jsonfile)
-    return(dtf)
+    return(json$dataset)
 }
 
 

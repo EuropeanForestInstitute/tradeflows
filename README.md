@@ -17,7 +17,8 @@ Examples and demonstration:
 
 
 ### Input
-Data from the comtrade API
+Data from the comtrade API, 
+Data is downloaded in JSON format and converted to a data.frame.
 
 ### Output
 
@@ -35,6 +36,8 @@ For data I followed his recommendations in r-pkgs/data.rmd
 `devtools::use_data_raw()` # To create a data-raw/ folder and add it to .Rbuildignore
     
 ### Documentation using roxygen2
+inspired by the documentation of roxygenize
+https://github.com/yihui/roxygen2/blob/master/R/roxygenize.R
 `vignette("namespace", package = "roxygen2")` says:
 ```
 If you are using just a few functions from another package, the recommended option is to note the package name in the Imports: field of the DESCRIPTION file and call the function(s) explicitly using ::, e.g., pkg::fun(). Alternatively, though no longer recommended due to its poorer readability, use @importFrom, e.g., @importFrom pgk fun, and call the function(s) without ::.
@@ -51,8 +54,7 @@ see also vignette("namespace", package = "roxygen2")
 require(RJSONIO)
 require(dplyr)
 
-inspired by the documentation of roxygenize
-https://github.com/yihui/roxygen2/blob/master/R/roxygenize.R
+
 
 
 ### Version tracking system with git

@@ -12,6 +12,6 @@ License: GNU GPLV3
 LazyData: true
 Imports:
     dplyr,
-    RJSONIO
+    jsonlite
 Suggests:
     ggplot2

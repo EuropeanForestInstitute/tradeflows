@@ -5,15 +5,25 @@ output:
     toc: true
 ---
 
+ 
+This document is relating development steps towards converting 
+JSON data to R data frames. 
 
+I have been inspired by several online reading, from package authors 
+and by questions on stackoverflow.
+* [Converting a list of data frames into one data frame in R](http://stackoverflow.com/questions/2851327/converting-a-list-of-data-frames-into-one-data-frame-in-r).
 ```{r packages}
 require(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
 require(tradeflows)
-require(RJSONIO) # Why are the plyr and dplyr packages not loaded whith treadeflows?
+require(RJSONIO)
+require(jsonlite)
+
+# Why are the plyr and dplyr packages not loaded whith treadeflows?
 # This didn't work before because you need to properly document the function in roxygen
 # placing @export before the function creation instruction 
 # then create a NAMESPACE file with devtools::document()
+# Will make the required package autoload.
 require(plyr)
 # require(dplyr)
 # Load plyr first to avoid this message:
@@ -29,11 +39,32 @@ require(plyr)
 The [UN Comtrade API](http://comtrade.un.org/data/doc/api/) has a limit of 50 000 records per request. But the max parameter is set by default to get only 500 records see for example, the time period below.
 
 
+Download a JSON file containing trade data for germany:
+```{r download_JSON, eval=FALSE}
+download.file("http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2011,2010&px=HS&max=50000&fmt=json",
+              destfile="data-raw/UNCOMTRADE_exp.JSON")
+```
+
+
 ### ps Time Period
-To download many years at once, paste them in a character string, separated by commas.
-The max parameter defaults to 500. 
+To download many years at once, paste them in a character string, separated by commas. I replaced this behavior, now you can use a vector. 
+There is a "query complexity" limit on the number of years that can be used.
+```{r time_query_complexity, eval=FALSE}
+swd20002013 <- loadcomtrade_bycode(4407, 276, seq(2000,2012))
+trying URL 'http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012&px=HS&max=50000&fmt=json'
+Content type 'application/json; charset=utf-8' length 329 bytes
+opened URL
+==================================================
+downloaded 329 bytes
+
+Error in loadcomtrade_bycode(4407, 276, seq(2000, 2012)) : 
+  list(name = "Query complexity", value = 5002, category = 0, description = "your query is too complex. Please simplify.", helpUrl = "")Too many years selected.list(value = 0, started = "0001-01-01T00:00:00", finished = "0001-01-01T00:00:00", durationSeconds = 0)NULL
+```
+
+### max limit on the number of record
+The max parameter defaults to 500.
 Illustration of a problem encountered as I had forgotten to set the max limit.
-```{r time_period, eval=FALSE}
+```{r max, eval=FALSE}
 swd89101112 <- tradeflows::loadcomtrade_bycode(4407, 276, "2012,2011,2010,2009,2008", max=500)
 # Year 2010 and 2011 are not in this table.
 unique(swd89101112$yr)
@@ -89,14 +120,15 @@ swd <- loadcomtrade_bycode(4407, "all", 2013)
 ``` 
 
 
-## Converting JSON data to a data.frame
+## Converting JSON data to a data.frame using RJSONIO::fromJSON
 ```{r load_json_file}
-json <- fromJSON("data-raw/UNCOMTRADE_exp.JSON", nullValue = NA)
+warning("If data-raw/UNCOMTRADE_exp.JSON file missing, look at the unevaluated peace of code above to download the JSON file.")
+json <- RJSONIO::fromJSON("data-raw/UNCOMTRADE_exp.JSON", nullValue = NA)
 stopifnot(json$validation$status$name == "Ok") # Check status
 ```
 
 
-### Convert to a data.frame using do.call
+### Convert the list to a data.frame using do.call
 ```{r convert_do_call}
 # head() keeps only the first few lines
 swd <- as.data.frame(do.call("rbind", head(json$dataset)))
@@ -108,7 +140,7 @@ str(do.call("rbind", head(json$dataset)))
 ```
 
 
-### Convert to a data frame using a loop
+### Convert the list to a data frame using a loop
 ```{r convert_loop}
 # Use a loop to create data frame first then bind them together
 swd2 <- data.frame()
@@ -120,10 +152,28 @@ str(swd2)
 ```
 
 
-### Convert to a data.frame using ldply
+### Convert the list to a data.frame using ldply
+This gives a nice table structure
 ```{r convert_ldply}
 system.time(swd3 <- ldply(json$dataset, function(l) data.frame(l)))
 str(swd3)
+```
+
+
+### Convert the list to a data.frame using sapply
+The structure is still not nice.
+```{r}
+system.time(swd4 <- data.frame(t(sapply(json$dataset, data.frame))))
+str(swd4)
+```
+
+
+## Converting JSON data to a data.frame using jsonlite::fromJSON
+```{r}
+system.time(json2 <- fromJSON("data-raw/UNCOMTRADE_exp.JSON"))
+stopifnot(json2$validation$status$name=="Ok")
+swd5 <- json2$dataset
+str(swd5)
 ```
 
 
