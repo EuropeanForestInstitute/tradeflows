@@ -1,0 +1,95 @@
+---
+title: "Learning to parse json files from comtrade"
+output:
+  html_document:
+    toc: true
+---
+
+ 
+This document is relating development steps towards converting 
+JSON data from the UN comtrade database to R data frames. 
+
+I have been inspired by several online reading, from package authors 
+and by questions on stackoverflow:
+[Converting a list of data frames into one data frame in R](http://stackoverflow.com/questions/2851327/converting-a-list-of-data-frames-into-one-data-frame-in-r).  After unsatisfactory trials with the rjson and RJSONIO packages. The most crucial step was discovering the jsonlite package. jsonlite transforms a json file directly into a list of data frames.
+
+```{r packages}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(RJSONIO)
+library(jsonlite)
+
+# Why are the plyr and dplyr packages not loaded whith treadeflows?
+# This didn't work before because you need to properly document the function in roxygen
+# placing @export before the function creation instruction 
+# then create a NAMESPACE file with devtools::document()
+# Will make the required package autoload.
+library(plyr)
+library(dplyr)
+# Load plyr before dplyr to avoid this message:
+# -------------------------------------------------------------------------------
+#     You have loaded plyr after dplyr - this is likely to cause problems.
+# If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+#     library(plyr); library(dplyr)
+# -------------------------------------------------------------------------------
+```
+
+
+## Converting JSON data to a data.frame using RJSONIO::fromJSON
+```{r load_json_file}
+warning("If data-raw/UNCOMTRADE_exp.JSON file missing, look at the unevaluated peace of code above to download the JSON file.")
+json <- RJSONIO::fromJSON("data-raw/UNCOMTRADE_exp.JSON", nullValue = NA)
+stopifnot(json$validation$status$name == "Ok") # Check status
+```
+
+
+### Convert the list to a data.frame using do.call
+```{r convert_do_call}
+# head() keeps only the first few lines
+swd <- as.data.frame(do.call("rbind", head(json$dataset)))
+# When I use do.call, the
+# structure of the data frame looks bizarre, more like a list than a dataframe.
+str(swd)
+# Structure of this binded list created by do.call
+str(do.call("rbind", head(json$dataset)))
+```
+
+
+### Convert the list to a data frame using a loop
+```{r convert_loop}
+# Use a loop to create data frame first then bind them together
+swd2 <- data.frame()
+system.time(
+    for (obs in json$dataset){
+        swd2 <- rbind(swd2,data.frame(obs))
+        })
+str(swd2)
+```
+
+
+### Convert the list to a data.frame using ldply
+This gives a nice table structure
+```{r convert_ldply}
+system.time(swd3 <- ldply(json$dataset, function(l) data.frame(l)))
+str(swd3)
+```
+
+
+### Convert the list to a data.frame using sapply
+The structure is still not nice.
+```{r}
+system.time(swd4 <- data.frame(t(sapply(head(json$dataset), data.frame))))
+str(swd4)
+```
+
+
+### Converting JSON data to a data.frame using jsonlite::fromJSON
+Gives a nice data.frame structure
+```{r}
+system.time(json2 <- fromJSON("data-raw/UNCOMTRADE_exp.JSON"))
+stopifnot(json2$validation$status$name=="Ok")
+swd5 <- json2$dataset
+str(swd5)
+```
+

@@ -6,12 +6,13 @@ Description: Grab data from the COMTRADE API and the COMEXT system,
     feed it through algorithms to compare and amend unit values
     and mirror export and import values,
     and then deliver to several output file formats and database.
-Depends:
+Depends: 
     R (>= 3.1.1)
 License: GNU GPLV3
 LazyData: true
-Imports:
+Imports: 
     dplyr,
     jsonlite
-Suggests:
-    ggplot2
+Suggests: 
+    ggplot2,
+    testthat
