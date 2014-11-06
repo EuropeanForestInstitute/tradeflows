@@ -6,15 +6,15 @@
 loadcomtrade_bycode(productcode, reportercode, year, px = "HS", max = 50000)
 }
 \arguments{
-\item{productcode}{: code of the product}
+\item{productcode}{code of the product}
 
-\item{reportercode}{: geographical area or country code}
+\item{reportercode}{geographical area or country code}
+
+\item{year}{a string of year separated by commas}
 
 \item{px}{Trade data classification scheme}
 
 \item{max}{maximum records returned}
-
-\item{year:}{a string of year separated by commas}
 }
 \value{
 a dataframe

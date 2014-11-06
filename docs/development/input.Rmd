@@ -168,7 +168,8 @@ str(swd4)
 ```
 
 
-## Converting JSON data to a data.frame using jsonlite::fromJSON
+### Converting JSON data to a data.frame using jsonlite::fromJSON
+Gives a nice data.frame structure
 ```{r}
 system.time(json2 <- fromJSON("data-raw/UNCOMTRADE_exp.JSON"))
 stopifnot(json2$validation$status$name=="Ok")
@@ -177,8 +178,12 @@ str(swd5)
 ```
 
 
-## Manipulate Comtrade data
-```{r filter}
-swd_exp <- filter(swd, rgDesc == "Export")
-swd_imp <- filter(swd, rgDesc == "Import")
+## Load Comtrade data with the function
+```{r loadcomtrade_bycode, eval=FALSE}
+years = seq(2000,2012)
+swd2012 <- loadcomtrade_bycode(4407, 276, 2012)
+swd20102011 <- loadcomtrade_bycode(4407, 276, c(2010, 2011))
+swd20002013 <- loadcomtrade_bycode(4407, 276, seq(2008,2012))
 ``` 
+
+

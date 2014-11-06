@@ -1,30 +1,48 @@
 ---
-title: "Experiments with Forest Products Trade Flow Data"
-html_document:
-  toc: true
+title: "Forest products trade flows database"
+output:
+  html_document:
+    toc : true
 ---
-
-Steve Johnson described the purpose of the forest products trade flow database as: 
-Procedures to automatically grab data from the 
-COMTRADE and COMEXT system, feed it through algorithms to compare 
-and amend unit values and mirror export and
-import values, and then to deliver to the online user-interface.
-
+This package prepares data for a forest products trade flow database.
+It contains functions that automatically grab data from the 
+COMTRADE and COMEXT databases, feed it through algorithms to compare 
+and amend unit values and mirror export and import values.
+Data will be delivered to an online user-interface.
 
 Examples and demonstration:
+* See example use in the doc/www folder.
 
-* See example use in  the docw/www folder.
+## Installation
+You can install this package using the devtools package.
+```
+install.packages("devtools")
+```
+You may need to upgrade your the libcurl library on your system shell
+```
+sudo apt-get install libcurl4-gnutls-dev 
+```
+Then install the tradeflows package with 
+```
+library(devtools)
+install_bitbucket("paul4forest/tradeflows")
+```
+
+## Input
+The function `loadcomtrade` and `loadcomtrade_bycode`, 
+load data from the comtrade API in JSON format 
+and convert it to data frames.
+
+### Raw data
+Inspired by the way hadley prepares this [flight planes data](https://github.com/hadley/nycflights13/tree/master/data-raw).
+The package includes a training dataset:
+sawnwood bilateral trade data for European countries.
+
+## Output
 
 
-### Input
-Data from the comtrade API, 
-Data is downloaded in JSON format and converted to a data.frame.
 
-### Output
-
-
-
-##Tools
+## Tools
 ### This is a package
 Created based on [instructions from Hadley](http://r-pkgs.had.co.nz/).
 `devtools::load_all()` or __Cmd + Shift + L__, reloads all code in the package.
@@ -34,16 +52,28 @@ Add packages to the list of required packages
 For data I followed his recommendations in r-pkgs/data.rmd
 `devtools::use_data(mtcars)`
 `devtools::use_data_raw()` # To create a data-raw/ folder and add it to .Rbuildignore
-    
+
+### Data frame manipulation with dplyr
+dplyr uses non standard evaluation. See vignette("nse") 
+NSE is powered by the lazyeval package
+```
+# standard evaluation
+sawnwood %>% select_(.dots = c("yr", "rtCode" )) %>% head
+# is the same as
+# lazy evaluation
+sawnwood %>% select(yr, rtCode ) %>% head
+```
 ### Documentation using roxygen2
+You should be able to see the documentation of exported functions by placing a 
+question mark before the function name at the R command prompt.
+
 inspired by the documentation of roxygenize
 https://github.com/yihui/roxygen2/blob/master/R/roxygenize.R
 `vignette("namespace", package = "roxygen2")` says:
-```
-If you are using just a few functions from another package, the recommended option is to note the package name in the Imports: field of the DESCRIPTION file and call the function(s) explicitly using ::, e.g., pkg::fun(). Alternatively, though no longer recommended due to its poorer readability, use @importFrom, e.g., @importFrom pgk fun, and call the function(s) without ::.
 
-If you are using many functions from another package, use @import package to import them all and make available without using ::.
-```
+> If you are using just a few functions from another package, the recommended option is to note the package name in the Imports: field of the DESCRIPTION file and call the function(s) explicitly using ::, e.g., pkg::fun(). Alternatively, though no longer recommended due to its poorer readability, use @importFrom, e.g., @importFrom pgk fun, and call the function(s) without ::.
+> If you are using many functions from another package, use @import package to import them all and make available without using ::.
+
 But Hadley says:
 
 > Alternatively, if you are repeatedly using many functions from another package, you can import them in one command with @import package. This is the least recommended solution: it makes your code harder to read (because you can’t tell where a function is coming from), and if you @import many packages, the chance of a conflicting function names increases.
@@ -53,8 +83,6 @@ on how package namespaces: http://r-pkgs.had.co.nz/namespace.html
 see also vignette("namespace", package = "roxygen2")
 require(RJSONIO)
 require(dplyr)
-
-
 
 
 ### Version tracking system with git

@@ -1,0 +1,93 @@
+---
+title: "clean"
+output:
+  html_document:
+    toc : true
+---
+```{r}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+library(tradeflows)
+```
+
+```{r load_data}
+load("data-raw/sawnwood.RData")
+```
+
+## Data manipulation
+```{r filter}
+swd_exp <- filter(sawnwood, rgDesc == "Export")
+swd_imp <- filter(sawnwood, rgDesc == "Import")
+```
+
+
+## Rename and select columns
+### Using dplyr
+I didn't manage to rename columns based on the table
+column_names. I used base R to do it, see further down below.
+```{r rename_columns}
+column_names <- read.csv("data-raw/column_names.csv", as.is=TRUE)
+column_names <- column_names %>%
+    filter(!is.na(efi) & !is.na(comtrade))
+swd <- head(sawnwood)
+# dplyr uses non standard evaluation
+swd %>% select(yr, rtCode ) 
+# swd %>% select(yr, column_names$comtrade) 
+# Error in abs(ind[ind < 0]) : 
+#   non-numeric argument to mathematical function
+# Standard evaluation
+swd %>% select_(.dots = c("yr", "rtCode" )) 
+swd %>% select_(.dots = column_names$comtrade) 
+# Rename variables
+select(swd, year = yr, reporter = rtCode)
+select(swd, list(year = yr, reporter=rtCode))
+# Issue with quotes
+# > select(swd, year = "yr", reporter = rtCode)
+# Error in abs(ind[ind < 0]) : 
+#   non-numeric argument to mathematical function
+# > select(swd, "year = yr, reporter = rtCode")
+# Error in abs(ind[ind < 0]) : 
+#   non-numeric argument to mathematical function
+# > substitute(select(swd, year = y, reporter = rtCode),
+substitute(select(swd, year = y, reporter = rtCode),
+           list(y = "yr"))
+e <- paste("select(sawnwood, ", "year = yr, reporter = rtCode", ")")
+e <- substitute(e)
+eval("list(year = yr, reporter=rtCode)")
+# sawnwood %>%
+#     rename(product = cmdDescE, reporter = rtTitle ) %>% head
+paste(column_names$tradeflows, "=", column_names$comtrade, collapse=", ")
+```
+
+
+### using base R to rename columns 
+```{r}
+swd <- head(sawnwood)
+names(swd)[names(swd)=="yr"] <- "year"
+column_names <- column_names %>%
+    filter(!is.na(efi) & !is.na(comtrade))
+for (n in column_names["comtrade"][[1]]){
+    names(swd)[names(swd)==n] <- 
+        column_names$efi[column_names[c("comtrade")]==n]
+}
+names(swd)
+
+# Try to use a lapply
+# swd <- head(sawnwood)
+# rename_column <- function(name, sourcename = "comtrade"){
+#     names(swd)[names(swd)==name] <- 
+#         column_names$tradeflows[column_names$comtrade==name]
+# }
+# lapply(column_names["comtrade"][[1]], rename_column)
+# names(swd)
+``` 
+
+## Calculate unit prices
+```{r unitprices}
+sawnwood <- sawnwood %>%
+    renamecolumns %>%
+    calcunitprices
+hist(sawnwood$pricecur)
+```
+

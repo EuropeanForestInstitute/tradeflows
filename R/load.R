@@ -3,9 +3,9 @@
 #'@description load a JSON file from the comtrade API in the temp directory
 #' The API is documented at http://comtrade.un.org/data/doc/api/
 #' Converts the file to a dataframe
-#'@param reportercode : geographical area or country code
-#'@param productcode : code of the product
-#'@param year: a string of year separated by commas
+#'@param reportercode  geographical area or country code
+#'@param productcode  code of the product
+#'@param year a string of year separated by commas
 #'@param px Trade data classification scheme
 #'@param max maximum records returned
 #'@return a dataframe
