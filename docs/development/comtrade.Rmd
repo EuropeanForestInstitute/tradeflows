@@ -4,6 +4,8 @@ output:
   html_document:
     toc: true
 ---
+
+
 ```{r packages}
 library(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
@@ -12,13 +14,13 @@ library(dplyr)
 ``` 
 
 ## UN comtrade API parameters
-The [UN Comtrade API](http://comtrade.un.org/data/doc/api/) 
-
+Load data from the [UN Comtrade API](http://comtrade.un.org/data/doc/api/).
 
 Download a JSON file containing trade data for germany:
 ```{r download_JSON, eval=FALSE}
 download.file("http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2011,2010&px=HS&max=50000&fmt=json",
               destfile="data-raw/UNCOMTRADE_exp.JSON")
+json <- jsonlite::fromJSON("data-raw/UNCOMTRADE_exp.JSON")
 ```
 
 
@@ -76,6 +78,7 @@ unique(swd10_11$yr)
 
 
 ### px Classification
+See below, the comparison of different classification schemes.
 ```{r classification}
 
 ```
@@ -110,20 +113,37 @@ swd20002013 <- loadcomtrade_bycode(4407, 276, seq(2008,2012))
 
 ## Classification
 ```{r}
-load("data-raw/classificationH4.RData")  
-classificationH4 %>% filter(id=="4407")  %>% kable
-classificationH4 %>% filter(parent=="4407")  %>% kable
-classificationH4 %>% filter(id=="44")  %>% kable
-classificationH4 %>% filter(parent=="44") %>% kable
+load("data-raw/classificationcomtrade.RData") 
+H4 <- classificationcomtrade$H4
+H4 %>% filter(id=="4407")  %>% kable
+H4 %>% filter(parent=="4407")  %>% kable
+H4 %>% filter(id=="44")  %>% kable
+H4 %>% filter(parent=="44") %>% kable
 # Number of products under chapter 44
-chap44 <- classificationH4 %>% filter(substr(id, 0, 2)=="44")
+chap44 <- H4 %>% filter(substr(id, 0, 2)=="44")
 nrow(chap44)
 # Number of products under sawnwood
-swd <- classificationH4 %>% filter(substr(id, 0, 4)=="4407")
+swd <- H4 %>% filter(substr(id, 0, 4)=="4407")
 nrow(swd)    
 ```
 
+
 ### Changes in HS products classifications
 ```{r}
-
+# Keep only chapter 44
+classification44 <- lapply(classificationcomtrade, 
+              function(dtf) filter(dtf, substr(id, 0, 2)=="44"))
+HS <- classification44$HS
+H4 <- classification44$H4 
+# HSnotinH4 <- HS %>% filter(!id %in% H4$id)
+# H4notinHS <- H4 %>% filter(!id %in% HS$id)
+# Table of products disapearing and appearing
+HS %>%
+    merge(H4, by="id", all=TRUE, suffixes=c("HS", "H4")) %>%
+    filter(is.na(textHS) | is.na(textH4)) %>%
+    arrange(id) %>% 
+    kable
+# Do the same comparison between H3 and H4  
 ```
+
+

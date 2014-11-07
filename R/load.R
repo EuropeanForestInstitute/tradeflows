@@ -1,4 +1,4 @@
-#' load raw data from the COMTRADE API and other sources
+#' load raw data from the COMTRADE API
 #'
 #'@description load a JSON file from the comtrade API in the temp directory
 #' The API is documented at http://comtrade.un.org/data/doc/api/
@@ -14,7 +14,7 @@ loadcomtrade_bycode <- function(productcode, reportercode, year,
                                 px="HS", max=50000){
     jsonfile <- tempfile(fileext = ".json")
     url <- paste0("http://comtrade.un.org/api/get",
-                  "?cc=", productcode,
+                  "?cc=", paste0(productcode, collapse = ","),
                   "&r=", reportercode,
                   "&p=all&rg=all", # All partners and flows
                   "&ps=", paste0(year, collapse = ","),

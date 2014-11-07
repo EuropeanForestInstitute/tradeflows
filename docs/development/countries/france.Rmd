@@ -1,0 +1,48 @@
+---
+title: "Looking at French data series"
+output:
+  html_document:
+    toc: true
+---
+There was a break in the recording of weight for trade flows reported by 
+France between 2006 and 2010. Investigate this issue.
+
+
+```{r packages, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+``` 
+load data
+```{r load}
+
+```
+
+## Sawnwood
+Load data for france Alexandra said that there is missing weight values between 
+2006 and 2010, but I only see missing values for 2012.
+
+Load data from comtrade for an example file of missing data.
+Paste this data to Excel.
+```{r eval=FALSE}
+swdoakfr <- loadcomtrade_bycode(440791, 251, "recent")
+unique(swdoakfr$yr)
+# add 5 years before
+swdoakfr2 <- loadcomtrade_bycode(440791, 251,seq(2004,2008))
+swdoakfr <- rbind(swdoakfr, swdoakfr2)
+swdoakfr <- swdoakfr %>% arrange(yr, rgCode, ptCode)
+unique(swdoakfr$yr[is.na(swdoakfr$NetWeight)])
+unique(swdoakfr[c("yr","pfCode")])
+xlsx::write.xlsx(swdoakfr,file="data-raw/swdoakfr.xlsx")
+# write.xlsx2 is slightly faster on first use. Immensely faster on second use.
+system.time(xlsx::write.xlsx(swdoakfr,file="data-raw/swdoakfr.xlsx"))
+#    user  system elapsed 
+#  14.397   0.056  14.430 
+system.time(xlsx::write.xlsx2(swdoakfr,file="data-raw/swdoakfr.xlsx"))
+#    user  system elapsed 
+#   0.520   0.064   0.601 
+```
+
+### Missing data by classification type

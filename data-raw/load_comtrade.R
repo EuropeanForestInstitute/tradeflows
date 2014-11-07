@@ -33,34 +33,26 @@ save(reportercomtrade, file="data-raw/reportercomtrade.RData")
 ########################### #
 # Comtrade Classifications  #
 ########################### #
-# H4
-# http://comtrade.un.org/data/cache/classificationH4.json
-classificationH4 <- load_comtrade_definition("http://comtrade.un.org/data/cache/classificationH4.json")
-save(classificationH4, file="data-raw/classificationH4.RData")
-classificationHS <- load_comtrade_definition("http://comtrade.un.org/data/cache/classificationHS.json")
-save(classificationHS, file="data-raw/classificationHS.RData")
-
-# You may want to save all classification dataframes in one list
-
-# HS not in H4
-HSnotinH4 <- classificationHS %>%
-    filter(!id %in% classificationH4$id & substr(id, 0, 2)=="44")
-H4notinHS <- classificationH4 %>%
-    filter(!id %in% classificationHS$id & substr(id, 0, 2)=="44")
-
+HS <- load_comtrade_definition("http://comtrade.un.org/data/cache/classificationHS.json")
+url <- "http://comtrade.un.org/data/cache/classification" # fancy
+H4 <- load_comtrade_definition(paste0(url,"H4",".json"))
+classificationcomtrade <- list(HS = HS, H4 = H4)
+save(classificationcomtrade, file="data-raw/classificationcomtrade.RData")
 
 ###################### #
 # Load Sawnwood data   #
 ###################### #
 # More examples under "docs/development/comtrade.Rmd"
-swd <- classificationH4 %>% filter(substr(id, 0, 4)=="4407")
-
+# And country specific issues under "docs/development/countries"
+claswd <- classificationcomtrade$H4 %>% filter(substr(id, 0, 4)=="4407")
+claswd$id
 # Germany
 sawnwood <- loadcomtrade_bycode(4407, 276, "recent")
 # France
 swdfr <- loadcomtrade_bycode(4407, 251, "recent")
 swdoakfr <- loadcomtrade_bycode(440791, 251, "recent")
-
+swdfr <- loadcomtrade_bycode(c(440791, 440792), 251, "recent")
+sawnwood <- rbind(sawnwood, swdfr, swdoakfr)
 
 # Save tradeflows to RDATA
 # One file by product at 4 digit level

@@ -46,6 +46,6 @@ if(FALSE){
     sawnwood <- sawnwood %>%
         renamecolumns %>%
         calcunitprices
-
+    save(sawnwood, file="data/sawnwood.RData")
 }
 
