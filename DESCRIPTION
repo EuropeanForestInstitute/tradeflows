@@ -15,4 +15,5 @@ Imports:
     jsonlite
 Suggests:
     ggplot2,
-    testthat
+    testthat,
+    rmarkdown

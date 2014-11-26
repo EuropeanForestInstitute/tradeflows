@@ -1,9 +1,8 @@
 knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
-library(rmarkdown)
 library(dplyr)
 
 
-#' Create data completeness report for comptrade data
+#' Create data completeness report for comtrade data
 #'
 #' You may want to generalise this function, for all template that are
 #' product specific.
@@ -22,11 +21,11 @@ create_completeness_report <- function(rawdata,
     outputdir <- file.path(getwd(), outputdir)
     for (productcode_in_report in products){
         message("creating report for ",productcode_in_report)
-        tryCatch(render(input = file.path(inputpath, template),
-                        output_format = pdf_document(toc=TRUE,
-                                                     toc_depth = 3),
-                        output_dir = outputdir,
-                        output_file = paste0(productcode_in_report,".pdf")),
+        tryCatch(rmarkdown::render(input = file.path(inputpath, template),
+                                   output_format = rmarkdown::pdf_document(toc=TRUE,
+                                                                           toc_depth = 3),
+                                   output_dir = outputdir,
+                                   output_file = paste0(productcode_in_report,".pdf")),
                  finally= print("Finally"))
     }
 }
