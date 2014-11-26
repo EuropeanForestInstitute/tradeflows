@@ -1,0 +1,157 @@
+---
+title: "Learning to load data from eurostat"
+output:
+  html_document:
+    toc: true
+---
+Eurostat provides several download facilities, we are looking for 
+a bulk download of bilateral trade data.
+
+```{r packages}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(reshape2)
+``` 
+
+## Eurostat download parameters
+Eurostat [interface to the COMEXT bilateral trade data](http://epp.eurostat.ec.europa.eu/newxtweb/submitformatselect.do) 
+enables the selection of reporting and partner area, 
+product, trade fow and time period.
+For example [Fuel wood Austria](http://epp.eurostat.ec.europa.eu/newxtweb/submitopensavedextraction.do?extractionId=11381457&datasetID=DS-016890&keepsessionkey=true&extractionName=Untitled_20141110&extractionDate=2014/11/10%2014:30:01)
+
+Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/rest_sdmx_2.1#ind_18_1).
+
+
+* Eurostat used to provide [DVD of bulk data](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/publications/comext_dvd)
+    * Now available as [bulk download historical yearly](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2013S2_DVD_image)
+    * and bulk download monthly for recent months.
+    * Go into the [COMEXT folder](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext)
+    * More details in the [readme.txt](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
+
+
+### Tools 
+* Check the [R sdmx package as mentionned on this question](http://stackoverflow.com/questions/12762431/is-this-the-solution-to-get-data-from-eurostat-into-r)
+
+
+
+## Using the SmarterPoland package
+Load data from the [Eurostat trade database](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/data/database), using the smarterpoland package
+
+### Examples
+Example use of the function SmarterPoland::getEurostatRCV
+Download the dataset 'Pupil/Student - teacher ratio 
+and average class size' from eurostat.
+```{r download_educ, eval=FALSE}
+tmp <- SmarterPoland::getEurostatRCV(kod = "educ_iste")
+head(tmp)
+```
+
+
+Download a sample dataset containing Sawnwood trade by species (for_swspec).
+This is downloading from the [Eurostat bulkdownload listing]
+
+* [URL downloading the compressed dataset for_swspec](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=data%2Ffor_swspec.tsv.gz)
+```{r download_swd, eval=FALSE}
+swd <- SmarterPoland::getEurostatRCV(kod = "for_swspec")
+head(swd)
+#   treespec prod_wd indic_fo    unit  geo  time      value
+# 1    CONIF    SAWN      EXP THS_EUR   AT 2013  1013150.51
+# 2    CONIF    SAWN      EXP THS_EUR   BE 2013   229409.43
+# 3    CONIF    SAWN      EXP THS_EUR   BG 2013    41869.04
+# 4    CONIF    SAWN      EXP THS_EUR BLEU 2013          NA
+# 5    CONIF    SAWN      EXP THS_EUR   BR 2013          NA
+# 6    CONIF    SAWN      EXP THS_EUR   CA 2013          NA
+
+
+unique(swd$geo)
+#  [1] AT   BE   BG   BLEU BR   CA   CH   CN   CY   CZ   DE   DK   EE   EL   ES   FI  
+# [17] FR   HR   HU   ID   IE   IN   IS   IT   LT   LU   LV   ME   MK   MT   NL   NO  
+# [33] PL   PT   RO   RU   SE   SI   SK   TR   UK   US   LI  
+# 43 Levels: AT BE BG BLEU BR CA CH CN CY CZ DE DK EE EL ES FI FR HR HU ID IE IN ... US
+
+
+unique(swd[c("treespec", "indic_fo", "unit")]) %>%
+    dcast( unit + indic_fo  ~ treespec, value.var="treespec")
+#      unit indic_fo C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+# 1 THS_EUR      EXP C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+# 2 THS_EUR      IMP C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+# 3  THS_M3      EXP C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+# 4  THS_M3      IMP C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+# 5 THS_NAC      EXP C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+# 6 THS_NAC      IMP C_FIR CONIF C_PIN NC_ASH NC_BEE NC_BIR NC_CHE NC_MAP NC_OAK NCONIF
+#   NC_POP TOTAL
+# 1 NC_POP TOTAL
+# 2 NC_POP TOTAL
+# 3 NC_POP TOTAL
+# 4 NC_POP TOTAL
+# 5 NC_POP TOTAL
+# 6 NC_POP TOTAL
+```
+
+
+Try to download EU trade
+as written on this database http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/data/database
+
+```{r download_trade, eval=FALSE}
+trade
+trade <- SmarterPoland::getEurostatRCV(kod = "DS-016890")
+head(trade)
+
+
+```
+
+
+### Source of the SmarterPoland package
+```{r sourceSmarterPoland, eval=FALSE}
+f <- SmarterPoland::getEurostatRCV
+f
+# function (kod = "educ_iste") 
+# {
+#     require(reshape)
+#     dat <- getEurostatRaw(kod)
+#     dat2 <- t(as.data.frame(strsplit(as.character(dat[, 1]), 
+#         split = ",")))
+#     cnames <- strsplit(colnames(dat)[1], split = "[,\\\\]")[[1]]
+#     colnames(dat2) <- cnames[-length(cnames)]
+#     rownames(dat2) <- dat[, 1]
+#     rownames(dat) <- dat[, 1]
+#     dat3 <- data.frame(dat2, dat[, -1])
+#     colnames(dat3) <- c(colnames(dat2), colnames(dat)[-1])
+#     dat4 <- melt(dat3, id = cnames[-length(cnames)])
+#     colnames(dat4)[ncol(dat4) - 1] = cnames[length(cnames)]
+#     dat4
+# }
+# <environment: namespace:SmarterPoland>
+
+f2 <- SmarterPoland::getEurostatRaw
+f2
+# function (kod = "educ_iste") 
+# {
+#     adres <- paste("http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=data%2F", 
+#         kod, ".tsv.gz", sep = "")
+#     tfile <- tempfile()
+#     download.file(adres, tfile)
+#     dat <- read.table(gzfile(tfile), sep = "\t", na.strings = ": ", 
+#         header = F, stringsAsFactors = F)
+#     unlink(tfile)
+#     colnames(dat) <- as.character(dat[1, ])
+#     dat <- dat[-1, ]
+#     for (i in 2:ncol(dat)) {
+#         tmp <- sapply(strsplit(as.character(dat[, i]), split = " "), 
+#             `[`, 1)
+#         tmp[tmp == ":"] = NA
+#         dat[, i] <- as.numeric(tmp)
+#     }
+#     dat
+# }
+# <environment: namespace:SmarterPoland>
+``` 
+
+
+## Loading eurostat data directly
+
+The SmarterPoland package is downloading data tables from the
+[bulkdownload listing](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing)
+It appears that these do not contain bilateral trade data.

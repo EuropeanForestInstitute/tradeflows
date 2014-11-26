@@ -1,0 +1,79 @@
+---
+title: "Development version of a completeness report by country for product `r productcode_in_report` "
+output:
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+
+```{r load_packages, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(xtable)
+``` 
+
+
+```{r load, eval=FALSE}
+# # load raw data and rename it for direct evaluation of this template in RSTUDIO
+# load("data/sawnwoodexample.rda") # if the format has change,
+# rawdata <- sawnwood
+# productcode_in_report = 4407
+```
+
+
+```{r prepare_completeness_table}
+completeness <- rawdata %>% 
+    select(reporter, classification, year, quantity, weight, tradevalue) %>%
+    melt(id=c("reporter", "classification", "year"))  %>%
+    mutate(value = !is.na(value)) %>%
+    unique %>%
+    group_by(reporter)
+```
+
+
+## Product definitions
+Product `r productcode_in_report` has the following definitions:
+```{r productdefinition, results='asis'}
+productname <- rawdata %>% 
+    filter(productcode == productcode_in_report) %>%
+    select(classification, product) %>%
+    unique
+
+for(code in productname$classification){
+    cat("\n\n__",code,":__ ", sep="")
+    cat(productname$product[productname$classification == code])
+}
+```
+
+## Summary
+Number of reporting country by year and by classification type
+```{r reporting_by_classification}
+
+kable
+```
+
+
+## Completeness by country and by classification type 
+```{r plot, results='asis'}
+# Add product code and country name to the plot
+for (r in unique(completeness$reporter)){
+    cat("\n\n###", r, "\n")
+    p <- ggplot(data=filter(completeness, reporter == r), 
+                aes(x=year, y=variable, 
+                    xend=year+1, yend=variable, 
+                    color=value, linetype=value)) +
+        geom_segment(size=3) + 
+        facet_grid(classification~.) +
+        ggtitle(paste("Data completeness of", productcode_in_report,
+                      "in", r))
+    plot(p)
+    }
+``` 
+
+
+

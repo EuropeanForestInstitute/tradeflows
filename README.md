@@ -36,13 +36,27 @@ The function `loadcomtrade` and `loadcomtrade_bycode`,
 load data from the comtrade API in JSON format 
 and convert it to data frames.
 
+[Bug request of the Comtrade API](https://www.surveymonkey.com/r/?sm=2BQpdoHC1wFB3xIKcDja4TErpxm5%2b5nI5Iuz8et35wI%3d)
+* submitted the 
+jsonlite::fromJSON("http://comtrade.un.org/data/cache/classificationHS.json")
+Warning message:
+Unexpected Content-Type: application/x-javascript 
+
 ### Raw data
 Inspired by the way hadley prepares this [flight planes data](https://github.com/hadley/nycflights13/tree/master/data-raw).
 The package includes a training dataset:
 sawnwood bilateral trade data for European countries.
 
 ## Output
+Reports and data files.
 
+### Templates
+Templates are placed in inst/templates, 
+[location inspired by the rapport package](https://github.com/Rapporter/rapport/tree/master/inst/templates).
+See also their function [rapport.ls](https://github.com/Rapporter/rapport/blob/7b459b9733a44511b4884b6d35d25d743c7a11e1/R/rp_helpers.R) that lists templates.
+And their function 
+[rapport.read](https://github.com/Rapporter/rapport/blob/7b459b9733a44511b4884b6d35d25d743c7a11e1/R/template.R) that reads templates from files or form 
+package-bundled templates.
 
 
 ## Tools
@@ -56,6 +70,9 @@ For data I followed his recommendations in r-pkgs/data.rmd
 `devtools::use_data(mtcars)`
 `devtools::use_data_raw()` # To create a data-raw/ folder and add it to .Rbuildignore
 
+### Tests
+Example of testing [for the devtools package](https://github.com/hadley/devtools/blob/master/tests/testthat/test-data.r)
+
 ### Data frame manipulation with dplyr
 dplyr uses non standard evaluation. See vignette("nse") 
 NSE is powered by the lazyeval package
@@ -66,6 +83,11 @@ sawnwood %>% select_(.dots = c("yr", "rtCode" )) %>% head
 # lazy evaluation
 sawnwood %>% select(yr, rtCode ) %>% head
 ```
+
+### Error catching with tryCatch
+see `demo(error.catching)`.
+
+
 ### Documentation using roxygen2
 You should be able to see the documentation of exported functions by placing a 
 question mark before the function name at the R command prompt.
@@ -118,7 +140,8 @@ Calling the javascript files should be possible within a YAML document, see
 
 
 ### TODO by order of ease / importance
-
+* use package options, inspired by the devtools or knitr package 
+  "Devtools uses the following options to configure behaviour:..."
 * Time plot of HS by quantity, weight or value data (ggplot gant chart) to 
 visualise missing data
 * load from EUROSTAT comext at 10 digit level

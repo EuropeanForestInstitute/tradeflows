@@ -1,0 +1,40 @@
+---
+title: "Comparing different data storing techniques"
+output:
+  html_document:
+    toc: true
+---
+
+
+```{r packages, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+``` 
+
+
+Load data
+```{r load}
+load("data/sawnwood.RData")
+size1 <- file.info("data/sawnwood.RData")$size
+size1
+```
+
+
+Save to RDATA
+```{r save, eval=FALSE}
+# drop the product column which has large text
+sawnwood  <- sawnwood %>% select(-product)
+save(sawnwood, file="data/sawnwood2.RData")
+size2 <- file.info("data/sawnwood2.RData")$size
+(size1 - size2) / size1 *100
+# 6.4 % difference in file size
+
+# drop the flowcode column which has only 1, 2 and 4 values
+sawnwood  <- sawnwood %>% select(-flowcode)
+save(sawnwood, file="data/sawnwood2.RData")
+size2 <- file.info("data/sawnwood2.RData")$size
+(size1 - size2) / size1 *100
+# 0,1 % difference in file size
+```

@@ -1,0 +1,20 @@
+---
+title: "Tables"
+author: "Paul Rougieux"
+date: "25/11/2014"
+output: pdf_document
+---
+
+```{r}
+library(xtable)
+```
+PDF table
+```{r xtablepdf, results='asis'}
+print(xtable(cars), type='latex', booktabs=FALSE)
+```
+
+
+HTML table
+```{r xtablehtml, results='asis'}
+# print(xtable(cars), type='html')
+```

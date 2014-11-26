@@ -37,8 +37,9 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
 #' @param dtf data frame
 #' @import dplyr
 calcunitprices <- function(dtf){
-    dtf <- dtf %>% mutate(pricecur = value / weight )
+    dtf %>% mutate(pricecur = tradevalue / weight )
 }
+
 
 if(FALSE){
     library(dplyr)

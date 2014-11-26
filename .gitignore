@@ -1,7 +1,7 @@
 .Rproj.user
 .Rhistory
 
-# Ignore all automatically generated markdown file except README.md
+# Ignore all automatically generated markdown files except README.md
 *.md
 !README.md
 

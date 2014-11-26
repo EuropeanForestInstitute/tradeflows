@@ -10,14 +10,23 @@ France between 2006 and 2010. Investigate this issue.
 
 ```{r packages, warning=FALSE, message=FALSE}
 library(knitr)
-opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 library(tradeflows)
 library(dplyr)
+library(reshape2)
 library(ggplot2)
-``` 
-load data
-```{r load}
+getwd()
 
+``` 
+
+
+
+
+```{r load}
+# load raw data and rename it
+load("data/sawnwoodexample.rda") # if the format has change,
+sawnwood <- sawnwoodexample
+sawnwoodexample %>% select(reporter, productcode) %>% unique()
 ```
 
 ## Sawnwood
@@ -45,4 +54,21 @@ system.time(xlsx::write.xlsx2(swdoakfr,file="data-raw/swdoakfr.xlsx"))
 #   0.520   0.064   0.601 
 ```
 
-### Missing data by classification type
+### Missing data by classification type and country
+```{r}
+# Data for French sawnwood oak
+swdoakfr <- sawnwood %>% 
+    filter(productcode == 440791 & reporter=="France") %>%
+    select(classification, year, quantity, weight, tradevalue) %>%
+    melt(id=c("classification", "year"))  %>%
+    mutate(value = !is.na(value)) %>%
+    unique
+
+# Add product name and title to the plot
+ggplot(data=swdoakfr,aes(x=year, y=variable, 
+                         xend=year+1, yend=variable, 
+                         color=value, linetype=value)) +
+    geom_segment(size=3) + 
+    facet_grid(classification~.)
+``` 
+
