@@ -1,4 +1,6 @@
-# This will call functions from load.R to load comtrade data
+# Load product codes and names in the different classifications
+# Load reporter area codes and names (mostly country names)
+# Call functions from load.R to load sample comtrade datasets
 #
 # No need to source load.R as it is loaded within the package already
 # This script will run on a development system
@@ -9,54 +11,59 @@
 #
 # Example of file that load data:
 # https://github.com/hadley/nycflights13/blob/master/data-raw/airlines.R
-#
-
-load_comtrade_definition <- function(url){
-    jsonfile <- tempfile(fileext = ".json")
-    download.file(url, destfile=jsonfile)
-    json <- jsonlite::fromJSON(jsonfile)
-    unlink(jsonfile)
-    return(json$results)
-}
-
-########################### #
-# Comtrade reporter areas   #
-########################### #
-# http://comtrade.un.org/data/cache/reporterAreas.json
-# Keep only countries for which there is sawnwood or fuelwood data in 2010
-# This should eliminate former countries such as east germany
-reportercomtrade <-
-    load_comtrade_definition("http://comtrade.un.org/data/cache/reporterAreas.json")
-save(reportercomtrade, file="data-raw/reportercomtrade.RData")
+library(dplyr)
 
 
-########################### #
-# Comtrade Classifications  #
-########################### #
-HS <- load_comtrade_definition("http://comtrade.un.org/data/cache/classificationHS.json")
-url <- "http://comtrade.un.org/data/cache/classification" # fancy
-H4 <- load_comtrade_definition(paste0(url,"H4",".json"))
-classificationcomtrade <- list(HS = HS, H4 = H4)
-save(classificationcomtrade, file="data-raw/classificationcomtrade.RData")
+
 
 ###################### #
-# Load Sawnwood data   #
+# Load Example dataset #
 ###################### #
+
+# Country codes and names
+# View(tradeflows::reportercomtrade)
+
+# Product codes and names in chapter 44
+# View(filter(tradeflows::classificationcomtrade$HS,
+#                 substr(productcode, 0, 2)=="44"))
+
 # More examples under "docs/development/comtrade.Rmd"
 # And country specific issues under "docs/development/countries"
-claswd <- classificationcomtrade$H4 %>% filter(substr(id, 0, 4)=="4407")
-claswd$id
-# Germany
-sawnwood <- loadcomtrade_bycode(4407, 276, "recent")
-# France
-swdfr <- loadcomtrade_bycode(4407, 251, "recent")
-swdoakfr <- loadcomtrade_bycode(440791, 251, "recent")
-swdfr <- loadcomtrade_bycode(c(440791, 440792), 251, "recent")
-sawnwood <- rbind(sawnwood, swdfr, swdoakfr)
-
-# Save tradeflows to RDATA
-# One file by product at 4 digit level
-save(sawnwood, file="data-raw/sawnwood.RData")
+claswd <- classificationcomtrade$H4 %>%
+    filter(substr(productcode, 0, 4)=="4407")
+claswd$productcode
 
 
+# Germany, swd, swdoak, swdbeech
+swdde <- loadcomtrade_bycode(c(4407, 440791, 440792), 276, "recent")
+# add 5 years before
+swdde2 <- loadcomtrade_bycode(c(4407, 440791, 440792), 276, seq(2004,2008))
+swdde <- rbind(swdde, swdde2)
 
+
+# France, swd, swdoak, swdbeech
+swdfr <- loadcomtrade_bycode(c(4407, 440791, 440792), 251, "recent")
+# add 5 years before
+swdfr2 <- loadcomtrade_bycode(c(4407, 440791, 440792), 251, seq(2004,2008))
+swdfr <- rbind(swdfr, swdfr2)
+
+
+# uk wood pellets
+pelletsuk <- loadcomtrade_bycode(440131, 826, "recent")
+
+
+# bind tables
+sawnwoodexample <- rbind(swdde, swdfr) %>%
+    arrange(yr, rgCode, ptCode)
+unique(sawnwoodexample[c("yr", "rtTitle")])
+save(sawnwoodexample, file="data-raw/sawnwoodexample.RData")
+save(pelletsuk, file="data-raw/pelletsexample.RData")
+
+# The rest loads trade datasets
+# for all countries in reportercomtrade
+# This is only on a development system
+# Not exported within the package
+if (FALSE){
+    # Save tradeflows to RDATA
+    # One file by product at 4 digit level
+}
