@@ -4,7 +4,7 @@ output:
   html_document:
     toc : true
 ---
-```{r}
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
 library(dplyr)
@@ -12,17 +12,22 @@ library(tradeflows)
 ```
 
 ```{r load_data}
-load("data-raw/sawnwood.RData")
+load("data-raw/sawnwood_all.RData")
+# data frame with comtrade column names
+# only for experiments on column renaming
+sawnwoodasincomtrade <- swdall
+# data frame with efi column names prefere this one for all manipulations
+sawnwood <- swdall %>% renamecolumns
 ```
 
 ## Data manipulation
 ```{r filter}
-swd_exp <- filter(sawnwood, rgDesc == "Export")
-swd_imp <- filter(sawnwood, rgDesc == "Import")
+swd_exp <- filter(sawnwoodasincomtrade, rgDesc == "Export")
+swd_imp <- filter(sawnwoodasincomtrade, rgDesc == "Import")
 ```
 
 
-## Rename and select columns
+## Rename columns
 ### Using dplyr
 I didn't manage to rename columns based on the table
 column_names. I used base R to do it, see further down below.
@@ -30,7 +35,7 @@ column_names. I used base R to do it, see further down below.
 column_names <- read.csv("data-raw/column_names.csv", as.is=TRUE)
 column_names <- column_names %>%
     filter(!is.na(efi) & !is.na(comtrade))
-swd <- head(sawnwood)
+swd <- head(sawnwoodasincomtrade)
 # dplyr uses non standard evaluation
 swd %>% select(yr, rtCode ) 
 # swd %>% select(yr, column_names$comtrade) 
@@ -52,10 +57,10 @@ select(swd, list(year = yr, reporter=rtCode))
 # > substitute(select(swd, year = y, reporter = rtCode),
 substitute(select(swd, year = y, reporter = rtCode),
            list(y = "yr"))
-e <- paste("select(sawnwood, ", "year = yr, reporter = rtCode", ")")
+e <- paste("select(sawnwoodasincomtrade, ", "year = yr, reporter = rtCode", ")")
 e <- substitute(e)
 eval("list(year = yr, reporter=rtCode)")
-# sawnwood %>%
+# sawnwoodasincomtrade %>%
 #     rename(product = cmdDescE, reporter = rtTitle ) %>% head
 paste(column_names$tradeflows, "=", column_names$comtrade, collapse=", ")
 ```
@@ -63,7 +68,7 @@ paste(column_names$tradeflows, "=", column_names$comtrade, collapse=", ")
 
 ### using base R to rename columns 
 ```{r}
-swd <- head(sawnwood)
+swd <- head(sawnwoodasincomtrade)
 names(swd)[names(swd)=="yr"] <- "year"
 column_names <- column_names %>%
     filter(!is.na(efi) & !is.na(comtrade))
@@ -74,7 +79,7 @@ for (n in column_names["comtrade"][[1]]){
 names(swd)
 
 # Try to use a lapply
-# swd <- head(sawnwood)
+# swd <- head(sawnwoodasincomtrade)
 # rename_column <- function(name, sourcename = "comtrade"){
 #     names(swd)[names(swd)==name] <- 
 #         column_names$tradeflows[column_names$comtrade==name]
@@ -85,9 +90,83 @@ names(swd)
 
 ## Calculate unit prices
 ```{r unitprices}
-sawnwood <- sawnwood %>%
-    renamecolumns %>%
-    calcunitprices
-hist(sawnwood$pricecur)
+# sawnwoodasincomtrade <- sawnwoodasincomtrade %>%
+#     renamecolumns %>%
+#     calcunitprices
+# hist(sawnwoodasincomtrade$pricecur)
 ```
 
+## Add partner trade flows
+Check that there are no duplicates
+```{r partnerflow}
+dtf <- sawnwood 
+swap <- dtf %>%
+    rename(partnercode = reportercode,
+           reportercode = partnercode) %>%
+    select(reportercode, partnercode,
+           productcode, flow, year,
+           quantity, weight, tradevalue) %>%
+    mutate(flow = gsub("Import","aaaaaaa",flow),
+           flow = gsub("Export","Import",flow),
+           flow = gsub("aaaaaaa","Export",flow))
+    # Check that values in the dtf and swap tables are all there
+    # and in the same order
+    stopifnot(dtf$value == swap$value)
+    # Merge
+    dtf <- merge(dtf, swap, all.x=TRUE, suffixes = c("", "partner"),
+                 by = c("reportercode", "partnercode",
+                        "productcode", "flow", "year"))
+head(dtf)
+```
+
+### Check for duplicated flows
+There should not be duplicated entires for one combination of
+year & flowcode & reportercode & partnercode
+```{r duplicates, eval=FALSE}
+# Example of a duplicate entry in the swd_all dataset
+swdall %>% renamecolumns() %>% select(-productdescription) %>%
+    filter(year == 2008 & flowcode ==1 &
+                   reportercode == 276& partnercode == 0 )
+#   classification year flowcode   flow reportercode reporter reporteriso partnercode
+# 1             H3 2008        1 Import          276  Germany         DEU           0
+# 2             H3 2008        1 Import          276  Germany         DEU           0
+#   partner partneriso productcode unitcode        unit quantity     weight tradevalue
+# 1   World        WLD        4407        1 No Quantity       NA 2116672100 1340236000
+# 2   World        WLD        4407        1 No Quantity       NA 2116672100 1340236000
+print(summary(duplicated(swdall)))
+#    Mode   FALSE    TRUE    NA's 
+# logical   17185    9291       0 
+```
+
+
+```{r}
+# check that there are no duplicates
+# swap2 <- unique(swap) # Should be the same length as the rest
+swap2 <- swap[duplicated(swap),] %>%
+    arrange(year, productcode, flow, partnercode, reportercode)
+head(swap2)
+
+swd2 <- dtf[duplicated(dtf),] %>%
+    arrange(year, productcode, flow, reportercode, partnercode)
+head(swd2) 
+# are there duplicates
+dtf %>% filter(year == 2008 & flowcode ==1 &
+                   reportercode == 276& partnercode == 0 )
+```
+
+### Calculate discrepancies
+There is one discrepancy column for each column 
+weight, quantity and tradevalue.
+Calculating it in a molten data frame would facilitate the calculation but
+melting a 17000 row data frame returns this 
+"Error: C stack usage  9460099 is too close to the limit"
+```{r c_stackusageistooclosetolimit, eval=FALSE }
+dtf <- swdall %>% renamecolumns %>% removeduplicates %>% addpartnerflow
+ids <- names(dtf)[!names(dtf) %in%
+                      c("weight", "quantity", "tradevalue",
+                        "weightpartner", "quantitypartner",
+                        "tradevaluepartner")]
+stopifnot(length(ids) + 6 == length(names(dtf)))
+dtf2 %>% melt(dtf, id=ids)
+# Error: C stack usage  9460099 is too close to the limit
+```

@@ -1,11 +1,12 @@
+# Load product codes and names for the different classifications
 # Prepare the product classification reference tables for use
 # within the package
 library(dplyr)
 
-##################### #
-# ITTO classification #
-##################### #
-
+############################# #
+# ITTO product classification #
+############################# #
+itto <- read.csv("data-raw/ITTO_products.csv")
 
 
 ########################### #

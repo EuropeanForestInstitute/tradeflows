@@ -1,5 +1,5 @@
 ---
-title: "Data completeness by country for product `r productcode_in_report` "
+title: "Data completeness by country for product `r productcodeinreport` "
 output:
   html_document:
     toc: true
@@ -7,41 +7,34 @@ output:
     toc: true
 ---
 
-```{r load_packages, warning=FALSE, message=FALSE}
-library(knitr)
-opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
-library(tradeflows)
-library(dplyr)
-library(reshape2)
-library(ggplot2)
-library(xtable)
-``` 
-
-
-```{r load, eval=FALSE}
-# # load raw data and rename it for direct evaluation of this template in RSTUDIO
-# load("data/sawnwoodexample.rda") # if the format has change,
-# rawdata <- sawnwood
-# productcode_in_report = 4407
-```
-
+## Warning
+This report is generated automatically based on data from the 
+[UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
+Tables and graphs are in development.
+They are intended for internal use within the TradeFLowsDB project.
+As of November 2014, some aggregates such as EU-28 might be counted as countries.
+Therefore, country numbers in tables below might be slightly
+overestimated, use them as a rough indication only.
 
 ```{r prepare_completeness_table}
-completeness <- rawdata %>% 
+# This report is intended for one product only
+rawdata2 <- rawdata %>% 
+    filter(productcode == productcodeinreport)
+completeness <- rawdata2 %>%
     select(reporter, classification, year, quantity, weight, tradevalue) %>%
     melt(id=c("reporter", "classification", "year"))  %>%
     mutate(value = !is.na(value)) %>%
-    unique %>%
-    group_by(reporter)
+    unique %>% 
+    arrange(classification, reporter, year)
 ```
 
 
 ## Product definitions
-Product `r productcode_in_report` has the following definitions:
+Product `r productcodeinreport` has the following definitions:
 ```{r productdefinition, results='asis'}
-productname <- rawdata %>% 
-    filter(productcode == productcode_in_report) %>%
-    select(classification, product) %>%
+productname <- rawdata2 %>% 
+    select(classification, productdescription) %>%
+    arrange(classification) %>%
     unique
 
 for(code in productname$classification){
@@ -50,30 +43,76 @@ for(code in productname$classification){
 }
 ```
 
-## Summary
-Number of reporting country by year and by classification type
-```{r reporting_by_classification}
 
-kable
+## Summary
+Number of reporting countries by year and by classification type.
+```{r reporting_by_classification}
+completeness %>% 
+    select(reporter, year, classification) %>%
+    unique() %>% # Keep only unique combinations of reporter, year, classification
+    group_by(year, classification) %>% 
+    dcast(year ~ classification, value.var="reporter", length) %>%
+    kable()
+```
+
+List of countries using each classification type in `r max(completeness$year)`.
+```{r reportername_by_classification, results='asis'}
+reporterbyclassif <- completeness %>% 
+    filter(year == max(year)) %>%
+    select(year, classification, reporter) %>%
+    unique()
+#     group_by(classification) %>%
+#     do(head(.,2)) # works! how to use this do
+
+for (code in unique(reporterbyclassif$classification)){
+    cat("\n\n__",code,":__ ", sep="")
+    cat(reporterbyclassif$reporter[reporterbyclassif$classification == code], 
+        sep=", ")
+}
 ```
 
 
 ## Completeness by country and by classification type 
 ```{r plot, results='asis'}
-# Add product code and country name to the plot
+# Prepare table to show partner countries
+# remove world
+rawdata3 <- rawdata2 %>% 
+    filter(!reporter == "World" & !partner == "World") %>%
+    select(year, classification, flow, reporter, partner) %>%
+    arrange(year, classification, flow)
 for (r in unique(completeness$reporter)){
     cat("\n\n###", r, "\n")
+    
+    # plot completeness
     p <- ggplot(data=filter(completeness, reporter == r), 
                 aes(x=year, y=variable, 
                     xend=year+1, yend=variable, 
                     color=value, linetype=value)) +
         geom_segment(size=3) + 
         facet_grid(classification~.) +
-        ggtitle(paste("Data completeness of", productcode_in_report,
+        ggtitle(paste("Data completeness of", productcodeinreport,
                       "in", r))
     plot(p)
+
+    
+    ###################################################### #
+    # Number of trade partners per classification and year #
+    ###################################################### #
+    # Reported by the country
+    npartnersbyr <- rawdata3 %>% 
+        filter(reporter == r) %>%
+        dcast(year + classification ~ flow, value.var="partner", length) %>%
+        kable(., caption = 
+                  paste("Number of trade partners reported by", r))
+    print(npartnersbyr)
+    
+    # Reported by partner countries
+    try(npartnersbyothers <- rawdata3 %>% 
+            filter(partner == r) %>%
+            dcast(year + classification ~ flow, value.var="reporter", length))
+    try(print(kable(npartnersbyothers,
+                    caption = paste("Number of countries who report trading with",
+                                    r))))
     }
 ``` 
-
-
 

@@ -3,19 +3,20 @@
 #'@description load a JSON file from the comtrade API in the temp directory
 #' The API is documented at http://comtrade.un.org/data/doc/api/
 #' Converts the file to a dataframe
-#'@param reportercode  geographical area or country code
 #'@param productcode  code of the product
-#'@param year a string of year separated by commas
+#'@param reportercode  geographical area or country code
+#'@param year a vector of years (maximum 5), or the chain of character "recent"
 #'@param px Trade data classification scheme
 #'@param max maximum records returned
 #'@return a dataframe
 #'@export
-loadcomtrade_bycode <- function(productcode, reportercode, year,
-                                px="HS", max=50000){
+loadcomtradebycode <- function(productcode, reportercode, year,
+                                px = "HS", max = 50000,
+                                logfile = FALSE){
     jsonfile <- tempfile(fileext = ".json")
     url <- paste0("http://comtrade.un.org/api/get",
                   "?cc=", paste0(productcode, collapse = ","),
-                  "&r=", reportercode,
+                  "&r=", paste0(reportercode, collapse = ","),
                   "&p=all&rg=all", # All partners and flows
                   "&ps=", paste0(year, collapse = ","),
                   "&px=", px,
@@ -23,42 +24,78 @@ loadcomtrade_bycode <- function(productcode, reportercode, year,
                   "&fmt=json")
     download.file(url, destfile=jsonfile)
     json <- jsonlite::fromJSON(jsonfile)
+
     if (json$validation$status$name != "Ok"){
         # If there was an error,
         # write it to a log file and give an error message
         stop(json$validation)
+        # write geterrmessage() to a log file
     }
     unlink(jsonfile)
     return(json$dataset)
 }
 
 
-loadcomtrade <- function(product, reporter, year){
-    #'@description convert names to the corresponding codes
-    #' use the function wich loads by codes
-    # product names beeing very long it might be usefull to allow
-    # using part of the name if there is no ambiguity.
-    loadcomtrade_bycode(product, reporter, year)
+#' Load flows for all countries, in all directions available in comtrade
+#' for a given product.
+#'
+#' @param productcode a vector of product codes
+#' @param year a vector of years (maximum 5), or the chain of character "recent"
+#' @export
+loadcomtradeallreporters <- function(productcode, year="recent"){
+    dtf <- data.frame()
+    # Create groups of 3 reporter, to overcome API limitation
+    # more details in docs/development/comtrade.Rmd
+    reportercomtrade$group <- round(as.numeric(row.names(reportercomtrade)) /3)
+    reporter_list <- split(reportercomtrade$reportercode,
+                           as.factor(reportercomtrade$group))
+    # Remove "all", because it won't be accepted for reasons of query complexity
+    reporter_list[reporter_list=="all"] <- NULL
+    # Loop on group of reporters
+    for (g in reporter_list){
+        print(g)
+        try(dtf <- rbind(dtf,
+                         loadcomtradebycode(productcode, g, year,
+                                             logfile=TRUE)))
+    }
+        #     if (logfile != FALSE){
+        #         # Write jsonvalidataion to a logfile
+        #         logfileconn <- file(logfile)
+        #         writeLines(paste("\n\n",url), logfileconn)
+        #         writeLines(paste(json$validation), logfileconn)
+        #         close(logfileconn)
+        #     }
+    save(dtf, file=paste0(productcode,".RData"))
+    try(write.csv(dtf,file=paste0(productcode,".csv")))
 }
 
-
-#' load comtrade data for all countries, for a vector of product codes
-#' this could be moved later.
+#' Load flows for all countries, with a pause of 1 hour between products
+#'
+#' Load flows in all directions available in comtrade
+#' for a given vector of product codes.
+#'
 #' @param productcode a vector of product codes
+#' @param year a vector of years (maximum 5), or the chain of character "recent"
 #' @export
-loadcomtrade_all_countries <- function(productcode){
-    for (code in tradeflows::reportercomtrade$reportercode){
-        print(tradeflows::reportercomtrade[reportercomtrade$reportercode == code,])
-        try(swd <- loadcomtrade_bycode(productcode, code, seq(2008,2012)))
-        try(save(swd, file=paste0(reportercomtrade$text[reportercomtrade$id == id],
-                                  ".RData")))
-        try(write.csv(swd,file=paste0(reportercomtrade$text[reportercomtrade$id == id],
-                                      ".csv")))
+loadcomtradewithpause <- function(products, year="recent", pause=3601){
+    # loop on the vector productcode,
+    # pause 1 hour between each product to stay within the comtrade API limit
+    for (productcode in products){
+        loadcomtradeallreporters(produccode, year)
+        Sys.sleep(pause)
     }
 }
 
+# # On the server I put datasets together in this way
+# swdall <- data.frame()
+# for (f in list.files(".","RData")){
+#     load(f);swdall <- rbind(swd,swdall)
+# }
+# save(swdall, file="sawnwood_all.RData")
+# swdall2 <- tradeflows::renamecolumns(swdall)
+# create_completeness_report(swdall2)
 
-# See example ans tests under docs/development
+# See example and tests under docs/development
 # http://appsso.eurostat.ec.europa.eu/nui/show.do?query=BOOKMARK_DS-016890_QID_-26F2D7BC_UID_-3F171EB0&layout=PERIOD,L,X,0;REPORTER,L,Y,0;PARTNER,L,Z,0;PRODUCT,B,Z,1;FLOW,L,Z,2;INDICATORS,C,Z,3;&zSelection=DS-016890PARTNER,EU28_EXTRA;DS-016890FLOW,2;DS-016890PRODUCT,44071031;DS-016890INDICATORS,VALUE_IN_EUROS;&rankName1=PARTNER_1_2_-1_2&rankName2=PRODUCT_1_2_-1_2&rankName3=FLOW_1_2_-1_2&rankName4=INDICATORS_1_2_-1_2&rankName5=PERIOD_1_0_0_0&rankName6=REPORTER_1_2_0_1&sortC=ASC_-1_FIRST&rStp=&cStp=&rDCh=&cDCh=&rDM=true&cDM=true&footnes=false&empty=false&wai=false&time_mode=NONE&time_most_recent=false&lang=EN&cfo=%23%23%23%2C%23%23%23.%23%23%23
 loadeurostat <- function(){
 
@@ -85,4 +122,6 @@ if (FALSE){
     # Show how functions above work on sample data
     loadbycomtradecode()
     load_by_name("germany","wood sawn or chip...",2011)
+
+
 }

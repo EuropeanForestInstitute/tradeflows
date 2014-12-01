@@ -7,6 +7,7 @@ output: pdf_document
 
 ```{r}
 library(xtable)
+library(knitr)
 ```
 PDF table
 ```{r xtablepdf, results='asis'}
@@ -17,4 +18,12 @@ print(xtable(cars), type='latex', booktabs=FALSE)
 HTML table
 ```{r xtablehtml, results='asis'}
 # print(xtable(cars), type='html')
+```
+
+
+Table in loop
+```{r tableinloop, results='asis'}
+for(s in unique(cars$speed)){
+print(kable(subset(cars,speed==s)))
+}
 ```

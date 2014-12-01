@@ -30,14 +30,55 @@ You may need to upgrade the libcurl library on your system shell
 ```
 sudo apt-get install libcurl4-gnutls-dev 
 ```
+### Installation on a server 
+More details on the server configuration in this 
+[google doc](https://docs.google.com/document/d/1pY6HL0kOqulsdWzgZ7ic5ibJP4wrlF0Fl1wbhV3Kxdg/edit#heading=h.4fw0eqfvx5sz)
+
+Rmarkdown requires the latest pandoc version,
+[explanation here](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md#newer-systems-debianubuntufedora)
+
+To include the latest required version of pandoc:
+
+* [install pandoc from source](http://johnmacfarlane.net/pandoc/installing.html#all-platforms)
+ haksell installation was rather bulky.
+ and pandoc installation from source failed:
+```
+ setup: At least the following dependencies are missing:
+ http-client >=0.3.2 && <0.4 && ==0.4.5
+ cabal: Error: some packages failed to install:
+ pandoc-1.13.1 failed during the configure step. The exception was:
+ ExitFailure 1
+```
+* Or [install Rstudio server](http://www.rstudio.com/products/rstudio/download-server/)
+```
+md5sum rstudio-server-0.98.1091-amd64.deb
+930eca2738ce335791df41c3f6302fae 
+```
+Rstudio server requres the installation of a recent libssl version.
+md5sum should not be used anymore for security reason, 
+authenticity should be checked with
+```
+sha256sum libssl0.9.8_0.9.8o-4squeeze14_amd64.deb 
+```
+Couldn't find the key. So i loaded if from 2 locations and checked that they had 
+the same sum. 
+To manually stop, start, and restart the server you use the following commands:
+```
+$ sudo rstudio-server stop
+$ sudo rstudio-server start
+$ sudo rstudio-server restart
+```
 
 ## Input
 The function `loadcomtrade` and `loadcomtrade_bycode`, 
 load data from the comtrade API in JSON format 
 and convert it to data frames.
 
-[Bug request of the Comtrade API](https://www.surveymonkey.com/r/?sm=2BQpdoHC1wFB3xIKcDja4TErpxm5%2b5nI5Iuz8et35wI%3d)
-* submitted the 
+* [Comtrade data extraction interface](http://comtrade.un.org/data/) beta
+* [Comtrade API release notes](http://comtrade.un.org/data/doc/releasenotes/)
+ first release in February 2014. 
+* [Bug request of the Comtrade API](https://www.surveymonkey.com/r/?sm=2BQpdoHC1wFB3xIKcDja4TErpxm5%2b5nI5Iuz8et35wI%3d)
+ * submitted the 
 jsonlite::fromJSON("http://comtrade.un.org/data/cache/classificationHS.json")
 Warning message:
 Unexpected Content-Type: application/x-javascript 
@@ -49,6 +90,17 @@ sawnwood bilateral trade data for European countries.
 
 ## Output
 Reports and data files.
+
+### Data output
+One record contains information about one flow,
+for a unique combination of 
+c("reportercode", "partnercode", "productcode", "flow", "year")
+For more information on this unique combination,
+see the merge part of the `addpartnerflow()` function, 
+Each single record can be caracterized by 6 figures:
+
+1. weight, tradevalue and quantity as reported by the _reporter_ area
+2. weight, tradevalue and quantity as reported by the _partner_ area
 
 ### Templates
 Templates are placed in inst/templates, 
@@ -70,6 +122,7 @@ For data I followed his recommendations in r-pkgs/data.rmd
 `devtools::use_data(mtcars)`
 `devtools::use_data_raw()` # To create a data-raw/ folder and add it to .Rbuildignore
 
+
 ### Tests
 Example of testing [for the devtools package](https://github.com/hadley/devtools/blob/master/tests/testthat/test-data.r)
 
@@ -85,8 +138,9 @@ sawnwood %>% select(yr, rtCode ) %>% head
 ```
 
 ### Error catching with tryCatch
-see `demo(error.catching)`.
 
+* see `demo(error.catching)`.
+* See also Hadley's article: [beyond-exception-handling](http://adv-r.had.co.nz/beyond-exception-handling.html).
 
 ### Documentation using roxygen2
 You should be able to see the documentation of exported functions by placing a 
@@ -119,6 +173,24 @@ Use devtools::install_bitbucket() to install the package.
 A demonstration with time series plot and bar chart will be made
 with shiny and the ggplot2 package, based on the diamond example using.
 
+### Screen server tool
+Use screen to keep a long process running on a server after you close the ssh session. I started a screen session with:
+
+        screen -S sessionname
+
+In order to find the screen session later you might want to rename it using sessionname. Or on the first screen invocation use the s flag -S sessionname
+
+I started the R software in this screen session, started a long running process. Then detached the session with:
+
+        CTRL-A-D
+
+I could re-attach the session later with:
+
+        screen -r sessionname
+
+If the session was not detached properly, it might be necessary to detach it and re attach it:
+
+       screen -d -r sessionname
 
 ## Ongoing work
 
@@ -140,6 +212,16 @@ Calling the javascript files should be possible within a YAML document, see
 
 
 ### TODO by order of ease / importance
+in the server function,
+add a parameter to the loadcomtrade_bycode function to render this optional
+log validataion status of jsonfiles with
+fileConn<-file("output.txt")
+writeLines(c("Hello","World"), fileConn)
+close(fileConn)
+
+* Use aesthetic to make points more transparent on a coutry * contry grid 
+ display trade volume as alpha level.
+ see also docs/development/ggplot2
 * use package options, inspired by the devtools or knitr package 
   "Devtools uses the following options to configure behaviour:..."
 * Time plot of HS by quantity, weight or value data (ggplot gant chart) to 

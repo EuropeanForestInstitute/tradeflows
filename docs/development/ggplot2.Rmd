@@ -1,0 +1,38 @@
+---
+title: "Explore ggplot2 functionalities"
+author: "Paul Rougieux"
+date: "27/11/2014"
+output: 
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+```{r packages}
+library(ggplot2)
+```
+Explore some of the ggplot2 functions for use in the project
+
+## Alpha
+
+### Alpha to avoid overplotting
+Use aesthetic to make points more transparent on a coutry * contry grid 
+display trade volume as alpha level.
+```{r alphaoverplot}
+df <- data.frame(x = rnorm(5000), y = rnorm(5000))
+ggplot(df, aes(x,y)) + geom_point(alpha = 1/10)
+```
+
+### Alpha to add shading
+```{r alphshading}
+b <- ggplot(economics, aes(x = date, y = unemploy))
+j <- b + geom_line()
+# j # uncomment to display basic plot
+yrng <- range(economics$unemploy)
+j <- j + geom_rect(aes(NULL, NULL, xmin = start, xmax = end, fill = party),
+ymin = yrng[1], ymax = yrng[2], data = presidential)
+# j
+library(scales) # to access the alpha function
+j + scale_fill_manual(values = alpha(c("blue", "red"), .3))
+```
+

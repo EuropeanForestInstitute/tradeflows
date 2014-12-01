@@ -1,3 +1,4 @@
+# Load reporter area codes and names (mostly country names)
 # Prepare the reporter names and codes reference tables for use
 # within the package
 library(dplyr)

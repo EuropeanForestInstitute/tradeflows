@@ -8,6 +8,10 @@ library(ggplot2)
 
 load("data/sawnwoodexample.rda")
 
+
+############################################### #
+# Outdated, see R/template.R for recent version #
+############################################### #
 #' Create product reports
 #'
 #' @param products
