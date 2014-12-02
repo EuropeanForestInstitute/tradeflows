@@ -88,6 +88,8 @@ for (r in unique(completeness$reporter)){
                 aes(x=year, y=variable, 
                     xend=year+1, yend=variable, 
                     color=value, linetype=value)) +
+        scale_colour_manual(values = c("TRUE" = "blue", "FALSE" = "red")) +
+        scale_linetype_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
         geom_segment(size=3) + 
         facet_grid(classification~.) +
         ggtitle(paste("Data completeness of", productcodeinreport,
@@ -101,10 +103,9 @@ for (r in unique(completeness$reporter)){
     # Reported by the country
     npartnersbyr <- rawdata3 %>% 
         filter(reporter == r) %>%
-        dcast(year + classification ~ flow, value.var="partner", length) %>%
-        kable(., caption = 
-                  paste("Number of trade partners reported by", r))
-    print(npartnersbyr)
+        dcast(year + classification ~ flow, value.var="partner", length) 
+    try(print(kable(npartnersbyr,
+                    caption = paste("Number of trade partners reported by", r))))
     
     # Reported by partner countries
     try(npartnersbyothers <- rawdata3 %>% 

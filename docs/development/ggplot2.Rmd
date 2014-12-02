@@ -10,6 +10,8 @@ output:
 ---
 ```{r packages}
 library(ggplot2)
+library(dplyr)
+library(reshape2)
 ```
 Explore some of the ggplot2 functions for use in the project
 
@@ -34,5 +36,41 @@ ymin = yrng[1], ymax = yrng[2], data = presidential)
 # j
 library(scales) # to access the alpha function
 j + scale_fill_manual(values = alpha(c("blue", "red"), .3))
+```
+
+### Scales for color and linetype
+For some countries, the completeness table contained only true values. 
+WHIch were rendered as red lines, for other countries 
+true values were rendered as blue lines. 
+Changed this behaviour by using 
+manual color palettes for `colours scale_colour_manual()`
+and line palette for lines `scale_linetype_manual()`.
+
+```{r scalesggplot}
+# plot completeness
+rawdata <- tradeflows::sawnwoodexample
+r <- "France"
+productcodeinreport <- 4407
+completeness <- rawdata %>%
+    filter(productcode == 4407) %>%
+    select(reporter, classification, year, quantity, weight, tradevalue) %>%
+    melt(id=c("reporter", "classification", "year"))  %>%
+    mutate(value = !is.na(value)) %>%
+    unique %>% 
+    arrange(classification, reporter, year)
+
+    p <- ggplot(data=filter(completeness, reporter == r), 
+                aes(x=year, y=variable, 
+                    xend=year+1, yend=variable, 
+                    color=value, linetype=value)) +
+        scale_colour_manual(values = c("TRUE" = "blue", "FALSE" = "red")) +
+        scale_linetype_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
+    #"solid", "dashed"
+        geom_segment(size=3) + 
+        facet_grid(classification~.) +
+        ggtitle(paste("Data completeness of", productcodeinreport,
+                      "in", r))
+    plot(p)
+
 ```
 

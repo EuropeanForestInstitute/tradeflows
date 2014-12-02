@@ -8,12 +8,16 @@
 #' @param template name of the template file
 #' @param outputdir name of the output directory relative to getwd()
 #' @export
-create_completeness_report <- function(rawdata,
+createcompletenessreport <- function(rawdata,
                                        products = "all",
                                        inputpath = system.file("templates",
                                                                package="tradeflows"),
                                        template = "completeness.Rmd",
                                        outputdir = "reports"){
+    # load optional packages
+    require(ggplot2)
+    require(reshape2)
+    require(knitr)
     if (!"productcode" %in% names(rawdata)){
         stop("Rename raw data columns to EFI convention before running this function.")
     }
@@ -35,13 +39,14 @@ create_completeness_report <- function(rawdata,
 
 
 if (FALSE){
-    # load optional packages
-    library(ggplot2)
-    library(reshape2)
-
     directory <- "docs/development/completeness/"
-#     You need to reload the package for template updates to take effect
-    create_completeness_report(tradeflows::sawnwoodexample, outputdir = directory)
+    # You need to reload the package for template updates to take effect
+    createcompletenessreport(tradeflows::sawnwoodexample, outputdir = directory)
+    # report for the "black hole" dataset
+    load("data-raw/440799.RData")
+    swd99 <- renamecolumns(dtf, "comtrade", "efi")
+    createcompletenessreport(swd99, outputdir = directory)
+    # another dataset
     load("data-raw/sawnwood_all.RData")
     swdall <- renamecolumns(swdall)
     create_completeness_report(swdall, "4407", outputdir = directory)

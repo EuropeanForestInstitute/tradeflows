@@ -129,7 +129,7 @@ different countries.
 See below, the comparison of different classification schemes.
 
 
-### ps Productcoder
+### ps Productcode
 ```{r classification, eval=FALSE}
 claswd <- classificationcomtrade$H4 %>%
     filter(substr(productcode, 0, 4)=="4407")
@@ -143,7 +143,10 @@ swd_17_de <- loadcomtradebycode(claswd$productcode, 276, "recent")
 #   cannot open: HTTP status was '500 Internal Server Error'
 # > 
 ```
-It doesn't work for that many products.
+It seems the Comtrade API doesn't accept 17 products.
+
+To load all sawnwood products, I created a function:
+`loadcomtradewithpause(claswd$productcode)`
 
 
 ### r Reporting Area
@@ -162,6 +165,18 @@ swd <- loadcomtradebycode(4407, "all", 2013)
 # Error in loadcomtradebycode(4407, "all", 2013) : 
 #   list(name = "Query complexity", value = 5002, category = 0, description = "your query is too complex. Please simplify.", helpUrl = "")Both 'all' reporters and 'all' partners may not be selected. Select a different reporter or partner.list(value = 0, started = "0001-01-01T00:00:00", finished = "0001-01-01T00:00:00", durationSeconds = 0)NA
 ``` 
+
+
+## Loading several datasets from the API
+
+### Load Comtrade data with a function
+```{r loadcomtradebycode, eval=FALSE}
+years = seq(2000,2012)
+swd2012 <- loadcomtradebycode(4407, 276, 2012)
+swd20102011 <- loadcomtradebycode(4407, 276, c(2010, 2011))
+swd20002013 <- loadcomtradebycode(4407, 276, seq(2008,2012))
+``` 
+
 
 ### r reporting area to be loaded on the server
 The api is limited to 100 downloads per hour. 
@@ -202,16 +217,21 @@ for (productcode in products){
 ```
 
 
-### Load Comtrade data with a function
-```{r loadcomtradebycode, eval=FALSE}
-years = seq(2000,2012)
-swd2012 <- loadcomtradebycode(4407, 276, 2012)
-swd20102011 <- loadcomtradebycode(4407, 276, c(2010, 2011))
-swd20002013 <- loadcomtradebycode(4407, 276, seq(2008,2012))
-``` 
+## Log errors and json validation to a file
+
+```{r eval=FALSE}
+# Log errors and json validation to a file?
+#     if (logfile != FALSE){
+#         # Write jsonvalidataion to a logfile
+#         logfileconn <- file(logfile)
+#         writeLines(paste("\n\n",url), logfileconn)
+#         writeLines(paste(json$validation), logfileconn)
+#         close(logfileconn)
+#     }
+```
 
 
-## Classification
+## Product classification
 ```{r}
 load("data/classificationcomtrade.rda") 
 H4 <- classificationcomtrade$H4
@@ -245,5 +265,4 @@ HS %>%
     kable
 # Do the same comparison between H3 and H4  
 ```
-
 

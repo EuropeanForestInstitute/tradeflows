@@ -58,33 +58,29 @@ loadcomtradeallreporters <- function(productcode, year="recent"){
                          loadcomtradebycode(productcode, g, year,
                                              logfile=TRUE)))
     }
-        #     if (logfile != FALSE){
-        #         # Write jsonvalidataion to a logfile
-        #         logfileconn <- file(logfile)
-        #         writeLines(paste("\n\n",url), logfileconn)
-        #         writeLines(paste(json$validation), logfileconn)
-        #         close(logfileconn)
-        #     }
     save(dtf, file=paste0(productcode,".RData"))
     try(write.csv(dtf,file=paste0(productcode,".csv")))
 }
 
-#' Load flows for all countries, with a pause of 1 hour between products
+
+#' Load flows for all countries, with a 1 hour pause between products
 #'
 #' Load flows in all directions available in comtrade
 #' for a given vector of product codes.
 #'
 #' @param productcode a vector of product codes
 #' @param year a vector of years (maximum 5), or the chain of character "recent"
+#' @param pause length of the pause in seconds
 #' @export
 loadcomtradewithpause <- function(products, year="recent", pause=3601){
     # loop on the vector productcode,
     # pause 1 hour between each product to stay within the comtrade API limit
     for (productcode in products){
-        loadcomtradeallreporters(produccode, year)
+        loadcomtradeallreporters(productcode, year)
         Sys.sleep(pause)
     }
 }
+
 
 # # On the server I put datasets together in this way
 # swdall <- data.frame()
@@ -122,6 +118,4 @@ if (FALSE){
     # Show how functions above work on sample data
     loadbycomtradecode()
     load_by_name("germany","wood sawn or chip...",2011)
-
-
 }
