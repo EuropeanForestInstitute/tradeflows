@@ -1,0 +1,20 @@
+---
+title: "440799_discrepancies"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output: html_document
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+``` 
+
+
+```{r}
+load("data-raw/440799.RData")
+swd99 <- renamecolumns(dtf, "comtrade", "efi")
+head(swd99)
+```

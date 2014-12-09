@@ -1,0 +1,61 @@
+---
+title: "440799_discrepancies in Thailand"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output: html_document
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+```{r standalone}
+# dtf enddata in this chunk 
+# will have to be provided to the report generating function
+load("data-raw/440799.RData")
+dtfall <- dtf
+load("data-raw/4407.RData")
+dtfall <- rbind(dtfall, dtf)
+
+enddata <- dtfall %>%
+    renamecolumns("comtrade", "efi") %>%
+    filter(partnercode != 0) %>% #remove world
+    addpartnerflow %>%
+    calculatediscrepancies
+```
+
+
+```{r countryspecific}
+reporterinreport <- 764
+enddata2 <- enddata %>%
+    filter(reportercode == reporterinreport)
+```
+
+## Major trade partners in `r max(enddata$year)` 
+### Export to 10 major partners
+```{r}
+exp <- enddata2 %>% 
+    filter(flow =="Export" & year == max(year)) %>%
+    select(partner, weight, discrw) %>%
+    arrange(-weight)
+partnerssorted <- unique(exp$partner)
+kable(head(exp,10), col.names = names(exp))
+
+exp <- exp %>%
+    # Order the contries by trade volume
+    mutate(partner = ordered(partner, levels= partnerssorted)) %>%
+    melt(id=c("partner"))
+
+ggplot(data=exp)+
+    aes(partner, value, fill=variable) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = c("chocolate3","black"))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+

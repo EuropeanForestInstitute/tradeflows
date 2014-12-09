@@ -47,6 +47,7 @@ removeduplicates <- function(dtf){
 #' For the same country, year, item, add the corresponding partner flow.
 #'@param dtf data frame containing trade flow data.
 #'   With column names following the efi convention.
+#'@export
 addpartnerflow <- function(dtf){
     # Warning for duplicated entries
     nbduplicates <- sum(duplicated(select(dtf, reportercode, partnercode,
@@ -89,21 +90,21 @@ calculatediscrepancies <- function(dtf){
     require(reshape2)
     # Reshape data frame in long format before calculation
     # Reshape in wide format before returning output dtf
-
-    ids <- names(dtf)[!names(dtf) %in%
-                          c("weight", "quantity", "tradevalue",
-                            "weightpartner", "quantitypartner",
-                            "tradevaluepartner")]
-    stopifnot(length(ids) + 6 == length(names(dtf)))
-    dtf2 %>% melt(dtf, id=ids)
-#         mutate(discrepancyweight = weight - weightpartner,
-#                discrepancyquantity = quantity - quantitypartner,
-#                discrepancyvalue = tradevalue - tradevaluepartner,
-#                reldiscweight = signif((weight - weightpartner)/
-#                                           (weight + weightpartner),2),
-#                reldiscquantity = signif((weight - weightpartner)/
-#                                             (weight + weightpartner),2),
-#                reldisc)
+    #     ids <- names(dtf)[!names(dtf) %in%
+    #                           c("weight", "quantity", "tradevalue",
+    #                             "weightpartner", "quantitypartner",
+    #                             "tradevaluepartner")]
+    #     stopifnot(length(ids) + 6 == length(names(dtf)))
+    dtf %>% #melt(dtf, id=ids)
+        mutate(discrw = weightpartner - weight,
+               discrq = quantitypartner - quantity,
+               discrv = tradevaluepartner - tradevalue,
+               reldiscrw = signif((weightpartner - weight)/
+                                          (weight + weightpartner),2),
+               reldiscrq = signif((quantitypartner - quantity)/
+                                            (quantity + quantitypartner),2),
+               reldiscrv = signif((tradevalue - tradevaluepartner)/
+                                            (tradevalue + tradevaluepartner),2))
 }
 
 
@@ -119,7 +120,7 @@ calcunitprices <- function(dtf){
 
 #' Combine all cleaning functions
 #' @param dtf data frame
-#'
+#' @export
 clean <- function(dtf){
     dtf %>%
         addpartnerflow() %>%
@@ -132,9 +133,10 @@ if(FALSE){
     load("data-raw/sawnwood_all.RData")
     # Step by step
     sawnwood <- swdall %>%
-        renamecolumns() %>%
-        removeduplicates()
-        addpartnerflow()
+        renamecolumns %>%
+        removeduplicates %>%
+        addpartnerflow %>%
+        calculatediscrepancies
     # All in one step, except for renamecolumns because
     # it's specific to the development system
     # In the production system, columns will already have been renamed

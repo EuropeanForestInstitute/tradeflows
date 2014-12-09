@@ -1,0 +1,22 @@
+---
+title: "Experiments with Forest Products Trade Flow Data"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output: 
+  html_document:
+    toc: false    
+---
+
+This website is a place to show the output of the R statistical software processing Forest Products Trade Flow data.
+
+## Datasets available by products
+* data-raw folder
+
+## Reports
+
+* reports folder
+    * completeness
+    * examples
+
+## Documentation
+See the "tradeflows" package documentation, readme and vignettes. 

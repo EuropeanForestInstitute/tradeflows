@@ -14,7 +14,9 @@ Examples and demonstration:
 
 * See example use in the doc/www folder.
 * look in docs/development/countries for investigations on country specific issues
-
+* look in docs/development/cleaning for unit price calculation 
+  and a procedure to prepare volume and weight data
+  
 ## Installation
 You can install this package using the devtools package.
 ```
@@ -142,7 +144,12 @@ sawnwood %>% select(yr, rtCode ) %>% head
 * see `demo(error.catching)`.
 * See also Hadley's article: [beyond-exception-handling](http://adv-r.had.co.nz/beyond-exception-handling.html).
 
-### Documentation using roxygen2
+### Documentation in long form
+[How to create package vignettes](http://r-pkgs.had.co.nz/vignettes.html).
+
+Change the docs/development folder into vignettes.
+
+### Function documentation using roxygen2
 You should be able to see the documentation of exported functions by placing a 
 question mark before the function name at the R command prompt.
 
@@ -210,15 +217,24 @@ Calling the javascript files should be possible within a YAML document, see
     * Call R functions in clean.R from the server to clean the raw data
   from the database. Put cleaned data in the database.
 
+### Bugs
+20141208 A bug in Lyx prevents me from generating pdfs 
+    when the text contains a euro € sign.
+
 
 ### TODO by order of ease / importance
+discrepancy report
+
 in the server function,
 add a parameter to the loadcomtrade_bycode function to render this optional
 log validataion status of jsonfiles with
 fileConn<-file("output.txt")
 writeLines(c("Hello","World"), fileConn)
 close(fileConn)
+Change the docs/development folder into vignettes.
 
+* Floating table of content for html reports with a custom csss
+  http://rpubs.com/stevepowell99/floating-css
 * Use aesthetic to make points more transparent on a coutry * contry grid 
  display trade volume as alpha level.
  see also docs/development/ggplot2

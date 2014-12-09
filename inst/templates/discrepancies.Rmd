@@ -1,0 +1,22 @@
+---
+title: "Discrepancies for product `r productcodeinreport` "
+output:
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+
+## Warning
+This report is generated automatically based on data from the 
+[UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
+Tables and graphs are in development.
+They are intended for internal use within the TradeFLowsDB project.
+
+
+```{r prepare_completeness_table}
+# This report is intended for one product only
+rawdata2 <- rawdata %>% 
+    filter(productcode == productcodeinreport)
+
+```

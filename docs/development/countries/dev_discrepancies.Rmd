@@ -1,0 +1,188 @@
+---
+title: "4407 and 440799 discrepancies"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+```{r standalone, echo=FALSE, message=FALSE, warning=FALSE}
+# dtf enddata in this chunk 
+# will have to be provided to the report generating function
+load("data-raw/440799.RData")
+dtfall <- dtf
+load("data-raw/4407.RData")
+dtfall <- rbind(dtfall, dtf)
+
+enddata <- dtfall %>%
+    renamecolumns("comtrade", "efi") %>%
+    filter(partnercode != 0) %>% #remove world
+    addpartnerflow %>%
+    calculatediscrepancies
+```
+
+
+## Thailand
+### Major export partners in weight in `r max(enddata$year)` 
+```{r thailand}
+reporterinreport <- 764
+flowselected <- "Export"
+enddata2 <- enddata %>%
+    filter(reportercode == reporterinreport)
+
+for (p in unique(enddata$productcode)){
+    exp <- enddata2 %>% 
+        filter(flow == flowselected & year == max(year) & productcode==p) %>%
+        select(partner, weight, discrw) %>%
+        arrange(-weight) %>%
+        rename(discrepancy = discrw) %>%
+        head(10)
+    partnerssorted <- unique(exp$partner)
+    kable(exp)
+    
+        # Order the contries by trade volume
+    exp <- exp %>%
+        mutate(partner = ordered(partner, levels= partnerssorted)) %>%
+        melt(id=c("partner"))
+    
+    chart <- ggplot(data=exp)+
+        aes(partner, value, fill=variable) +
+        geom_bar(position="dodge", stat="identity") +
+        scale_fill_manual(values = c("chocolate3","black"))+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        ggtitle(paste(flowselected, p))
+    print(chart)
+    cat("\n\n")
+}
+
+# write.csv(exp, file="data-raw/export440799_Thailand_mainpartners2013.csv", row.names=FALSE)
+```
+Data can be exported to csv, Excel or other formats.
+
+
+### Thailand Export of 440799 to China in recent years
+```{r}
+reporterinreport <- 764
+# Report could choosedisplay those time series for main partners  only
+partnerinreport <- 156 
+flowselected <- "Export"
+productcodeinreport <- 440799
+enddata2 <- enddata %>%
+    filter(reportercode == reporterinreport & 
+               partnercode==partnerinreport &
+               productcode == productcodeinreport&
+               flow == flowselected)
+kable(select(enddata2, classification, quantity, weight, tradevalue, 
+             discrq, discrw, discrv))
+enddata2 <- enddata2 %>%
+    select(year, weight, discrw, quantity, discrq, tradevalue, discrv) %>%
+    melt(id=c("year"))
+weight <- enddata2 %>% filter(variable %in% c("weight", "discrw"))
+enddata2$v <- enddata2$variable
+enddata2$v[enddata2$variable == "discrw"] <- "weight"
+enddata2$v[enddata2$variable == "discrq"] <- "quantity"
+enddata2$v[enddata2$variable == "discrv"] <- "tradevalue"
+# for (v1 in unique(enddata2$v))
+ggplot(data=enddata2)+#filter(enddata2,v=="weight"))+
+    aes(year, value, fill=variable) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = rep(c("chocolate3","black"),3))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle(paste(flowselected, p)) +
+    facet_grid(v~., scales="free_y")
+
+
+# csv file for Sergey
+# write.csv(enddata2, file="data-raw/export440799_Thailand_to_China.csv", row.names=FALSE) 
+```
+
+## Spain
+### Major import partners in weight in 2012
+```{r spain, results='asis'}
+reporterinreport <- 724
+flowselected <- "Import"
+# yearselected <-   max(enddata$year)
+yearselected <- 2012
+enddata2 <- enddata %>%
+    filter(reportercode == reporterinreport)
+
+for (p in unique(enddata$productcode)){
+    exp <- enddata2 %>% 
+        filter(flow == flowselected & year == yearselected & productcode==p) %>%
+        select(partner, weight, discrw, tradevalue, discrv, quantity, discrq) %>%
+        arrange(-weight) %>%
+        head(10)
+    partnerssorted <- unique(exp$partner)
+    cat("\n\n")
+    print(kable(rename(exp, discrepancy_weight = discrw)))
+    cat("\n\n")
+
+    
+    exp <- exp %>%
+        select(partner, weight, discrw) %>%
+        # Order the contries by trade volume
+        mutate(partner = ordered(partner, levels= partnerssorted)) %>%
+        melt(id=c("partner"))
+    
+    chart <- ggplot(data=exp)+
+        aes(partner, value, fill=variable) +
+        geom_bar(position="dodge", stat="identity") +
+        scale_fill_manual(values = c("chocolate3","black"))+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        ggtitle(paste(flowselected, p))
+    cat("\n\n")
+    print(chart)
+    cat("\n\n")
+}
+# write.csv(exp, file="data-raw/export440799_Spain_mainpartners2012", 
+#           row.names=FALSE)
+```
+
+## Cameroon
+### Cameroon Export of 440799 to Spain in recent years
+```{r}
+reporterinreport <- 120 # Cameroon
+# Report could choosedisplay those time series for main partners  only
+partnerinreport <- 724 # Spain 
+flowselected <- "Export"
+productcodeinreport <- 440799
+enddata2 <- enddata %>%
+    filter(reportercode == reporterinreport & 
+               partnercode==partnerinreport &
+               productcode == productcodeinreport&
+               flow == flowselected)
+kable(select(enddata2, classification, quantity, weight, tradevalue, 
+             discrq, discrw, discrv))
+enddata2 <- enddata2 %>%
+    select(year, weight, discrw, quantity, discrq, tradevalue, discrv) %>%
+    melt(id=c("year"))
+weight <- enddata2 %>% filter(variable %in% c("weight", "discrw"))
+enddata2$v <- enddata2$variable
+enddata2$v[enddata2$variable == "discrw"] <- "weight"
+enddata2$v[enddata2$variable == "discrq"] <- "quantity"
+enddata2$v[enddata2$variable == "discrv"] <- "tradevalue"
+# for (v1 in unique(enddata2$v))
+ggplot(data=enddata2)+#filter(enddata2,v=="weight"))+
+    aes(year, value, fill=variable) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = rep(c("chocolate3","black"),3))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle(paste(flowselected, p)) +
+    facet_grid(v~., scales="free_y")
+# write.csv(enddata2, file="data-raw/export440799_Cameroon_to_Spain.csv", 
+#           row.names=FALSE)
+```

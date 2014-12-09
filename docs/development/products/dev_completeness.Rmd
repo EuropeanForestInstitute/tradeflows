@@ -7,6 +7,11 @@ output:
     toc: true
 ---
 
+
+## Observations
+* [940130](http://vps98645.ovh.net/~paul/reports/completeness/woodenfurniture/940130.pdf) Burundi changed from H2 to H3 in 2010 and back to H2 in 2011.
+* [Data completeness of 940130 in Venezuela](http://vps98645.ovh.net/~paul/reports/completeness/woodenfurniture/940130.pdf) look at missing data for quantity, an example of why I need this visualisation with dashed line.
+
 ```{r load_packages, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory

@@ -1,0 +1,17 @@
+---
+title: "Cleaning procedure"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: html_document
+---
+
+* If the quantity is in kg or m3 take the quantity
+he doesn't bother with the weight because the volume is already there
+* If he has only the kilos, he will convert using one conversion factor for the entire world.
+* If neither volume nor quantity is there use a unit price to calculate the quantity
+
+Goal:
+For wood products Goal is to have a correct volume in m3
+For paper products is to have a correct weight
+
+## Unit

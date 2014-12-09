@@ -1,0 +1,26 @@
+comtrade,eurostat,faostat,efi,efioutput
+pfCode,NA,NA,classification,Trade classification system
+yr,NA,year,year,Year
+period,NA,NA,NA,NA
+periodDesc,NA,NA,NA,NA
+aggrLevel,NA,NA,NA,NA
+IsLeaf,NA,NA,NA,NA
+rgCode,NA,NA,flowcode,NA
+rgDesc,FLOW,ElementName,flow,NA
+rtCode,NA,NA,reportercode,Reporting coutry code
+rtTitle,REPORTER,ReporterName,reporter,Reporting country
+rt3ISO,NA,NA,reporteriso,Reporting ISO code
+ptCode,NA,NA,partnercode,Partner country code
+ptTitle,PARTNER,PartnerName,partner,Partner country code
+pt3ISO,NA,NA,partneriso,Partner ISO code
+cmdCode,NA,NA,productcode,Product code
+cmdDescE,PRODUCT,ItemName,productdescription, Product Description
+qtCode,NA,NA,unitcode,NA
+qtDesc,NA,NA,unit,NA
+TradeQuantity,NA,NA,quantity,Quantity
+NetWeight,NA,NA,weight,Weight
+TradeValue,VALUE_IN_EUROS,NA,tradevalue,Trade Value
+estCode,NA,NA,NA,NA
+NA,NA,NA,pricecur,NA
+NA,NA,NA,priceconst,NA
+NA,NA,NA,NA,Product definition

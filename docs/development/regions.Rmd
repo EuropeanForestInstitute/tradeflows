@@ -1,0 +1,265 @@
+---
+title: "Regional aggregates from FAOSTAT"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(FAOSTAT)
+``` 
+
+
+## Merge FAO regions based on reportercode and UN_CODE
+To be added to the list of reporter comtrade, 
+inspired by work on another package, see
+`GFPMoutput/rawdata/Merge GFPM and FAO regions and country codes 0.1.r`
+```{r countryaggregates}
+FAOcountryProfile2 <- FAOcountryProfile %>%
+    select(reportercodefao = FAOST_CODE, 
+           reporteriso = ISO3_CODE,
+           reporternamefao = FAO_TABLE_NAME)
+
+regions <- FAOregionProfile %>%
+    filter(!is.na(UNSD_MACRO_REG) & !is.na(FAOST_CODE)) %>%
+    select(reportercode = UN_CODE,
+           reportercodefao = FAOST_CODE,
+           region = UNSD_MACRO_REG,
+           subregion = UNSD_SUB_REG) %>%
+    merge(FAOcountryProfile2, by="reportercodefao") %>%
+    arrange(region, subregion)
+str(regions)
+# str(FAOcountryProfile)
+# str(FAOregionProfile)
+# Should merge based on the ISO3 code instead
+reportercomtrade2 <- reportercomtrade %>%
+    merge(regions, by="reportercode", all.x=TRUE) 
+```
+
+### GFPM regions
+Add a type of region usefull for the analysis 
+from a North American perspective at least.
+```{r gfpmregion, eval=FALSE}
+createGFPMRegion = function(region, subregion){
+    GFPMregion = NULL
+    if (region %in%  c("Asia", "Europe", "Africa", "Oceania")){
+        GFPMregion = region
+    } 
+    if (subregion=="South America"){
+            GFPMregion = "South America" 
+    }
+    if (subregion%in%c("Caribbean", "Central America", "Northern America")){
+            GFPMregion = "North/Central America"
+    }
+    return(GFPMregion)
+}
+# cm$GFPMRegion = createGFPMRegion(cm$UNSD_MACRO_REG, cm$UNSD_SUB_REG)
+# FAOregions$GFPM_REG = mapply(createGFPMRegion,
+#                              cm$UNSD_MACRO_REG, cm$UNSD_SUB_REG)
+regions %>% 
+    mutate(GFPMregion = createGFPMRegion(region, subregion)) %>%
+    head(10)
+```
+
+
+### Some country names are missing from the regional aggregates
+```{r}
+# Some reporters are missing from the database
+missingreporter <- reportercomtrade2 %>% filter(is.na(region))
+
+# Some were present in the FAOregionProfile tables :
+missingreporter[missingreporter$reportercode %in% FAOregionProfile$UN_CODE,]
+
+# But most were not present in the FAOregionProvile table
+# For example France's un code 251 wasn't in the FAO region aggregates
+regions %>% filter(reportercode == 251) 
+# Therefore the region is missing
+reportercomtrade2 %>% filter(reporter=="France") %>% kable
+# However France is present in the FAOstat dataset, under a different code
+FAOcountryProfile %>% filter(FAO_TABLE_NAME=="France") %>% kable
+
+# Missing countries not present in the FAOregion table
+missingreporter %>% filter(!reporter %in% regions$reporternamefao) %>% kable
+
+################################################## #
+# Missing countries present in the FAOregion table #
+################################################## #
+missingreporter2 <- reportercomtrade %>%
+    merge(regions, by="reportercode", all.x=TRUE) %>%
+    filter(is.na(region)) %>%
+    filter(reporter %in% regions$reporternamefao) %>%
+    select(reportercode, reporter)
+missingreporter2 %>% kable
+
+regions2 <- regions %>%
+    filter(reporternamefao %in% missingreporter$reporter) %>%
+    merge(missingreporter2, by.x ="reporternamefao", by.y="reporter")
+regions2 %>% kable
+
+# Change their reportercode in the region table so that they match
+regions2 <- regions2 %>% 
+    rename(reportercode = reportercode.y) %>%
+    select(-reportercode.x)
+
+# put them back into the regions table
+regions <- rbind(regions, regions2)
+# recreate reportercomtrade2
+reportercomtrade2 <- reportercomtrade %>%
+    merge(regions, by="reportercode", all.x=TRUE) %>%
+    arrange(region, subregion)
+```
+
+### List of country names belonging to each region
+```{r results='asis'}
+for (subr in unique(reportercomtrade2$subregion)){
+    countries <- filter(reportercomtrade2, subregion==subr)
+    nbcountries <- nrow(countries)
+    cat("\n * __", subr, "__: (", 
+         nbcountries," countries)\n", sep="")
+    cat(countries$reporter,sep=", ")
+}
+```
+
+### List of country which don't belong to any region
+```{r results='asis'}
+cat(reportercomtrade2$reporter[is.na(reportercomtrade2$region)], sep="| ")
+```
+
+
+## Merge FAO regions based on reporteriso and ISO3_CODE
+Load the sawnwood dataset and get iso codes from there
+```{r}
+load("data-raw/comtrade/4407.RData")
+reportercomtrade3 <- dtf %>% 
+    renamecolumns()
+# There are more partners than reporters, take reporters
+length(unique(reportercomtrade3$reporteriso)) 
+length(unique(reportercomtrade3$partneriso)) 
+# Partners not in reporters
+unique(reportercomtrade3$partneriso)[!unique(reportercomtrade3$partneriso) %in%  unique(reportercomtrade3$reporteriso)]
+# Reporters not in partners
+unique(reportercomtrade3$reporteriso)[!unique(reportercomtrade3$reporteriso) %in% unique(reportercomtrade3$partneriso)]
+# 
+#merge based on iso code
+# get a table of partnercode, partner, partneriso
+```
+
+```{r}
+reportercomtrade3 <- dtf %>% 
+    renamecolumns %>%
+    select(reportercode = partnercode,
+           reporter = partner,  
+           reporteriso = partneriso) %>%
+    unique
+# Those which are not included
+reportercomtrade2$reporter[!reportercomtrade2$reporter %in% reportercomtrade3$reporter]
+
+# Merge based on iso3 code
+# remove those which don't have an iso code
+regions3 <- regions %>%
+    filter(!is.na(reporteriso)) %>%
+    select(reporteriso, region, subregion)
+    
+reportercomtrade3 <- reportercomtrade3 %>%
+    merge(regions3, by="reporteriso")
+```
+
+### No ISO code for China 
+```{r}
+# There is an  ISO code for China in the sawnwood dataset
+dtf %>% renamecolumns %>% filter(reportercode==156) %>%
+    select(reporter, reportercode,  reporteriso) %>% unique
+# But there is no ISO code for China code 351 in FAO tables
+filter(regions, subregion == "Eastern Asia") %>% kable
+# Or there is no region and subregion mentionned for china code 41
+filter(regions, reporteriso == "CHN") %>% kable
+# China mainland is a country, but it doesn't have any regions mentionned
+# filter(FAOcountryProfile, ISO3_CODE == "CHN")
+FAOregionProfile %>%
+    #filter(FAOST_CODE==351,FAOST_CODE==41,FAOST_CODE==357)
+    filter(FAO_TABLE_NAME == "China") %>%
+    select(FAOST_CODE, ISO3_CODE, UN_CODE, OFFICIAL_FAO_NAME) %>%
+    kable
+```
+
+### List of country names belonging to each region
+```{r results='asis'}
+for (subr in unique(reportercomtrade3$subregion)){
+    countries <- filter(reportercomtrade3, subregion==subr)
+    cat("\n * __", subr, "__: (", 
+        nrow(countries) ," countries)\n", sep="")
+    cat(countries$reporter,sep=", ")
+}
+```
+
+
+### List of country which don't belong to any region
+```{r results='asis'}
+cat(reportercomtrade3$reporter[is.na(reportercomtrade3$region)], sep="| ")
+# Some are not in the list sent by comtrade
+reportercomtrade$reporter[!reportercomtrade$reporter %in% reportercomtrade3$reporter]
+# but all of them are in the sawnwood dataset
+reportercomtrade3$reporter[reportercomtrade3$reporter %in% dtf$reporter]
+# How about china?
+reportercomtrade3 %>% filter(reporter=="China")
+# reportercomtrade3 %>% filter(reportercode.x==156 | reportercode.y==156 )
+reportercomtrade %>% filter(reporter =="China")
+```
+
+
+### Sawnwood trade quantity weight and value by subregion
+```{r}
+swd <- dtf  %>% 
+    renamecolumns %>%
+    merge(select(reportercomtrade3, reportercode, region, subregion),
+          by="reportercode") %>%
+    group_by(subregion) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE),
+              weight = sum(weight, na.rm=TRUE), 
+              tradevalue = sum(tradevalue)) %>%
+    mutate(price = tradevalue / quantity) %>%
+    arrange(-tradevalue)
+kable(swd)
+# Same for swd99
+
+```
+
+## Compare reportercomtrade2 and reportercomtrade3
+```{r}
+comp2 <- reportercomtrade2 %>% 
+    group_by(region, subregion) %>%
+    summarise(nbcountries2 = n())
+comp3 <- reportercomtrade3 %>% 
+    group_by(region, subregion) %>%
+    summarise(nbcountries3 = n())
+merge(comp2, comp3) %>% 
+    mutate(diff = nbcountries2 - nbcountries3) %>%
+    arrange(diff) %>%
+    kable
+# Are there differences ?
+rdiff <- merge(reportercomtrade2, reportercomtrade3,
+               by = "reporter", all=TRUE)
+filter(rdiff, reportercode.x != reportercode.y)
+
+# All reporteriso seem to be identicall
+filter(rdiff, reporteriso.x != reporteriso.y)
+# However reportercodes are not all identicall
+
+```
+
+
+### Full table for those areas which don't have a subregion
+```{r}
+rdiff %>% 
+    select(reporter, reportercode.x, reportercode.y, 
+           subregion.x, subregion.y, reporteriso.x) %>%
+    filter(is.na(subregion.x) | is.na(subregion.y)) %>%
+    kable
+```

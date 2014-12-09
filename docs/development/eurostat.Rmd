@@ -7,7 +7,7 @@ output:
 Eurostat provides several download facilities, we are looking for 
 a bulk download of bilateral trade data.
 
-```{r packages}
+```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
 library(tradeflows)
@@ -15,31 +15,110 @@ library(dplyr)
 library(reshape2)
 ``` 
 
-## Eurostat download parameters
+## Places to download Eurostat data from
+### Easy comext
 Eurostat [interface to the COMEXT bilateral trade data](http://epp.eurostat.ec.europa.eu/newxtweb/submitformatselect.do) 
 enables the selection of reporting and partner area, 
 product, trade fow and time period.
 For example [Fuel wood Austria](http://epp.eurostat.ec.europa.eu/newxtweb/submitopensavedextraction.do?extractionId=11381457&datasetID=DS-016890&keepsessionkey=true&extractionName=Untitled_20141110&extractionDate=2014/11/10%2014:30:01)
 
-Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/rest_sdmx_2.1#ind_18_1).
+
+### Bulk download
+* Eurostat used to provide [DVD of bulk data](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/publications/comext_dvd). Now available as [bulk download](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2013S2_DVD_image)
+* Into the [COMEXT folder](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext)
+    * [2014S1](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S1) contains monthly data since 1988
+    * [2014S2](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S2) contains yearly data
+    * [2014S3](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S3) contains montly and yearly data by mode of transport
+    * More details in the [Instructions on how to use the bulk download facility.pdf](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=comext%2FInstructions+on+how+to+use+the+bulk+download+facility.pdf) and explanation of data format in the [readme.txt](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
+
+### SDMX SOAP and Rest APIs
+Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/rest_sdmx_2.1#ind_18_1) and a [SOAP API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/soap_sdmx_2.1).
+
+"These SDMX Web Services are a programmatic access to Eurostat data, with the possibility to: 
+
+* get a complete list of publicly available datasets.
+* detail the complete structure definition of a given dataset.
+* download a subset of a given dataset or a full dataset. "
+
+## Bulk download of comext data
+Yearly data from the [2014S2](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S2) folder 
+on eurostat's bulk download facility. 
 
 
-* Eurostat used to provide [DVD of bulk data](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/publications/comext_dvd)
-    * Now available as [bulk download historical yearly](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2013S2_DVD_image)
-    * and bulk download monthly for recent months.
-    * Go into the [COMEXT folder](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext)
-    * More details in the [readme.txt](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
+### Download and decompress
+Data is downloaded in 7z format. 
+It can be uncompressed in Debian GNU linux with the
+[p7zip program](https://packages.debian.org/wheezy/p7zip). 
+Use system2 to invoque the decompression utility.
+Example downloading 2012 data:
+```{r, eval=FALSE}
+# Download all comext trade flows for a given year
+year <- 2012
+bulkfile <- paste0("nc",year, "52.7z")
+download.file(paste0("http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=comext%2F2014S2%2Fdata%2F",bulkfile), 
+              destfile = paste0("data-raw/",bulkfile))
+
+# Change to the raw-data directory
+curdir <- getwd()  
+setwd("data-raw/")
+
+# decompress file and come back to the project root directory
+tryCatch(system2("p7zip", args=c("-d", bulkfile)),
+    finally = setwd(curdir))
+```
+
+### Read .dat file
+Comext bulk files are over 400 Mb in size and cannot be read in one slice.
+One has to extract a slice of interesting product codes first.
+
+```{r eval=FALSE}
+# This takes more than 10 minutes to run on a laptop
+# nc2012 <- read.table("data-raw/nc201252.dat", header = TRUE)
+bulkfile <- gsub(".7z", ".dat", bulkfile)
+productcode <- 4407
+
+# Change to the raw-data directory
+curdir <- getwd()  
+setwd("data-raw/")
+# grep productcode into a smaller file containing only those characters
+system2("grep", args=c(productcode,bulkfile), 
+        stdout = paste0(productcode,bulkfile))
+# Read the first line of bulkfile to use it as col.names 
+header <- readLines(bulkfile, n=1)
+header <- strsplit(header,",")[[1]]
+setwd(curdir)
+
+# read the data file
+nc2012 <- read.table("data-raw/4407nc201252.dat", sep=",",
+                     col.names = header, as.is=TRUE)
+str(nc2012)
+# 'data.frame':    24364 obs. of  9 variables:
+#  $ DECLARANT    : chr  "001" "001" "001" "001" ...
+#  $ PARTNER      : int  3 3 3 3 3 3 3 3 3 3 ...
+#  $ PRODUCT_NC   : chr  "44071015" "44071015" "44071031" "44071038" ...
+#  $ FLOW         : int  1 2 1 1 1 2 1 2 1 2 ...
+#  $ STAT_REGIME  : int  4 4 4 4 4 4 4 4 4 4 ...
+#  $ PERIOD       : int  201252 201252 201252 201252 201252 201252 201252 201252 201252 201252 ...
+#  $ VALUE_1000ECU: num  64.8 147.4 126.2 213.8 725.1 ...
+#  $ QUANTITY_TON : num  44.2 977.3 179.8 207.6 1142.3 ...
+#  $ SUP_QUANTITY : int  91 1042 388 498 3891 506 2 311 4218 192 ...
+unique(nc2012$PRODUCT_NC) 
 
 
-### Tools 
+```
+
+
+## Other tools 
 * Check the [R sdmx package as mentionned on this question](http://stackoverflow.com/questions/12762431/is-this-the-solution-to-get-data-from-eurostat-into-r)
 
 
-
-## Using the SmarterPoland package
+### Using the SmarterPoland package
 Load data from the [Eurostat trade database](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/data/database), using the smarterpoland package
 
-### Examples
+The SmarterPoland package is downloading data tables from the
+[bulkdownload listing](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing) but these data tables do not contain bilateral trade.
+
+
 Example use of the function SmarterPoland::getEurostatRCV
 Download the dataset 'Pupil/Student - teacher ratio 
 and average class size' from eurostat.
@@ -93,20 +172,15 @@ unique(swd[c("treespec", "indic_fo", "unit")]) %>%
 
 Try to download EU trade
 as written on this database http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/data/database
-
 ```{r download_trade, eval=FALSE}
-trade
 trade <- SmarterPoland::getEurostatRCV(kod = "DS-016890")
 head(trade)
-
-
 ```
 
 
-### Source of the SmarterPoland package
+### Source code of the SmarterPoland package
 ```{r sourceSmarterPoland, eval=FALSE}
-f <- SmarterPoland::getEurostatRCV
-f
+SmarterPoland::getEurostatRCV
 # function (kod = "educ_iste") 
 # {
 #     require(reshape)
@@ -125,8 +199,7 @@ f
 # }
 # <environment: namespace:SmarterPoland>
 
-f2 <- SmarterPoland::getEurostatRaw
-f2
+SmarterPoland::getEurostatRaw
 # function (kod = "educ_iste") 
 # {
 #     adres <- paste("http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=data%2F", 
@@ -149,9 +222,3 @@ f2
 # <environment: namespace:SmarterPoland>
 ``` 
 
-
-## Loading eurostat data directly
-
-The SmarterPoland package is downloading data tables from the
-[bulkdownload listing](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing)
-It appears that these do not contain bilateral trade data.

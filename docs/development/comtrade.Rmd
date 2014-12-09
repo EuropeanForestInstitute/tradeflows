@@ -1,8 +1,10 @@
 ---
 title: "Learning to load data from comtrade"
 output:
+  pdf_document:
+    toc: yes
   html_document:
-    toc: true
+    toc: yes
 ---
 
 
@@ -13,7 +15,7 @@ library(tradeflows)
 library(dplyr)
 ``` 
 
-## UN comtrade API 
+## UN comtrade API parameters 
 Load data from the [UN Comtrade API](http://comtrade.un.org/data/doc/api/).
 
 Download a JSON file containing trade flows 
@@ -34,7 +36,7 @@ loadcomtradebycode
 ```
 
 
-### Usage limit
+### Usage limit per hour
 According to [the API main page](http://comtrade.un.org/data/doc/api/),
 usage is limited to _100 requests per hour (per IP address)_. 
 
@@ -55,7 +57,7 @@ The error happens before JSON is returned.
 Because there are 255 reporter in the db, I have to load them in 3 hours. 
 Or try to group them somehow.
 
-## API parameters and limitations in query complexity
+### Limitations in query complexity
 It seems the API is limitted in query complexity.
 Once the max parameter has been set to its maximum: 50000.
 Limits seem to be :
@@ -68,7 +70,7 @@ Further details are given on the [Comtrade data extraction interface](http://com
 
 Example of query limitation for the different API parameters below.
 
-### max limit on the number of record
+### Max limit on the number of record
 The API has a limit of 50 000 records per request. 
 But the max parameter is set by default to get only 500 records 
 see for example below Illustration of a problem encountered 
@@ -216,9 +218,38 @@ for (productcode in products){
 }
 ```
 
+### Loadcomtradewithpause()
+Load all world flows for a product with a pause every hour to overcome 
+the API limit of 100 downloads per hour.
 
-## Log errors and json validation to a file
+```{r eval=FALSE}
+furniture <- classificationcomtrade$HS %>% 
+    filter(substr(productcode, 0, 4)=="9401")
+str(furniture)
+# 'data.frame':    14 obs. of  3 variables:
+#  $ productcode: chr  "9401" "940110" "940120" "940130" ...
+#  $ product    : chr  "9401 - Seats (except dentist, barber, etc chairs)" "940110 - Seats, aircraft" "940120 - Seats, motor vehicles" "940130 - Swivel seats with variable height adjustment" ...
+#  $ parentcode : chr  "94" "9401" "9401" "9401" ...
+loadcomtradewithpause(furniture$productcode)
+```
 
+Those data set are loaded for a product in a directory
+on the server. I have then put datasets together in this way, 
+in order to generate reports:
+```{r}
+# getwd() is where raw files are located
+dtfall <- data.frame()
+for (f in list.files(".", ".RData")){
+    load(f)
+    dtfall <- rbind(dtf,dtfall)
+}
+dtfall <- tradeflows::renamecolumns(dtfall)
+tradeflows::createcompletenessreport(dtfall, outputdir="../../reports/completeness/woodenfurniture/")
+# save(dtfall, file="sawnwood_all.RData") #optional saving
+```
+
+
+### Log errors and json validation to a file
 ```{r eval=FALSE}
 # Log errors and json validation to a file?
 #     if (logfile != FALSE){
@@ -231,7 +262,7 @@ for (productcode in products){
 ```
 
 
-## Product classification
+## Product classifications
 ```{r}
 load("data/classificationcomtrade.rda") 
 H4 <- classificationcomtrade$H4

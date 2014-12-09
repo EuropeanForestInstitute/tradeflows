@@ -82,7 +82,7 @@ loadcomtradewithpause <- function(products, year="recent", pause=3601){
 }
 
 
-# # On the server I put datasets together in this way
+# # On the server I have put datasets together in this way
 # swdall <- data.frame()
 # for (f in list.files(".","RData")){
 #     load(f);swdall <- rbind(swd,swdall)
