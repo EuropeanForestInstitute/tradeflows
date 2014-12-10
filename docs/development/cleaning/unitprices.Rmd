@@ -17,12 +17,6 @@ library(reshape2)
 * Calculate median price and standard deviation for sawnwood products by region.
 * In a boxplot, the upper and lower "hinges" correspond to the first and third quartiles (the 25th and 75th percentiles).
 
-
-```{r boxplot}
-ggplot(mpg, aes(class, hwy))+ geom_boxplot()
-```
-
-
 Add a ditribution of trade volumes below these prices for a sample product.
 As visible on this graph.
 
@@ -36,12 +30,12 @@ As not all quantity are available, a part of the unit value cannot be taken into
 
 ### Unit prices by subregions
 A simple unit price without ponderation for volumes.
-```{r}
+```{r results='asis'}
 print(load("data-raw/comtrade/440799.RData"))
 swd99 <- dtf %>% 
     renamecolumns %>%
     filter(flow %in% c("Import", "Export")) %>%
-    merge(select(reportercomtrade3, reportercode, region, subregion)) %>%
+    merge(select(reportercomtrade, reportercode, region, subregion)) %>%
     mutate(price = tradevalue / quantity)
 
 for (f in c("Import", "Export")){
