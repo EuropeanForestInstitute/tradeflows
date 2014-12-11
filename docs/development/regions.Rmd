@@ -1,9 +1,9 @@
 ---
 title: "Regional aggregates from FAOSTAT"
 output:
-  html_document:
-    toc: yes
   pdf_document:
+    toc: yes
+  html_document:
     toc: yes
 ---
 
@@ -16,8 +16,28 @@ library(dplyr)
 library(FAOSTAT)
 ``` 
 
+## Merge Comtrade reporters with ITTO region definitions based on reportercode and COMTRADE CODE
 
-## Merge FAO regions based on reportercode and UN_CODE
+```{r}
+reporterITTO <- read.csv("data-raw/ITTO_reporters.csv")
+names(reporterITTO)[grepl("tropical",names(reporterITTO))] <- "tropical"
+reporterITTO <- reporterITTO %>%
+    rename(reportercode = COMTRADE.CODE,
+           reporter = COMTRADE.COUNTRIES,
+           region = Regional.Distribution)
+reporterITTO <- reporterITTO %>% 
+    merge(select(reportercomtrade, reportercode, reporter),
+          by="reportercode",all.y=TRUE)
+reporterITTO %>% head(15) %>% kable
+unique(reporterITTO$region)
+```
+
+### Countries which don't belong to any region
+```{r}
+reporterITTO %>% filter(is.na(region)) %>% kable
+```
+
+## Merge Comtrade reporters with FAO region definitions based on reportercode and UN_CODE
 To be added to the list of reporter comtrade, 
 inspired by work on another package, see
 `GFPMoutput/rawdata/Merge GFPM and FAO regions and country codes 0.1.r`
@@ -39,13 +59,13 @@ str(regions)
 # str(FAOcountryProfile)
 # str(FAOregionProfile)
 # Should merge based on the ISO3 code instead
-reportercomtrade2 <- reportercomtrade %>%
+reportercomtrade2 <- select(reportercomtrade,reportercode, reporter) %>%
     merge(regions, by="reportercode", all.x=TRUE) 
 ```
 
 ### GFPM regions
 Add a type of region usefull for the analysis 
-from a North American perspective at least.
+from a North American perspective.
 ```{r gfpmregion, eval=FALSE}
 createGFPMRegion = function(region, subregion){
     GFPMregion = NULL
@@ -91,7 +111,7 @@ missingreporter %>% filter(!reporter %in% regions$reporternamefao) %>% kable
 ################################################## #
 # Missing countries present in the FAOregion table #
 ################################################## #
-missingreporter2 <- reportercomtrade %>%
+missingreporter2 <- select(reportercomtrade,reportercode,reporter) %>%
     merge(regions, by="reportercode", all.x=TRUE) %>%
     filter(is.na(region)) %>%
     filter(reporter %in% regions$reporternamefao) %>%
@@ -111,7 +131,7 @@ regions2 <- regions2 %>%
 # put them back into the regions table
 regions <- rbind(regions, regions2)
 # recreate reportercomtrade2
-reportercomtrade2 <- reportercomtrade %>%
+reportercomtrade2 <- select(reportercomtrade,reportercode,reporter) %>%
     merge(regions, by="reportercode", all.x=TRUE) %>%
     arrange(region, subregion)
 ```
@@ -133,7 +153,7 @@ cat(reportercomtrade2$reporter[is.na(reportercomtrade2$region)], sep="| ")
 ```
 
 
-## Merge FAO regions based on reporteriso and ISO3_CODE
+## Merge Comtrade reporters with FAO region definitions based on reporteriso and ISO3_CODE
 Load the sawnwood dataset and get iso codes from there
 ```{r}
 load("data-raw/comtrade/4407.RData")

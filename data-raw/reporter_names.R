@@ -16,6 +16,10 @@ reportercomtrade <- reportercomtrade$results %>%
     select(reportercode = id, reporter = text)
 nbcountriesincomtrade <- nrow(reportercomtrade)
 
+
+# Use ITTO aggregates
+
+
 ###################################### #
 # Load regional aggregates from FAOSTAT #
 ###################################### #

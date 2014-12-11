@@ -14,4 +14,31 @@ Goal:
 For wood products Goal is to have a correct volume in m3
 For paper products is to have a correct weight
 
+## Price discrepancies
+Calculate median unit price,
+```{r}
+print(load("data-raw/comtrade/440799.RData"))
+swd99 <- dtf %>% 
+    renamecolumns %>%
+    filter(flow %in% c("Import", "Export")) %>%
+    merge(select(reportercomtrade, reportercode, region, subregion)) %>%
+    mutate(price = tradevalue / quantity)
+
+#table of median flow prices
+swd99subregion <- swd99 %>% 
+    group_by(flow,subregion) %>%
+    summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
+                                                names=FALSE, na.rm=TRUE)),
+              medianprice = round(median(price, na.rm=TRUE)),
+              upperprice = round(2 * quantile(price, 0.75,
+                                              names=FALSE, na.rm=TRUE))) %>%
+    arrange(-medianprice)
+ 
+lowerprice = 
+medianprice = 
+
+
+```
+
+
 ## Unit

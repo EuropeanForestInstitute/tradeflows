@@ -57,7 +57,7 @@ if (FALSE){
     ###################### #
     createcompletenessreport(tradeflows::sawnwoodexample, outputdir = directory)
     # report for the "black hole" dataset
-    load("data-raw/440799.RData")
+    load("data-raw/comtrade/440799.RData")
     swd99 <- renamecolumns(dtf, "comtrade", "efi")
     createcompletenessreport(swd99, outputdir = directory)
     # another dataset
@@ -73,7 +73,16 @@ if (FALSE){
     ####################### #
     # Discrepancies reports #
     ####################### #
-    load("data-raw/440799.RData")
+    load("data-raw/comtrade/440799.RData")
     swd99 <- renamecolumns(dtf, "comtrade", "efi")
     createreport(swd99, outputdir = directory, template = "discrepancies.Rmd")
+
+    ############################### #
+    # Network visualisation reports #
+    ############################### #
+    directory <- "docs/development/networkvisualisation/"
+    load("data-raw/comtrade/440799.RData")
+    swd99 <- renamecolumns(dtf, "comtrade", "efi")
+    createreport(swd99, outputdir = directory, template="asdfdsa.Rmd")
+
 }

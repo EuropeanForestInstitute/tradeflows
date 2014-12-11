@@ -2,7 +2,11 @@
 title: "Unit Prices"
 author: "Paul Rougieux"
 date: "04/12/2014"
-output: html_document
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
 ---
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
@@ -14,56 +18,88 @@ library(ggplot2)
 library(reshape2)
 ``` 
 
-* Calculate median price and standard deviation for sawnwood products by region.
+* Calculate prices for sawnwood products 440799.
+* Calculate median prices and an upper and lower bound. Upper price is the third quartile multiplied by 2, lower price is the first quartile divided by 2.
 * In a boxplot, the upper and lower "hinges" correspond to the first and third quartiles (the 25th and 75th percentiles).
 
-Add a ditribution of trade volumes below these prices for a sample product.
-As visible on this graph.
 
-
-### Percentage of trade value not taken into account
-As not all quantity are available, a part of the unit value cannot be taken into account for price calculation.
-```{r}
-
-
-```
-
-### Unit prices by subregions
-A simple unit price without ponderation for volumes.
-```{r results='asis'}
+```{r loadandprepare}
 print(load("data-raw/comtrade/440799.RData"))
 swd99 <- dtf %>% 
     renamecolumns %>%
     filter(flow %in% c("Import", "Export")) %>%
     merge(select(reportercomtrade, reportercode, region, subregion)) %>%
     mutate(price = tradevalue / quantity)
-
-for (f in c("Import", "Export")){
-    #table of median flow prices
-    swd99subregion <- swd99 %>% 
-        filter(flow== f) %>%
-        group_by(subregion) %>%
-        summarise(medianprice = round(median(price, na.rm=TRUE))) %>%
-        arrange(-medianprice)
-    cat("\n\n")
-    print(kable(swd99subregion))
-    cat("\n\n")
-    
-    # Transform subregion to an ordered vector 
-    swd99exp <- swd99 %>% filter(flow==f) %>%
-        mutate(subregion = ordered(subregion, levels = swd99subregion$subregion)) 
-    
-    p <- ggplot(data=swd99exp, aes(x=subregion, y=price)) +
-        geom_boxplot() + 
-        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-        ggtitle(paste(f, "440799"))
-        
-    print(p + scale_y_log10()) # Log scale
-    print(p + coord_cartesian(ylim=c(0,1500))) # zoom plot 
-    
-}
 ```
 
-```{r importprices}
+### Distribution of unit prices between `r min(swd99$year)` and `r max(swd99$year)`
 
+```{r}
+p <- ggplot(swd99, aes(x=price)) + 
+    geom_histogram(binwidth=100) + xlim(0,2500) +
+    ylab("Number of trade flows")
+p + facet_grid(~flow) + ggtitle("All world flows for 440799")
+p + facet_grid(region~flow) + ggtitle("World flows for 440799 by regions")
+p + facet_grid(year~flow) + ggtitle("World flows for 440799 by year")
+
+# density plot
+# ggplot(swd99, aes(price, fill = region)) +
+#   geom_density(alpha = 0.2) + xlim(0, 2500) + facet_wrap(~region)
+
+```
+
+### Unit prices by subregions
+```{r results='asis', fig.height=6}
+#table of median flow prices
+swd99subregion <- swd99 %>% 
+    group_by(flow,subregion) %>%
+    summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
+                                                names=FALSE, na.rm=TRUE)),
+              medianprice = round(median(price, na.rm=TRUE)),
+              upperprice = round(2 * quantile(price, 0.75,
+                                              names=FALSE, na.rm=TRUE))) %>%
+    arrange(-medianprice)
+kable(swd99subregion)
+# Transform subregion to an ordered vector by import prices
+f = "Import"
+swd99imp <- swd99subregion %>% filter(flow==f) %>% arrange(-medianprice)
+swd99subregion <- swd99subregion %>% 
+    mutate(subregion = ordered(subregion, levels = swd99imp$subregion)) 
+
+# Add these lower, upper and median prices on the plot
+swd99subregionmelt <- swd99subregion %>% 
+    melt(id=c("flow", "subregion")) %>%
+    mutate(variable = ordered(variable, levels=c("upperprice",
+                                                 "medianprice","lowerprice" )))
+
+ggplot(data=swd99subregionmelt) +
+    geom_point(aes(x = subregion, y = value, color =  variable))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_grid(flow~.)
+
+
+p <- ggplot(data=swd99, aes(x=subregion, y=price)) +
+    geom_boxplot() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_point(data=melt(swd99subregion, id=c("flow", "subregion")),
+             aes(x = subregion, y = value, color =  variable))+
+   facet_grid(flow~.) + xlab("")
+
+p + coord_cartesian(ylim=c(0,2000)) + ggtitle( "440799 zoom plot (price<2000$)") 
+p + scale_y_log10() + ggtitle( "440799 Log scale") 
+```
+
+### Percentage of trade value not taken into account
+Not all quantity are available. which percentage of the trade value cannot be taken into account for the unit price calculation? 
+
+* There are `r nrow(swd99)` flows in the 440799 dataset. 
+* `r nrow(filter(swd99, is.na(tradevalue)))` don't have a trade value
+* `r nrow(filter(swd99, is.na(quantity)))` don't have a quantity
+
+```{r}
+swd99bis <- 
+    swd99 %>% 
+    group_by(flow, is.na(quantity)) %>%
+    summarise(tradevalue = sum(tradevalue, na.rm=TRUE),
+              numberofflows = n()) 
 ```
