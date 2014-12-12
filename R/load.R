@@ -10,6 +10,9 @@
 #'@param max maximum records returned
 #'@return a dataframe
 #'@export
+#'@examples library(tradeflows)
+#'# Load "other sawnwood" in France for the last 5 years available in comtrade
+#'loadcomtradebycode(440799, 251, "recent")
 loadcomtradebycode <- function(productcode, reportercode, year,
                                 px = "HS", max = 50000,
                                 logfile = FALSE){
@@ -108,14 +111,9 @@ load_all_countries_for_a_product <- function(product, year){
 }
 
 
-convertcolumns <- function(dtf){
-    # Creates column names which are more readable
-    # Rename columns one by one based on the matching table
-}
 
 
 if (FALSE){
     # Show how functions above work on sample data
-    loadbycomtradecode()
-    load_by_name("germany","wood sawn or chip...",2011)
+    loadcomtradebycode
 }

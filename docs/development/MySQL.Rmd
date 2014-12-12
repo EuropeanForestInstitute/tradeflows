@@ -1,0 +1,124 @@
+---
+title: "Learning to load data from MySQL"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(RMySQL)
+``` 
+
+## Connection using dplyr, SELECT only
+* Description and examples in the `?src_mysql` documentation
+    To connect to a database :
+    ```
+    # First create a src
+    my_db <- src_mysql(host = "blah.com", user = "hadley",
+        password = "pass")
+    # Then reference a tbl within that src
+    my_tbl <- tbl(my_db, "my_table")
+    ```
+* [dplyr vignette on databases](http://cran.r-project.org/web/packages/dplyr/vignettes/databases.html) explains the verbs that can be used to communicate with the database: `select`, `filter`, `arrange`, `mutate`, `summarise`.
+* [Stackoverflow question on insert using dplyr](http://stackoverflow.com/questions/26568182/is-it-possible-to-insert-add-a-row-to-a-sqlite-db-table-using-dplyr-package) says it is possible to add a row to a database using dplyr. I added an answer mentionning the point below.
+* [a newsgroup](https://groups.google.com/forum/#!topic/manipulatr/IsRVJWoMPe4). 
+   explained the purpose of the function `dplyr::copy_to`.
+   It is intended to create temporary test tables.
+   The email exchange ends by suggesting to to use `RMySQL::dbWriteTable()` 
+   to append data to an existing table.
+
+### Query the database using tbl, verbs and collect
+```{r dplyrselect}
+DB <- src_mysql(user="tradeflows", host="localhost",
+                       password="tradeflows", dbname="tradeflows")
+# Create `tbl`
+rawdata <- tbl(DB, sql("SELECT * FROM raw_trade_data"))
+
+# number of rows
+rawdata %>% summarise(nrow = n()) %>% collect
+
+# Get data for one reporter
+swd <- rawdata %>% 
+    filter(reporter=="Germany") %>%
+    collect # forces computation and brings data back into a data.frame 
+
+# Play with verbs
+swdImport <- rawdata %>% 
+    filter(reporter=="Germany" & flow=="Import" ) %>%
+    select(year, flow, reporter, partner, tradevalue) %>%
+    collect
+```
+
+### db_insert_into, for test purposes only
+```{r insertdplyr, eval=FALSE}
+# Create table
+copy_to(DB, swdhead, "enddata2", temporary = FALSE)
+# Insert into the new table
+db_insert_into(DB = tdb$con, table = "enddata2", fields = swdhead) 
+```
+
+Look at `?db_insert_into` for a list of database actions.
+
+    If you find yourself overriding many of these functions
+    it may suggest that you should just override copy_to instead.
+
+## Connection using RMySQL, SELECT, INSERT and more
+Source of the package : [RMySQL](https://github.com/jeffreyhorner/RMySQL)
+
+Following developments inspired by :
+
+* [a finnish blog](http://gettinggeneticsdone.blogspot.fi/2011/12/query-mysql-database-from-r-using.html).
+* [a question on stackoverflow](http://stackoverflow.com/questions/5431961/connect-to-mysql-database-with-rmysql)
+
+### SELECT or dbReadTable()
+```{r rmysql_select}
+tdb2 <- dbConnect(MySQL(), user="tradeflows", host="localhost",
+                       password="tradeflows", dbname="tradeflows")
+dbListTables(tdb2)
+querytradedb <-  function(...) dbGetQuery(tdb2, ...)
+swdhead <- querytradedb("SELECT * FROM raw_trade_data LIMIT 2;")
+
+swd <- dbReadTable(tdb2, "raw_trade_data")
+```
+
+
+### CREATE a table
+```{r eval=FALSE}
+querytradedb("CREATE TABLE enddata LIKE tradeflows.raw_trade_data;")
+dbListTables(tdb2)
+```
+
+
+### INSERT or dbWriteTable()
+Using queries is not convenient with large dataframes
+```{r rmysql_insert, eval=FALSE}
+#dbGetQuery(tb2, "INSERT into SELECT * FROM raw_trade_data LIMIT 10;")
+
+
+```
+
+```{r dbwritetable}
+nrowinend <- function(){
+    dbGetQuery(tdb2, "SELECT COUNT(*) FROM enddata;")
+}
+nrowinend()
+dbWriteTable(tdb2, "enddata", swdhead, append=TRUE, row.names = FALSE)
+nrowinend()
+# Same instruction a seccond time
+dbWriteTable(tdb2, "enddata", swdhead, append=TRUE, row.names = FALSE)
+nrowinend()
+# Content is not added twice
+# If you remove the id
+swdhead$id <- NULL
+dbWriteTable(tdb2, "enddata", swdhead, append=TRUE, row.names = FALSE)
+nrowinend() # content is added again
+dbGetQuery(tdb2, "SELECT COUNT(*) FROM raw_trade_data;")
+# content is added again
+```

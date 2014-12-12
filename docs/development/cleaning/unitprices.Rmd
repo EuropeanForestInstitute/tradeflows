@@ -33,7 +33,6 @@ swd99 <- dtf %>%
 ```
 
 ### Distribution of unit prices between `r min(swd99$year)` and `r max(swd99$year)`
-
 ```{r}
 p <- ggplot(swd99, aes(x=price)) + 
     geom_histogram(binwidth=100) + xlim(0,2500) +
@@ -45,7 +44,13 @@ p + facet_grid(year~flow) + ggtitle("World flows for 440799 by year")
 # density plot
 # ggplot(swd99, aes(price, fill = region)) +
 #   geom_density(alpha = 0.2) + xlim(0, 2500) + facet_wrap(~region)
-
+```
+### Unit prices by regions
+```{r results='asis', fig.height=6}
+swd99region <- swd99 %>%
+    group_by(flow, region) %>%
+    summarise(medianprice = round(median(price, na.rm=TRUE)))
+kable(swd99region)
 ```
 
 ### Unit prices by subregions
@@ -103,3 +108,33 @@ swd99bis <-
     summarise(tradevalue = sum(tradevalue, na.rm=TRUE),
               numberofflows = n()) 
 ```
+
+## Replace `r nrow(filter(swd99, is.na(quantity)))` flows using unit prices
+Differences 
+### by region
+Use regional median prices to calculate quantities.
+Increase in global trade import and export due to the estimate for all flows
+```{r}
+# Use regional median prices
+swd99 <- merge(swd99, swd99region) %>%
+    mutate(quantity2 = tradevalue / medianprice)
+swd99 %>%
+    mutate(havequantity = !is.na(quantity)) %>%
+    group_by(havequantity,year, flow) %>%
+    summarise(rows = n(),
+              volume = sum(quantity, na.rm=TRUE) ,
+              estimatedvolume = sum(quantity2, na.rm=TRUE),
+              increase = estimatedvolume - volume,
+              percent = round(increase / volume*100)) %>%
+    kable
+
+
+```
+
+### by sub-region
+```{r}
+# Use  sub-regional median prices
+
+```
+
+

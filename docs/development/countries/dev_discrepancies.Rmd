@@ -23,9 +23,9 @@ library(reshape2)
 ```{r standalone, echo=FALSE, message=FALSE, warning=FALSE}
 # dtf enddata in this chunk 
 # will have to be provided to the report generating function
-load("data-raw/440799.RData")
+load("data-raw/comtrade/440799.RData")
 dtfall <- dtf
-load("data-raw/4407.RData")
+load("data-raw/comtrade/4407.RData")
 dtfall <- rbind(dtfall, dtf)
 
 enddata <- dtfall %>%

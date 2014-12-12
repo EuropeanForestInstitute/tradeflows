@@ -25,4 +25,9 @@ load a JSON file from the comtrade API in the temp directory
 The API is documented at http://comtrade.un.org/data/doc/api/
 Converts the file to a dataframe
 }
+\examples{
+library(tradeflows)
+# Load "other sawnwood" in France for the last 5 years available in comtrade
+loadcomtradebycode(440799, 251, "recent")
+}
 
