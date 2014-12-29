@@ -233,6 +233,9 @@ writeLines(c("Hello","World"), fileConn)
 close(fileConn)
 Change the docs/development folder into vignettes.
 
+* Calculate median prices by region patner and see how 
+  using partner prices for conversion impacts the 
+  world trade flows
 * Floating table of content for html reports with a custom csss
   http://rpubs.com/stevepowell99/floating-css
 * Use aesthetic to make points more transparent on a coutry * contry grid 

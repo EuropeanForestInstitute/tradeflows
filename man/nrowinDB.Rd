@@ -4,11 +4,17 @@
 \title{Number of rows in a database tables}
 \usage{
 nrowinDB(table)
+
+nrowinDB(table)
 }
 \arguments{
 \item{table}{name of a table}
+
+\item{table}{name of a table}
 }
 \description{
+Number of rows in a database tables
+
 Number of rows in a database tables
 }
 

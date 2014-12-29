@@ -23,19 +23,122 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
         names(dtf)[names(dtf)==n] <-
             column_names$efi[column_names[c(sourcedb)]==n]
     }
-    dtf <- dplyr::select_(dtf, .dots = column_names$efi)
+    destcolumns <- column_names[c(destdb)][[1]]
+    dtf <- dplyr::select_(dtf, .dots = destcolumns)
     return(dtf)
+}
+
+
+#' Add unit price and conversion factor to each flow
+#'
+#' Calculate unit prices in current currency
+#' Conversion factors in Quantity
+#' @param dtf data frame
+#' @import dplyr
+#' @export
+addconversionfactorandprice <- function(dtf){
+    dtf %>% mutate(conversion = weight / quantity,
+                   price = tradevalue / quantity,
+                   # To avoid "integer overflow - use sum(as.numeric(.))" error
+                   # on sum of all values
+                   tradevalue = as.numeric(tradevalue),
+                   # To avoid Error in swd99$c(NA_integer_,  :
+                   # invalid subscript type 'integer'
+                   quantity = as.numeric(quantity))
+}
+
+
+#' Extract median prices at a given geographical aggregation level
+#'
+#' Extract median prices by region (default) or at another
+#' geographical aggregation level (subregion)
+#' @param dtf a dataframe containing already available prices
+#' @param geoaggregation a character vector specifying the regional aggregation
+#'     level, a column name in the reportercomtrade table
+#' @param excludeqestimates logical TRUE when comtrade quantity estimates
+#' have to be excluded
+#' @export
+extractprices <- function(dtf, geoaggregation="regionreporter",
+                          excludeqestimates = FALSE){
+    if(excludeqestimates){
+        dtf <- dtf %>% filter(flag==0 |flag==4 )
+    }
+    dtf %>%
+        filter(flow %in% c("Import", "Export")) %>%
+        # Remove EU28 reporter
+        filter(!reporter %in% c("EU-28")) %>%
+        # Remove EU-28 and World partner
+        filter(!partner %in%c("EU-28", "World")) %>%
+        # Add regionreporter and regionpartner
+        merge(select(reportercomtrade, reportercode, regionreporter=region)) %>%
+#         merge(select(reportercomtrade,
+#                      partnercode = reportercode, regionpartner=region)) %>%
+        group_by(flow, regionreporter, year) %>%
+        summarise(lowerprice = round(0.5 * quantile(price, 0.25,
+                                                    names=FALSE, na.rm=TRUE)),
+                  medianprice = round(median(price, na.rm=TRUE)),
+                  upperprice = round(2 * quantile(price, 0.75,
+                                                  names=FALSE, na.rm=TRUE))) %>%
+        arrange(-medianprice)
+}
+
+
+
+#' Extract median converion factor at a given geographical aggregation level
+#'
+#' Extract median converion factors for the whole world (default)
+#' @param dtf a dataframe containing conversion factors
+#' @param geoaggregation a character string specifying the regional aggregation
+#'     level, a column name in the reportercomtrade table
+#' @param  excludeqwestimates logical TRUE when comtrade quantity and weight
+#'          estimates have to be excluded
+#' @export
+extractconversionfactors <- function(dtf, geoaggregation="World",
+                                     excludeqwestimates=FALSE){
+    if(excludeqwestimates){
+        dtf <- dtf %>% filter(flag==0)
+    }
+    dtf %>%
+        filter(flow %in% c("Import", "Export")) %>%
+        # Remove EU28 reporter
+        filter(!reporter %in% c("EU-28")) %>%
+        # Remove World partner
+        filter(!partner %in%c("EU-28", "World")) %>%
+        group_by(flow, year) %>%
+        summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
+}
+
+
+#' Change some of the column types
+#'
+#'  Change to factors for easy plotting
+#'  Change to large int or to floating point for some computations
+#' @param dtf data frame
+#' @export
+changecolumntype <- function(dtf){
+    dtf$flag <- as.factor(dtf$flag)
+    return(dtf)
+}
+
+
+#' Return a dataframe of duplicated flows
+#'
+#' @param dtf a dataframe contiaining trade flows, the funciton
+#'  tests for duplicated reportercode, partnercode, productcode, flow, year
+#' @export
+duplicates <- function(dtf){
+    dtf$duplicate <- duplicated(select(dtf, reportercode, partnercode,
+                                       productcode, flow, year))
+    filter(dtf, duplicate)
 }
 
 
 #' Remove duplicates
 #' Print the number of duplicated entries and remove them
 removeduplicates <- function(dtf){
-    nbduplicates <- sum(duplicated(select(dtf, reportercode, partnercode,
-                                          productcode, flow, year)))
-    if(nbduplicates>1){
-        message("There were duplicated lines, we removed them.")
-        print(summary(duplicated(dtf)))
+    if(nrow(duplicates(dtf))>1){
+        message("There were duplicated lines for the following reporters:")
+        message(unique(duplicates(dtf)$reporter))
         return(unique(dtf))
     }
     return(dtf)
@@ -50,9 +153,7 @@ removeduplicates <- function(dtf){
 #'@export
 addpartnerflow <- function(dtf){
     # Warning for duplicated entries
-    nbduplicates <- sum(duplicated(select(dtf, reportercode, partnercode,
-                                          productcode, flow, year)))
-    if(nbduplicates>1){
+    if(nbduplicates(dtf)>1){
         stop("Remove duplicated entries before adding partner flows")
     }
     swap <- dtf %>%
@@ -108,20 +209,17 @@ calculatediscrepancies <- function(dtf){
 }
 
 
-#' Calculate unit prices
-#'
-#' Calculate unit prices in current currency
-#' @param dtf data frame
-#' @import dplyr
-calcunitprices <- function(dtf){
-    dtf %>% mutate(pricecur = tradevalue / weight )
-}
+
+#' Calculate volume based on tradevalue
+
+
 
 
 #' Combine all cleaning functions
 #' @param dtf data frame
+#' @param write2db logical TRUE to write the result in the database
 #' @export
-clean <- function(dtf){
+clean <- function(dtf, write2db=FALSE){
     dtf %>%
         addpartnerflow() %>%
         calcunitprices()

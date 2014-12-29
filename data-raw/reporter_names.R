@@ -5,19 +5,31 @@ library(dplyr)
 library(FAOSTAT)
 
 
-########################### #
+################################ #
 # Load comtrade reporter areas   #
-########################### #
+################################ #
 # http://comtrade.un.org/data/cache/reporterAreas.json
 # Keep only countries for which there is sawnwood or fuelwood data in 2010
 # This should eliminate former countries such as east germany
 reportercomtrade <- jsonlite::fromJSON("http://comtrade.un.org/data/cache/reporterAreas.json")
 reportercomtrade <- reportercomtrade$results %>%
-    select(reportercode = id, reporter = text)
+    select(reportercode = id, reporter = text) %>%
+    filter(reportercode != "all") # Remove "all" as it is not allowed for query complexity reasons
 nbcountriesincomtrade <- nrow(reportercomtrade)
 
-
-# Use ITTO aggregates
+############################## #
+# Add ITTO regional aggregates #
+############################## #
+ittoregions <- read.csv("data-raw/ITTO_reporters.csv", as.is=TRUE)
+# rename columns
+ittoregions <- ittoregions %>%
+    select(reportercode = COMTRADE.CODE,
+           reporter = COMTRADE.COUNTRIES,
+           region = Regional.Distribution)
+names(ittoregions)[grepl("tropical",names(ittoregions))] <- "tropical"
+reportercomtrade <- merge(reportercomtrade,
+                           select(ittoregions, reportercode, region),
+                           all.x=TRUE)
 
 
 ###################################### #
@@ -32,10 +44,10 @@ regions <- FAOregionProfile %>%
     filter(!is.na(FAOST_CODE)) %>%
     select(reportercode = UN_CODE,
            reportercodefao = FAOST_CODE,
-           region = UNSD_MACRO_REG,
+           regionfao = UNSD_MACRO_REG,
            subregion = UNSD_SUB_REG) %>%
     merge(FAOcountryProfile2, by="reportercodefao") %>%
-    arrange(region, subregion) %>%
+    arrange(regionfao, subregion) %>%
     # Remove the reportercode as this is not part of the merge
     select(-reportercode)
 
@@ -61,8 +73,8 @@ reportercomtrade <- dtf %>%
            reporter = partner,
            reporteriso = partneriso) %>%
     unique %>%
-    # Merge based on iso3 code
-    merge(filter(regions, !is.na(reporteriso)),
+    # Merge based on iso3 code, remove NA and duplicates (for example SDN)
+    merge(filter(regions, !is.na(reporteriso) & !duplicated(reporteriso)),
           by="reporteriso") %>%
     merge(reportercomtrade, all.y = TRUE)
 nrow(reportercomtrade)
@@ -71,7 +83,14 @@ reportercomtrade$reporter[!reportercomtrade$reporter %in%
 length(unique(reportercomtrade$reporter))
 reportercomtrade[duplicated(reportercomtrade$reporter),]
 nbcountriesincomtrade
+
+# Remove duplicates
+reportercomtrade %>% filter(!duplicated(reportercode))
+
 # reportercomtrade$reporteriso[duplicated(reportercomtrade3$reporteriso)]
+
+
+## Check where region fao and ITTO are different
 
 
 #################################################### #

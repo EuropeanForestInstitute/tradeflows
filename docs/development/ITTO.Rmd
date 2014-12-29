@@ -32,7 +32,7 @@ itto <- itto %>%
            productcodeitto = Product.code, 
            nomenclature = Nomenclature,
            productcodecomtrade = Code,
-           description = Description)
+           description = Description) 
 ```
 
 ## List ITTO product codes and names
@@ -44,10 +44,27 @@ itto %>%
 ```
 
 ## Compare ITTO code and names to those of Comtrade
+
+### Product list to download in priority in the most recent classification
+Products used for the analysis in a prototype system. 
+
+```{r}
+itto %>% 
+    filter(nomenclature == "HS12",
+           product %in% c("SAWNWOOD", "LOGS", "VENEER", 
+                          "CONIFEROUS FURTHER PROCESSED SAWNOOD", 
+                          "NON-CONIFEROUS FURTHER PROCESSED SAWNOOD",
+                          "WOODEN FURNITURE",
+                          "WOOD CHARCOAL")) %>%
+#     write.csv(file="data-raw/listofproductstodownload.csv", row.names=FALSE)
+    kable
+
+```
+
 ### Example products under ITTO SAWNWOOD
 ```{r sawnwood}
 swd <- itto %>% 
-    filter(product == "SAWNWOOD" )
+    filter(product == "SAWNWOOD")
 kable(swd)
 ```
 
@@ -68,8 +85,14 @@ itto %>%
 ```
 
 ### Example products under Comtrade 440799
-```{r sawnwoodbeech}
+```{r sawnwoodother}
 itto %>%
     filter(productcodecomtrade == 440799) %>%
     kable()
+```
+
+
+## Load the ITTO reporter table and rename columns
+```{r}
+
 ```

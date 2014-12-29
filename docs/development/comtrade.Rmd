@@ -1,9 +1,9 @@
 ---
 title: "Learning to load data from comtrade"
 output:
-  pdf_document:
-    toc: yes
   html_document:
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -236,7 +236,7 @@ loadcomtradewithpause(furniture$productcode)
 Those data set are loaded for a product in a directory
 on the server. I have then put datasets together in this way, 
 in order to generate reports:
-```{r}
+```{r eval=FALSE}
 # getwd() is where raw files are located
 dtfall <- data.frame()
 for (f in list.files(".", ".RData")){

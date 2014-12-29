@@ -2,4 +2,4 @@
 *
 !.gitignore
 !*.R
-!*.csv # Except configuration file columnnames.csv
+!*.csv # Except configuration file columnnames.csv and classificationitto.csv

@@ -5,59 +5,171 @@ date: "04/12/2014"
 output:
   pdf_document:
     toc: yes
+    toc_depth: 3
   html_document:
     toc: yes
 ---
+
+
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
-opts_chunk$set(echo=FALSE)
+opts_chunk$set(echo=FALSE, warning=FALSE)
 library(tradeflows)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
 ``` 
 
-* Calculate prices for sawnwood products 440799.
-* Calculate median prices and an upper and lower bound. Upper price is the third quartile multiplied by 2, lower price is the first quartile divided by 2.
-* In a boxplot, the upper and lower "hinges" correspond to the first and third quartiles (the 25th and 75th percentiles).
-
-
 ```{r loadandprepare}
-print(load("data-raw/comtrade/440799.RData"))
+# Remove this chunk in the template file
+load("data-raw/comtrade/440799.RData")
+regionpartner <- reportercomtrade %>%
+    select(reportercode = reportercode, regionpartner=region)
 swd99 <- dtf %>% 
     renamecolumns %>%
     filter(flow %in% c("Import", "Export")) %>%
+    # Remove EU28 reporter
+    filter(!reporter %in%c("EU-28")) %>%
+    # Remove World partner
+    filter(!partner %in%c("EU-28", "World")) %>%
+    # keep region 
+    # but as of 23 December 2014, use regionreport and regionpartner instead
     merge(select(reportercomtrade, reportercode, region, subregion)) %>%
-    mutate(price = tradevalue / quantity)
+    merge(select(reportercomtrade, reportercode, regionreporter=region)) %>%
+    merge(select(reportercomtrade, 
+                 partnercode = reportercode, regionpartner=region)) %>%
+    mutate(conversion = weight / quantity,
+           price = tradevalue / quantity,
+           # To avoid "integer overflow - use sum(as.numeric(.))" error 
+           # on sum of all values
+           tradevalue = as.numeric(tradevalue),
+           # To avoid Error in swd99$c(NA_integer_,  : 
+           # invalid subscript type 'integer'
+           quantity = as.numeric(quantity),
+           # tradeflow within a region 
+           withinregion =  regionreporter == regionpartner)
 ```
 
-### Distribution of unit prices between `r min(swd99$year)` and `r max(swd99$year)`
+## Number of flows and total trade value of missing quantity and weight data
+### Flows for which there is no quantity
+Not all quantities are available. which percentage of the trade value cannot be taken into account for the unit price calculation? 
+
+* There are `r nrow(swd99)` flows in the  `r unique(swd99$productcode)` dataset. 
+* `r nrow(filter(swd99, is.na(tradevalue)))` don't have a trade value
+* `r nrow(filter(swd99, is.na(weight)))` don't have a weight
+* `r nrow(filter(swd99, is.na(quantity)))` don't have a quantity
+
+```{r percentagenoquantity}
+swd99 %>% 
+    mutate(has_a_quantity = !is.na(quantity)) %>%
+    group_by(flow, has_a_quantity) %>%
+    summarise(number_of_flows = n(),
+              total_tradevalue = sum(tradevalue, na.rm=TRUE)) %>%
+    mutate(percentage_of_value = 
+               round(total_tradevalue / sum(total_tradevalue, na.rm=TRUE)*100)) %>%
+    arrange(-has_a_quantity) %>%
+    kable
+```
+
+### Flows for which there is no weight
 ```{r}
-p <- ggplot(swd99, aes(x=price)) + 
-    geom_histogram(binwidth=100) + xlim(0,2500) +
-    ylab("Number of trade flows")
-p + facet_grid(~flow) + ggtitle("All world flows for 440799")
-p + facet_grid(region~flow) + ggtitle("World flows for 440799 by regions")
-p + facet_grid(year~flow) + ggtitle("World flows for 440799 by year")
-
-# density plot
-# ggplot(swd99, aes(price, fill = region)) +
-#   geom_density(alpha = 0.2) + xlim(0, 2500) + facet_wrap(~region)
+swd99 %>% 
+    mutate(has_a_weight = !is.na(weight)) %>%
+    group_by(flow, has_a_weight) %>%
+    summarise(number_of_flows = n(),
+              total_tradevalue = sum(tradevalue, na.rm=TRUE)) %>%
+    mutate(percentage_of_value = 
+               round(total_tradevalue / sum(total_tradevalue, na.rm=TRUE)*100)) %>%
+    arrange(-has_a_weight) %>%
+    kable
 ```
-### Unit prices by regions
-```{r results='asis', fig.height=6}
+
+
+
+## Unit prices at various aggregation level
+Calculate prices for product code `r unique(swd99$productcode)`.
+Calculate median prices and an upper and lower bound. Upper price is the third quartile multiplied by 2, lower price is the first quartile divided by 2.
+In a boxplot, the upper and lower "hinges" correspond to the first and third quartiles (the 25th and 75th percentiles).
+
+### Median unit prices by regions
+```{r medianpriceregion, results='asis', fig.height=6}
 swd99region <- swd99 %>%
-    group_by(flow, region) %>%
-    summarise(medianprice = round(median(price, na.rm=TRUE)))
-kable(swd99region)
+    group_by(flow, region, year) %>%
+    summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
+                                                names=FALSE, na.rm=TRUE)),
+              medianprice = round(median(price, na.rm=TRUE)),
+              upperprice = round(2 * quantile(price, 0.75,
+                                              names=FALSE, na.rm=TRUE))) %>%
+    arrange(-medianprice)
+
+swd99region %>%
+    dcast(region + flow  ~ year, value.var="medianprice") %>%
+    kable(caption="Median unit prices")
+
+
+ggplot(data=swd99region, aes(x=year, y=medianprice, color=flow)) +
+    coord_cartesian(ylim=c(0,2500)) +
+    geom_ribbon(aes(ymin=lowerprice, ymax=upperprice, 
+                    fill=flow, alpha=0.05))+
+    geom_point(colour="grey50", size = 4) + geom_point(size=3) +
+    ggtitle("Median prices by region, shaded area represents 
+            a zone between our limits on lowerprice and upperprice") +
+    facet_wrap(region~flow) 
+cat("\n\n")
+p <- ggplot(data=swd99, aes(x=factor(year), y=price)) +
+    geom_boxplot(na.rm=TRUE) + xlab("") +
+    facet_wrap(region~flow)  
+p + coord_cartesian(ylim=c(0,2500)) + ggtitle( "440799 zoom plot (price<2500$)") 
+cat("\n\n")
+p + scale_y_log10() + ggtitle( "440799 Log scale") 
+
+
+# compare to Unit price of aggregated trade flows
+swd99regionunitprice <- swd99 %>%
+    filter(!is.na(quantity)) %>%
+    group_by(region, flow, year) %>%
+    summarise(price = round(sum(tradevalue) / sum(quantity))) 
+swd99regionunitprice %>%
+    dcast(region + flow~year, value.var="price") %>%
+    kable(caption="Unit prices of aggregated trade flows")
 ```
 
-### Unit prices by subregions
-```{r results='asis', fig.height=6}
-#table of median flow prices
+
+### Median unit price within a region and region with world
+```{r medianpriceswithinregion}
+# Median prices
+swd99region2 <- swd99 %>%
+    group_by(withinregion, flow, region, year, flag) %>%
+    summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
+                                                names=FALSE, na.rm=TRUE)),
+              medianprice = round(median(price, na.rm=TRUE)),
+              upperprice = round(2 * quantile(price, 0.75,
+                                              names=FALSE, na.rm=TRUE))) %>%
+    arrange(-medianprice)
+
+ggplot(swd99region2, aes(x=year, y=medianprice, color=withinregion)) +
+    geom_point() + facet_grid(flow+flag~ region)
+
+
+swd99region2 %>%
+    dcast(withinregion + region + flow  ~ year, value.var="medianprice") %>%
+    kable(caption="Median unit prices")
+```
+
+
+### Median unit price and comtrade estimated quantities
+```{r}
+medianprice
+
+```
+
+
+### Median unit prices by subregions
+```{r medianpricesubregion, results='asis', fig.height=6}
+# Table of median flow prices
 swd99subregion <- swd99 %>% 
-    group_by(flow,subregion) %>%
+    group_by(flow,subregion, year) %>%
     summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
                                                 names=FALSE, na.rm=TRUE)),
               medianprice = round(median(price, na.rm=TRUE)),
@@ -65,18 +177,27 @@ swd99subregion <- swd99 %>%
                                               names=FALSE, na.rm=TRUE))) %>%
     arrange(-medianprice)
 kable(swd99subregion)
+
+```
+
+
+#### Analyse upper and lower prices by subregions in 2011.
+```{r medianpricessubregion2011}
 # Transform subregion to an ordered vector by import prices
 f = "Import"
-swd99imp <- swd99subregion %>% filter(flow==f) %>% arrange(-medianprice)
-swd99subregion <- swd99subregion %>% 
-    mutate(subregion = ordered(subregion, levels = swd99imp$subregion)) 
+swd99imp <- swd99subregion %>%
+    as.data.frame %>% # Otherwise grouping variables are used before arrange() 
+    filter(flow==f &year==2011) %>% arrange(-medianprice)
+
 
 # Add these lower, upper and median prices on the plot
 swd99subregionmelt <- swd99subregion %>% 
-    melt(id=c("flow", "subregion")) %>%
+    as.data.frame %>% #Prevent message cannot modify grouping variable
+    filter(year==2011) %>%
+    mutate(subregion = ordered(subregion, levels = swd99imp$subregion)) %>%
+    melt(id=c("flow", "subregion", "year")) %>%
     mutate(variable = ordered(variable, levels=c("upperprice",
                                                  "medianprice","lowerprice" )))
-
 ggplot(data=swd99subregionmelt) +
     geom_point(aes(x = subregion, y = value, color =  variable))+
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
@@ -86,40 +207,286 @@ ggplot(data=swd99subregionmelt) +
 p <- ggplot(data=swd99, aes(x=subregion, y=price)) +
     geom_boxplot() + 
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_point(data=melt(swd99subregion, id=c("flow", "subregion")),
+    geom_point(data=swd99subregionmelt,
              aes(x = subregion, y = value, color =  variable))+
    facet_grid(flow~.) + xlab("")
+cat("\n\n")
+p + coord_cartesian(ylim=c(0,2500)) + ggtitle( "440799 zoom plot (price<2500$)") 
 
-p + coord_cartesian(ylim=c(0,2000)) + ggtitle( "440799 zoom plot (price<2000$)") 
+cat("\n\n")
 p + scale_y_log10() + ggtitle( "440799 Log scale") 
 ```
 
-### Percentage of trade value not taken into account
-Not all quantity are available. which percentage of the trade value cannot be taken into account for the unit price calculation? 
-
-* There are `r nrow(swd99)` flows in the 440799 dataset. 
-* `r nrow(filter(swd99, is.na(tradevalue)))` don't have a trade value
-* `r nrow(filter(swd99, is.na(quantity)))` don't have a quantity
-
+## Distributions
 ```{r}
-swd99bis <- 
-    swd99 %>% 
-    group_by(flow, is.na(quantity)) %>%
-    summarise(tradevalue = sum(tradevalue, na.rm=TRUE),
-              numberofflows = n()) 
+summary(select(swd99, tradevalue, weight, quantity, price))
 ```
 
-## Replace `r nrow(filter(swd99, is.na(quantity)))` flows using unit prices
-Differences 
-### by region
+### Distribution of trade value
+Slice the dataset in log and show the distribution in number of rows and in 
+value along the trade value split in log.
+```{r}
+round(log(max(swd99$tradevalue)))
+swd99logtv <- swd99 %>% 
+    mutate(logtradevalue = round(log(tradevalue))) %>%
+    group_by(logtradevalue, region, withinregion) %>%
+    summarise(tradevalue = sum(tradevalue), number_of_flows = n()) %>%
+    melt(id=c("logtradevalue", "region", "withinregion")) 
+p <- ggplot(swd99logtv, aes(x=logtradevalue, y=value)) + 
+    geom_bar(stat="identity") + ylab("Number of flows | Trade value in $")
+p + facet_grid(variable~., scales="free_y")
+p + facet_grid(variable~region, scales="free_y") 
+p + facet_grid(variable+withinregion~region, scales="free_y") +
+    ggtitle("Trade within the region (TRUE) 
+            or with a partner outside the region (FALSE)")
+```
+
+### Distribution of quantity 
+```{r}
+round(log(max(swd99$quantity)))
+swd99logq <- swd99 %>% 
+    mutate(logquantity = round(log(quantity))) %>%
+    group_by(logquantity, region) %>%
+    summarise(quantity = sum(quantity), number_of_flows = n()) %>%
+    melt(id=c("logquantity", "region")) 
+
+p <- ggplot(filter(swd99logq, !is.na(logquantity)&logquantity!=-Inf), 
+            aes(x=logquantity, y=value)) + 
+    geom_bar(stat="identity") + ylab("Number of flows | Quantity in m3")
+p + facet_grid(variable~., scales="free_y")
+p + facet_grid(variable~region, scales="free_y") 
+```
+
+### Distribution of weight 
+```{r}
+swd99logw <- swd99 %>% 
+    mutate(logweight = round(log(weight))) %>%
+    group_by(logweight, region) %>%
+    summarise(weight = sum(weight), number_of_flows = n()) %>%
+    melt(id=c("logweight", "region")) 
+
+p <- ggplot(filter(swd99logw, !is.na(logweight)&logweight!=-Inf), 
+            aes(x=logweight, y=value)) + 
+    geom_bar(stat="identity") + ylab("Number of flows | weight in kg")
+p + facet_grid(variable~., scales="free_y")
+p + facet_grid(variable~region, scales="free_y") 
+```
+
+
+
+### Distribution of unit prices between `r min(swd99$year)` and `r max(swd99$year)`
+```{r pricedistributionnrow}
+p <- ggplot(swd99, aes(x=price)) + 
+    geom_histogram(binwidth=100) + xlim(0,2500) +
+    ylab("Number of trade flows")
+p + facet_grid(flow~.) + ggtitle("All world flows for 440799")
+p + facet_grid(flow~withinregion+flag) + ggtitle("All world flows for 440799")
+# p + facet_grid(region~flow) + ggtitle("World flows for 440799 by regions")
+# p + facet_grid(year~flow) + ggtitle("World flows for 440799 by year")
+p + facet_grid(flow + year ~flag) + ggtitle("World flows for 440799 by flag")
+p + facet_grid(region + flow ~ year) +
+    ggtitle("Number of flows for 440799 by region and year
+            vertical red line represents median price") + 
+    geom_vline(data=swd99region, aes(xintercept = medianprice), color="red")
+```
+
+
+```{r pricedistributiontradevalue, fig.height=10}
+# Calculate total trade value by region, year and show total trade value
+p <- swd99 %>% mutate(pricegroup = round(price/100) * 100) %>%
+    group_by(region, flow, year, pricegroup) %>% 
+    summarise(tradevalue = sum(tradevalue)) %>%
+    filter(!is.na(pricegroup)&pricegroup!=Inf) %>%
+    ggplot(aes(x=pricegroup,y=tradevalue)) + geom_bar(stat="identity") +
+    ylab("Total trade value in $") +
+    xlim(0,2500) + xlab("Price in $") 
+cat("\n\n")
+p + facet_grid(flow~.) + ggtitle("All world flows for 440799") #+ aes(fill=region)
+cat("\n\n")
+p + ggtitle("Total trade value for 440799 by region and year
+   Vertical red line represents median unit prices (by number of flows for each region), 
+   Vertical green line represents aggregate unit prices for each region") + 
+    geom_vline(data=swd99region, aes(xintercept = medianprice), colour="red") +
+    geom_vline(data=swd99regionunitprice, 
+               aes(xintercept = price), colour="green") +
+    facet_grid(region + flow ~ year)
+
+# density plot
+# ggplot(swd99, aes(price, fill = region)) +
+#   geom_density(alpha = 0.2) + xlim(0, 2500) + facet_wrap(~region)
+
+####################################################################### #
+# Different way of showing total trade value, using ggplot weight aesthetic
+###################################################################### #
+p <- ggplot(swd99, aes(x=price, weight=tradevalue)) + 
+    geom_histogram(binwidth=100) + xlim(0,2500) +
+     ylab("Total trade value in $")
+cat("\n\n")
+p + facet_grid(flow~.) +
+    ggtitle("All world flows for 440799, using price as a weight aesthetic") 
+
+cat("\n\n")
+p + facet_grid(region + flow ~ year) +
+    ggtitle("Total trade value for 440799 by region and year
+            vertical red line represents median price") + 
+    geom_vline(data=swd99region, aes(xintercept = medianprice), color="red")
+```
+
+
+### Distribution of unit prices along the tradevalue
+Vertical lines, represent large quantities which are at the same prices.
+```{r}
+swd99$logprice <- round(log(swd99$price))
+# Remove infinite prices
+cat("\n\n")
+p <- ggplot(filter(swd99, price!=Inf),
+            aes(x = tradevalue, y = price)) +
+    geom_point(alpha = 1/5) +
+     coord_cartesian(ylim =c(0,2000)) +
+    ggtitle("Variation of prices along the tradevalue")
+p + scale_x_log10(limits=c(1000, NA)) + 
+    xlab("Trade value $ (log scale)")
+p + scale_x_log10(limits=c(1000, NA)) + 
+    xlab("Trade value $ (log scale)") + 
+    facet_wrap(~flow) + aes(color=as.factor(flag))
+
+summary(swd99[c("tradevalue","price")])
+
+# Zoom on those price levels between first and third quartile
+firstquartile <- round(quantile(swd99$price ,probs=0.25, na.rm=TRUE))
+thirdquartile <- round(quantile(swd99$price ,probs=0.75, na.rm=TRUE))
+
+p + coord_cartesian(ylim=c(firstquartile,thirdquartile)) +
+#     + xlim(c(0,1e6)) +
+    scale_x_log10(limits=c(100, NA)) + 
+    xlab("Trade value $ (log scale)") + 
+    ggtitle(paste("Variation of prices along the trade value
+            for price between the first and third quartile",
+            firstquartile, "$ and", thirdquartile, "$")) +
+    facet_grid(flow + region ~ year) #+ aes(color=year)
+# Add a line for median prices on this graph
+
+# Median price and total volume by region
+swd99 %>% group_by(flow, region) %>% 
+    summarise(tradevalue = sum(tradevalue, na.rm=TRUE),
+              price = median(price, na.rm=TRUE)) %>%
+    ggplot() + aes(x = tradevalue, y = price, label=region) +
+    geom_text() + facet_wrap(~flow) +
+    ggtitle("Median prices and total trade value by regions")
+
+# Median price and volume by subregion
+swd99 %>% group_by(flow, subregion) %>% 
+    summarise(tradevalue = median(tradevalue, na.rm=TRUE),
+              price = median(price, na.rm=TRUE)) %>%
+    ggplot() + aes(x = tradevalue, y = price, label=subregion) +
+    geom_text() + facet_wrap(~flow)
+```
+
+### Prices and flags of comtrade estimates
+```{r}
+swd99 %>% group_by(year, region, flow, flag) %>%
+    summarise(medianprice = round(median(price, na.rm=TRUE))) %>%
+    dcast(year + region + flow ~ flag, value.var="medianprice" )
+
+```
+
+### Prices of Re-Import and Re-export
+```{r}
+swd99re <- dtf %>% 
+    renamecolumns %>%
+    filter(flow %in% c("Re-Import", "Re-Export")) %>%
+    merge(select(reportercomtrade, reportercode, region, subregion)) %>%
+    mutate(conversion = weight / quantity,
+           price = tradevalue / quantity,
+           # To avoid "integer overflow - use sum(as.numeric(.))" error 
+           # on sum of all values
+           tradevalue = as.numeric(tradevalue))
+# Remove infinite prices
+p <- ggplot(filter(swd99re, price!=Inf),
+            aes(x = tradevalue, y = price)) +
+    geom_point(alpha = 1/10) +
+     coord_cartesian(ylim =c(0,2000)) +
+    ggtitle("Variation of prices along the tradevalue")
+p + scale_x_log10(limits=c(1000, NA)) + xlab("Trade value $ (log scale)")
+p + scale_x_log10(limits=c(1000, NA)) + xlab("Trade value $ (log scale)") + 
+    facet_wrap(~flow) + aes(color=year)
+```
+
+
+
+### TradeValue as a function of the quantity
+The slope of those graphs represents unit prices.
+```{r}
+p <- ggplot(mutate(swd99, splitquantity=round(log(quantity)))) +
+    aes(x=quantity, y=tradevalue) + geom_point(alpha = 1/10)
+cat("\n\n")
+p + scale_x_log10() + scale_y_log10() + 
+    ggtitle("Trade value and quantity (log scale)")
+cat("\n\n")
+p + xlim(c(0,2e3)) + ylim(c(0,1e6)) +
+    ggtitle("Trade values below 1e6$, 
+            lines represent the median unit price by year and region") + 
+    facet_grid(flow+region~year) +
+# "             blue line corresponds to a price of 400$/m3,
+#             red line to a price of 800$/m3"
+#     geom_abline(intercept = 20, slope= 400 , colour = "blue", size = 2) + 
+#     geom_abline(intercept = 20, slope= 800 , colour = "red", size = 2)  +
+#     geom_smooth(aes(group=splitquantity), method="lm") + 
+    geom_abline(data=(swd99region), aes(intercept=0, slope=medianprice))
+```
+
+### Linear Model of tradevalue ~ quantity
+```{r}
+# Very poor fit and irrelevant slope for the whole dataset
+mtvq <- lm(tradevalue ~ quantity, swd99)
+summary(mtvq)
+# Model with log
+# mtvqlog <- lm(log(tradevalue)~log(quantity), swd99, na.action=na.exclude)
+# For quantities above 500 the slope is a realistic price
+mtvq <- lm(tradevalue ~ quantity, filter(swd99, quantity>500& quantity<1000))
+summary(mtvq)
+```
+
+
+### TradeValue as a function of the weight
+
+```{r tradevaluefunctionofweight}
+p <- ggplot(swd99) + aes(x=weight, y=tradevalue) + geom_point(alpha = 1/10)
+#p + ggtitle("Trade value and weight")
+# p + xlim(c(0,1e6)) + ylim(c(0,1e6)) + ggtitle("Values below 1e6") + 
+#     facet_grid(flow ~ year) + stat_smooth(method="lm")
+p + scale_x_log10() + scale_y_log10() + 
+    ggtitle("Trade value and weight (log scale)")
+```
+
+### Quantity as a function of the weight (conversion factor)
+See also the other file on conversion factors.
+
+The slope of those graph represents conversion factors.
+```{r}
+p <- ggplot(swd99) + aes(x=quantity, y=weight) + geom_point(alpha = 1/10)
+# p + ggtitle("Trade value and weight")
+cat("\n\n")
+p + xlim(c(0,1e3)) + ylim(c(0,1e6)) + ggtitle("Values below 1e6") + 
+    facet_wrap(~flow)
+cat("\n\n")
+p + scale_x_log10() + scale_y_log10() + aes(color=region) +
+    ggtitle("Weight and quantity (log scale)") +
+    facet_wrap(~region)
+```
+
+
+## Replace quantity in `r nrow(filter(swd99, is.na(quantity)))` flows using unit prices
+
+### One unit prices for each region in each year
 Use regional median prices to calculate quantities.
 Increase in global trade import and export due to the estimate for all flows
 ```{r}
 # Use regional median prices
-swd99 <- merge(swd99, swd99region) %>%
-    mutate(quantity2 = tradevalue / medianprice)
-swd99 %>%
-    mutate(havequantity = !is.na(quantity)) %>%
+swd99regioncorrected <- merge(swd99, swd99region, all.x=TRUE) %>%
+    mutate(quantity2 = tradevalue / medianprice,
+           havequantity = !is.na(quantity)) 
+swd99regioncorrected %>%
     group_by(havequantity,year, flow) %>%
     summarise(rows = n(),
               volume = sum(quantity, na.rm=TRUE) ,
@@ -128,13 +495,92 @@ swd99 %>%
               percent = round(increase / volume*100)) %>%
     kable
 
+# Check if both tables contain the same total world trade flows
+stopifnot(sum(swd99$quantity,na.rm=TRUE) == 
+              sum(swd99regioncorrected$quantity, na.rm=TRUE))
 
+
+print("Percent change in world trade flows ")
+wtf <- sum(swd99$quantity,na.rm=TRUE)
+swd99regioncorrected %>% 
+    filter(!havequantity) %>% 
+    group_by(havequantity, year, flow) %>%
+    summarise(percentchangeinworldtrade = 
+                  round((sum(quantity2,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / 
+                            wtf*100,3))
 ```
 
-### by sub-region
+
+### One unit prices for each subregion in each year
 ```{r}
 # Use  sub-regional median prices
+swd99subregioncorrected <- merge(swd99, swd99subregion) %>%
+    mutate(quantity3 = tradevalue / medianprice,
+           havequantity = !is.na(quantity)) %>%
+    group_by(havequantity, year, flow) %>%
+    summarise(rows = n(),
+              volume = sum(quantity, na.rm=TRUE) ,
+              estimatedvolume = sum(quantity3, na.rm=TRUE),
+              increase = estimatedvolume - volume,
+              percent = round(increase / volume*100)) 
+swd99subregioncorrected %>% kable
 
+print("Total world trade increase")
+# Check if both tables contain the same total world trade flows
+stopifnot(sum(swd99$quantity,na.rm=TRUE) == sum(swd99subregioncorrected$volume))
+
+print("Percent change in world trade flows ")
+swd99subregioncorrected %>% filter(!havequantity) %>% 
+    group_by(year, flow) %>%
+    summarise(percentchangeinworldtrade = 
+                  round(sum(increase)/sum(swd99$quantity,na.rm=TRUE)*100,3))
+```
+
+
+## Replace quantities when unit prices are too high or too low
+### Unit prices are too high
+```{r}
+swd99regioncorrected %>% filter(price > upperprice ) %>%
+    group_by(year, flow) %>% 
+    summarise(percentchangeinworldtrade = 
+                  round((sum(quantity2,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / 
+                            wtf*100,3)) %>%
+    kable
+```
+
+Double the threshold for upperprice
+```{r}
+swd99regioncorrected %>% filter(price > 2*upperprice ) %>%
+    group_by(year, flow) %>% 
+    summarise(percentchangeinworldtrade = 
+                  round((sum(quantity2,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / 
+                            wtf*100,3)) %>%
+    kable
+```
+
+### Unit prices are too low
+```{r}
+swd99regioncorrected %>% filter(price < lowerprice ) %>%
+    group_by(year, flow) %>% 
+    summarise(percentchangeinworldtrade = 
+                  round((sum(quantity2,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / 
+                            wtf*100,3)) %>%
+    kable
+```
+
+Half the threshold for lower price
+```{r}
+swd99regioncorrected %>% filter(price < lowerprice/2 ) %>%
+    group_by(year, flow) %>% 
+    summarise(percentchangeinworldtrade = 
+                  round((sum(quantity2,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / 
+                            wtf*100,3)) %>%
+    kable
 ```
 
 

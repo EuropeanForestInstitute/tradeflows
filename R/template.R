@@ -38,7 +38,7 @@ createreport <- function(rawdata,
     }
 }
 
-# an alias for the createreport() function
+# An alias for the createreport() function
 #' @rdname createreport
 #' @param template name of the template file
 #' @param ... arguments passed to \code{\link{createreport}()}
@@ -50,6 +50,10 @@ createcompletenessreport <- function(..., template="completeness.Rmd"){
 
 
 if (FALSE){
+
+    fibre$productcode <- fibre$productdescription
+    createcompletenessreport(fibre , outputdir = directory)
+
     directory <- "docs/development/completeness/"
     # You need to reload the package for template updates to take effect
     ###################### #

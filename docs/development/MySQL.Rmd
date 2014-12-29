@@ -16,7 +16,7 @@ library(dplyr)
 library(RMySQL)
 ``` 
 
-## Connection using dplyr, SELECT only
+## SELECT using dplyr
 * Description and examples in the `?src_mysql` documentation
     To connect to a database :
     ```
@@ -36,21 +36,24 @@ library(RMySQL)
 
 ### Query the database using tbl, verbs and collect
 ```{r dplyrselect}
-DB <- src_mysql(user="tradeflows", host="localhost",
-                       password="tradeflows", dbname="tradeflows")
+DB <- src_mysql(user="R", host="localhost",
+                       password="localhost", dbname="tradeflows")
 # Create `tbl`
-rawdata <- tbl(DB, sql("SELECT * FROM raw_trade_data"))
+rawdata <- tbl(DB, sql("SELECT * FROM raw_flow"))
 
 # number of rows
-rawdata %>% summarise(nrow = n()) %>% collect
+rawdata %>% summarise(nrow = n()) %>%
+    collect  # forces computation and brings data back into a data.frame 
 
 # Get data for one reporter
-swd <- rawdata %>% 
-    filter(reporter=="Germany") %>%
-    collect # forces computation and brings data back into a data.frame 
+# number of flows by product for Germany in 2011
+germany <- rawdata %>% 
+    filter(reporter=="Germany" & year==2011) 
+germany %>% group_by(productcode, flow) %>%
+    summarise(n()) %>% collect %>% kable
 
 # Play with verbs
-swdImport <- rawdata %>% 
+germimport <- rawdata %>% 
     filter(reporter=="Germany" & flow=="Import" ) %>%
     select(year, flow, reporter, partner, tradevalue) %>%
     collect
@@ -69,7 +72,7 @@ Look at `?db_insert_into` for a list of database actions.
     If you find yourself overriding many of these functions
     it may suggest that you should just override copy_to instead.
 
-## Connection using RMySQL, SELECT, INSERT and more
+## SELECT, INSERT and more using RMySQL, 
 Source of the package : [RMySQL](https://github.com/jeffreyhorner/RMySQL)
 
 Following developments inspired by :
@@ -77,15 +80,16 @@ Following developments inspired by :
 * [a finnish blog](http://gettinggeneticsdone.blogspot.fi/2011/12/query-mysql-database-from-r-using.html).
 * [a question on stackoverflow](http://stackoverflow.com/questions/5431961/connect-to-mysql-database-with-rmysql)
 
+
 ### SELECT or dbReadTable()
 ```{r rmysql_select}
 tdb2 <- dbConnect(MySQL(), user="tradeflows", host="localhost",
                        password="tradeflows", dbname="tradeflows")
 dbListTables(tdb2)
 querytradedb <-  function(...) dbGetQuery(tdb2, ...)
-swdhead <- querytradedb("SELECT * FROM raw_trade_data LIMIT 2;")
-
-swd <- dbReadTable(tdb2, "raw_trade_data")
+rawdatahead <- querytradedb("SELECT * FROM raw_flow LIMIT 2;")
+kable(rawdatahead)
+rawdata <- dbReadTable(tdb2, "raw_flow")
 ```
 
 
@@ -104,7 +108,7 @@ Using queries is not convenient with large dataframes
 
 ```
 
-```{r dbwritetable}
+```{r dbwritetable, eval=FALSE}
 nrowinend <- function(){
     dbGetQuery(tdb2, "SELECT COUNT(*) FROM enddata;")
 }
@@ -122,3 +126,12 @@ nrowinend() # content is added again
 dbGetQuery(tdb2, "SELECT COUNT(*) FROM raw_trade_data;")
 # content is added again
 ```
+
+
+## Trade Flows Database structure
+Change from the `raw_flow` table to the `validated_flow` table.
+```
+ALTER TABLE `tradeflows`.`validated_flow` ADD COLUMN `quantitypartner` BIGINT NULL  AFTER `quantityreporter` , CHANGE COLUMN `quantity2` `quantityreporter` BIGINT(20) NULL DEFAULT NULL    ;
+```
+
+

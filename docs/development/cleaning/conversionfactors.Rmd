@@ -1,9 +1,11 @@
 ---
-title: "Unit Prices"
+title: "Ratio Weight / Volume and use as a conversion factors"
 author: "Paul Rougieux"
 date: "04/12/2014"
 output: html_document
 ---
+
+
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
@@ -14,13 +16,222 @@ library(ggplot2)
 library(reshape2)
 ``` 
 
-* Calculate conversion factors for sawnwood products by region.
+
+To calculate conversion factors for sawnwood products,
+we divided the weight by the trade volume. 
+Then we analysed median conversion factors at the regional and subregional level.
+Mean values could not be used since there are a number of infinite 
+ratios (due to flows for which the reported volume was 0).
+
+```{r loadandprepare}
+load("data-raw/comtrade/440799.RData")
+swd99 <- dtf %>% 
+    renamecolumns %>% changecolumntype %>% 
+    filter(flow %in% c("Import", "Export")) %>%
+    # Remove EU28 reporter
+    filter(!reporter %in%c("EU-28")) %>%
+    # Remove World partner
+    filter(!partner %in%c("EU-28", "World")) %>%
+    merge(select(reportercomtrade, reportercode, region, subregion)) %>%
+    mutate(conversion = weight / quantity,
+           price = tradevalue / quantity)
+```
 
 
-```{r boxplot}
+### World median conversion factor (kg/m3)
+World median conversion factor (kg/m3) by year.
+```{r worldmedianbyyear}
+swd99 %>% group_by(year, flow) %>%
+    summarise(medianconv = round(median(conversion, na.rm=TRUE))) %>%
+    dcast(year~flow, value.var="medianconv") %>% kable
+```
+
+
+World median conversion factor (kg/m3) by year, with flag.
+```{r worldmedianbyyearwithflag}
+swd99 %>% group_by(year, flow, flag) %>%
+    summarise(medianconv = round(median(conversion, na.rm=TRUE))) %>%
+    dcast(year~flag+flow, value.var="medianconv") %>% kable
+```
+
+
+Netherlands and Belgium
+```{r}
+swd99 %>% filter(reporter %in% c("Netherlands", "Belgium")) %>%
+    group_by(reporter, year, flow, flag) %>%
+    summarise(medianconv = round(median(conversion, na.rm=TRUE))) %>%
+    dcast(reporter+year~flag+flow, value.var="medianconv") %>% kable
+```
+
+
+### Comtrade estimates and missing quantity data
+quantity estimation only 
+4 = net weight estimation only 
+6 = both quantity and net weight are estimated.
+```{r}
+flagname <- c("No estimate",
+              "Quantity estimate",
+              "Weight estimate",
+              "Both quandity and weight estimate")
+flag <- data.frame(flag=c(0,2,4,6),
+                   flagname = ordered(flagname, levels=flagname))
+swd99 %>% merge(flag) %>%
+    ggplot(aes(x=flagname,y=quantity)) + facet_grid(flow~.) +
+    geom_bar(stat="identity") + ggtitle("Estimates in terms of Quantity")
+
+swd99 %>% merge(flag) %>%
+    ggplot(aes(x=flagname,y=weight)) + facet_grid(flow~.) +
+    geom_bar(stat="identity")  + ggtitle("Estimates in terms of Weight")
+
+swd99 %>% merge(flag) %>%
+    ggplot(aes(x=flagname,y=tradevalue)) + facet_grid(flow~.) +
+    geom_bar(stat="identity")  + ggtitle("Estimates in terms of Trade value")
+
+
+swd99 %>% 
+    ggplot(aes(x=flag, y=tradevalue, fill=region)) +
+    geom_bar(stat="identity") + ggtitle("Estimates in terms of trade value") + 
+    facet_grid(region+flow~year)
+```
+
+
+
+### Distribution of conversion factors between `r min(swd99$year)` and `r max(swd99$year)`
+```{r}
+p <- ggplot(swd99, aes(x=conversion, fill=region)) + 
+    geom_histogram(binwidth=100) + xlim(0,2500) +
+    ylab("Number of trade flows") + 
+    xlab("Weight / Volume ratio (in kg/m3)")
+# p + facet_grid(~flow) + ggtitle("All world flows for 440799")
+p + facet_grid(region~flow) + ggtitle("World flows for 440799 by regions")
+# p + facet_grid(year~flow) + ggtitle("World flows for 440799 by year")
+
+p <- ggplot(swd99, aes(x=conversion)) + 
+    geom_histogram(binwidth=50) +  xlim(0,1500) +
+    geom_vline(aes(xintercept=700),color="green") +
+    ggtitle("Distribution of conversion factor, number of flows by region. 
+            Green line represents conversion factor for
+            non coniferous sawnwood 700kg/m3")
+p + facet_grid(flow~.) 
+p + facet_grid(region+flow~year) 
 
 ```
 
 
-Add a ditribution of trade volumes below these prices for a sample product.
-As visible on this graph.
+### Conversion factors by year and by trade weight
+Conversion factors above 2000 are clear outliers, 
+x axis was limited to 2000. 
+`r round(nrow(filter(swd99,conversion>2000))/nrow(swd99)*100)`% of the flows
+(percentage of the number of flows) had a conversion factor above this limit.
+And amoung them,
+`r round(nrow(filter(swd99,conversion==Inf))/nrow(swd99)*100)`%
+had a conversion factor equal to the infinite value.
+```{r conversionweight}
+nrow(filter(swd99,conversion==Inf))
+# Variable used for facetting
+swd99$logweight <- round(log(swd99$weight))
+p <- ggplot(filter(swd99,conversion!=Inf), 
+       aes(x = conversion, y = weight, color=as.factor(flag))) +
+    geom_point(alpha = 1/5) +
+    coord_cartesian(xlim =c(0,2000)) +
+    ggtitle("Variation of the conversion factor along the weight")
+p  
+p + scale_y_log10() + ylab("Weight (log scale)")
+p + scale_y_log10() + facet_wrap(~year) + ylab("Weight (log scale)")
+p + coord_cartesian(xlim =c(0,2000), ylim = c(0,10000)) 
+p + facet_wrap(~logweight, scales="free_y") + ylab("Weight split by log(weight)")
+p + scale_y_log10() + facet_grid(flag~year) 
+
+# Investigate those straight lines
+swd99 %>% filter(logweight == 7 & conversion>1000 & conversion<2000) %>%
+    ggplot(aes(x = conversion, y = weight, 
+               label=reporter, color=as.factor(flag))) + 
+    geom_text() + facet_grid(year ~ flow )
+# When both quantity and weight were corrected
+swd99 %>% filter(flag == 6) %>%
+    ggplot(aes(x=conversion, y = weight)) +
+    geom_point(alpha=1/5) + coord_cartesian(xlim=c(0,2000)) +
+    scale_y_log10() + facet_grid(region~year)
+# Europe 2009
+swd99 %>% filter(flag == 6 & region=="Europe" & year==2009) %>%
+    ggplot(aes(x=conversion, y = weight, label=reporter)) +
+    geom_text() + scale_y_log10()
+# Netherlands and Belgium
+swd99 %>% filter(flag == 6 & reporter %in% c("Netherlands", "Belgium")) %>%
+    ggplot(aes(x=conversion, y = weight, label=partner, color=reporter)) +
+    geom_text() + scale_y_log10() + facet_wrap(~year)
+
+
+# aggregate by country and flow
+# swd99agg <- swd99 %>% group_by(reporter, flow) %>%
+
+# aggregate import export by country before calculating the conversion factor
+# To see if the cloud looks different
+swd99agg <- swd99 %>% group_by(reporter, flow, year) %>%
+    summarise(weight = sum(weight),
+              quantity = sum(quantity)) %>%
+    mutate(conversion = weight / quantity)
+ggplot(swd99agg, aes(x = conversion, y = weight)) +
+  geom_point()
+```
+
+```{r conversionquantity}
+p <- ggplot(filter(swd99, conversion!=Inf), 
+       aes(x = conversion, y = quantity)) +
+    geom_point(alpha = 1/10) +
+    coord_cartesian(xlim =c(0,2000)) +
+    ggtitle("Variation of the conversion factor along the quantity")
+p + scale_y_log10() + ylab("Quantity (log scale)")
+# p + facet_wrap(~logweight, scales="free_y")
+
+# There seems to be flows which have the exact same quantity
+# No matter the conversion factor
+# This happens only for small quantities
+# This is normal, because quantities are rounded at the m3
+p <- ggplot(filter(swd99, conversion!=Inf & quantity<10), 
+       aes(x = conversion, y = quantity)) +
+    geom_point(alpha = 1/10) +
+    coord_cartesian(xlim =c(0,2000)) +
+    ggtitle("Variation of the conversion factor for quantities < 10m3")
+p + scale_y_log10() + ylab("Quantity (log scale)")
+```
+
+```{r conversiontradevalue}
+p <- ggplot(filter(swd99,conversion!=Inf), 
+       aes(x = conversion, y = tradevalue)) +
+    geom_point(alpha = 1/10) +
+    coord_cartesian(xlim =c(0,2000)) +
+    ggtitle("Variation of the conversion factor along the trade value")
+p + scale_y_log10() + ylab("Tradevalue (log scale)")
+```
+
+### Conversion factors by region
+```{r conversionbyregion}
+swd99region<- swd99 %>% group_by(region, flow, year) %>%
+    summarise(medianconv = round(median(conversion, na.rm=TRUE)),
+              averageconv = round(mean(conversion, na.rm=TRUE)),
+              min = min(conversion, na.rm=TRUE),
+              max = max(conversion, na.rm=TRUE))
+swd99region %>% select(region, year, medianconv) %>%
+    dcast(region+flow~year, value.var="medianconv") %>% 
+    kable(caption="Conversion factor (kg/m3) number of kg in one m3 of wood")
+swd99region %>% filter(year==max(year)) %>% kable
+
+
+ggplot(data=swd99region,aes(x=year, y=medianconv, color=region)) +
+    geom_point() + facet_wrap(~region) + ggtitle("Conversion factor kg/m3")
+```
+
+### Conversion factors by subregion
+```{r conversionbysubregion}
+swd99subregion<- swd99 %>% group_by(subregion, year) %>%
+    summarise(medianconv = round(median(conversion, na.rm=TRUE)))
+swd99subregion %>% dcast(subregion~year) %>% 
+    kable(caption="Conversion factor in kg/m3")
+p <- ggplot(data=swd99subregion, aes(x=year, y=medianconv, color=subregion)) +
+    geom_point() + facet_wrap(~subregion) + ggtitle("Conversion factor kg/m3")
+#p
+# Same plot, rescale to drop bizarre point for middle africa
+p + ylim(c(0,1300))
+```
+

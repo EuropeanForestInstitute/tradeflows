@@ -20,7 +20,7 @@ qtDesc,NA,NA,unit,NA
 TradeQuantity,NA,NA,quantity,Quantity
 NetWeight,NA,NA,weight,Weight
 TradeValue,VALUE_IN_EUROS,NA,tradevalue,Trade Value
-estCode,NA,NA,NA,NA
+estCode,NA,NA,flag,Flag
 NA,NA,NA,pricecur,NA
 NA,NA,NA,priceconst,NA
 NA,NA,NA,NA,Product definition

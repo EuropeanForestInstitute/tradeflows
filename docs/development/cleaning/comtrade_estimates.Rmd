@@ -1,0 +1,104 @@
+---
+title: "Ratio Weight / Volume and use as a conversion factors"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: html_document
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+Explore comtrade estimates
+
+```{r loadandprepare}
+load("data-raw/comtrade/440799.RData")
+swd99 <- dtf %>% 
+    renamecolumns %>% changecolumntype %>% 
+    filter(flow %in% c("Import", "Export")) %>%
+    # Remove EU28 reporter
+    filter(!reporter %in%c("EU-28")) %>%
+    # Remove World partner
+    filter(!partner %in%c("EU-28", "World")) %>%
+    merge(select(reportercomtrade, reportercode, region, subregion))
+```
+
+
+
+### Comtrade estimates and missing quantity data
+quantity estimation only 
+4 = net weight estimation only 
+6 = both quantity and net weight are estimated.
+```{r}
+flagname <- c("No estimate",
+              "Quantity estimate",
+              "Weight estimate",
+              "Both quandity and weight estimate")
+flag <- data.frame(flag=c(0,2,4,6),
+                   flagname = ordered(flagname, levels=flagname))
+
+swd99 %>% merge(flag) %>% filter(unit!="Volume in litres") %>%
+    ggplot(aes(x=flagname,y=quantity)) + facet_grid(flow~.) +
+    geom_bar(stat="identity") + ggtitle("Estimates in terms of Quantity")
+
+swd99 %>% merge(flag) %>%
+    ggplot(aes(x=flagname,y=weight)) + facet_grid(flow~.) +
+    geom_bar(stat="identity")  + ggtitle("Estimates in terms of Weight")
+
+swd99 %>% merge(flag) %>%
+    ggplot(aes(x=flagname,y=tradevalue)) + facet_grid(flow~.) +
+    geom_bar(stat="identity")  + ggtitle("Estimates in terms of Trade value")
+
+
+swd99 %>% 
+    ggplot(aes(x=flag, y=tradevalue, fill=region)) +
+    geom_bar(stat="identity") + ggtitle("Estimates in terms of trade value") + 
+    facet_grid(region+flow~year)
+```
+
+
+### Volume in litres reported in 2004
+```{r}
+litres <- swd99 %>% filter( unit=="Volume in litres") 
+unique(litres$year)
+litres %>% merge(flag) %>%
+    ggplot(aes(x=flagname,y=quantity)) + facet_grid(flow~.) +
+    geom_bar(stat="identity") + ggtitle("Estimates in terms of Quantity")
+```
+
+
+### Quantity estimate but no quantity
+```{r}
+noqflag2 <- swd99 %>% filter(is.na(quantity) & flag==2)
+nrow(noqflag2)
+unique(noqflag2$reporter)
+
+noqflag6 <- swd99 %>% filter(is.na(quantity) & flag==6)
+nrow(noqflag6)
+unique(noqflag6$reporter)
+```
+ 
+ 
+### Weight estimate but no weight
+```{r}
+nowflag4 <- swd99 %>% filter(is.na(weight) & flag==4)
+nrow(nowflag4)
+unique(nowflag4$reporter)
+
+nowflag6 <- swd99 %>% filter(is.na(weight) & flag==4)
+nrow(nowflag6)
+unique(nowflag6$reporter)
+```
+
+
+
+
+
+

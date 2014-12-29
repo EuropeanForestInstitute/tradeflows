@@ -1,9 +1,9 @@
 ---
 title: "Network visualisation of forest products trade flows"
 output:
-  pdf_document:
-    toc: yes
   html_document:
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -11,16 +11,18 @@ output:
 
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
-opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 opts_chunk$set(echo=TRUE)
-library(tradeflows)
+library(tradeflows)   # Which package is this?
 library(dplyr)
 library(igraph)
+library(caTools)
+library(maps)  
+library(mapdata) 
 ``` 
 
 ```{r load}
 # This chunk can be deleted once this file is converted to a template
-load("440799.RData")
+load("data-raw/comtrade/440799.RData")
 swd99 <- renamecolumns(dtf, "comtrade", "efi")
 ```
 ## Load data
@@ -31,7 +33,6 @@ They are intended for internal use within the TradeFLowsDB project.
 
 ### Warning for the igraph package
 * Column name "weight" in the context of the igraph package
-* It has to have a name column
 * Coordinates has to be with x and y
 * Is has to have a "name" column which are these ISO3 codes in the attributes object.
 
@@ -54,10 +55,10 @@ swd99 %>% filter(is.na(partneriso)) %>%
 
 swd99 <- renamecolumns(dtf, "comtrade", "efi") %>%
     filter(flow == "Import" & year ==2011) %>%
-    # Remove World and EU28 
+    # Remove World and EU28     !!!! Year should not be 2011 fixed, but last one -2!!!!!
     filter(!reportercode %in% c(0,97) &
                !partnercode %in% c(0,97)) %>%
-    # Remove those trade flows from a country with itself
+    # Remove those trade flows from a country with itself   !!!!! THIS DID NOT WORK !!!!!!!!! 
     filter(reportercode != partnercode) %>%
     # Remove reporteriso and partneriso which are not available
     filter(!is.na(reporteriso) & !is.na(partneriso))
@@ -84,17 +85,16 @@ attributes_COO <- data.frame(name = unique(c(data_frame$EXPORTER, data_frame$IMP
 # Add all combination of EXPORTER and IMPORTER codes 
 # to the data frame to try to avoid the error message "vertex names in edge list..."
 # When running the graph.data.frame function
-# > data_graph <- graph.data.frame(d = data_frame,   vertices = attributes_COO)
 # Error in graph.data.frame(d = data_frame, vertices = attributes_COO) : 
 #   Some vertex names in edge list are not listed in vertex data frame
-dtf <- data.frame()
-for (v in attributes_COO$name){
-    dtf <- rbind(dtf,
-                 data.frame(EXPORTER=v, IMPORTER=attributes_COO$name))
-}
-data_frame <- merge(data_frame, dtf, all=TRUE) 
-data_frame$weight[is.na(data_frame$weight)] <- 0
-###################################
+# dtf <- data.frame()
+# for (v in attributes_COO$name){
+#     dtf <- rbind(dtf,
+#                  data.frame(EXPORTER=v, IMPORTER=attributes_COO$name))
+# }
+# data_frame <- merge(data_frame, dtf, all=TRUE) 
+# data_frame$weight[is.na(data_frame$weight)] <- 0
+# ###################################
 
 attributes_COO$id <- row.names(attributes_COO)
 # Sum of export for each country
@@ -103,47 +103,347 @@ exports <- data_frame %>% group_by(EXPORTER) %>%
 # Sum of import for each country
 imports <- data_frame %>% group_by(IMPORTER) %>%
     summarise(y = sum(weight)) %>% rename(name = IMPORTER)
-# Merve sum of export and sum of import into the attributes table
+# Merve sum of export and sum of import into the attributes table   !!! The command below decreases the number of rows in attrib.!
 attributes_COO <- attributes_COO %>%
-    merge(exports) %>% 
-    merge(imports) %>%
-    mutate(Tot.tr = x + y, 
-           size = Tot.tr / max(Tot.tr)*100, # Total trade normalised from 0 to 100
+    merge(exports, all.x=TRUE) %>% 
+    merge(imports, all.x=TRUE)
+attributes_COO$x[is.na(attributes_COO$x)] <- 0
+attributes_COO$y[is.na(attributes_COO$y)] <- 0
+attributes_COO <- attributes_COO %>%
+  mutate(Tot.tr = x + y, 
+           size = Tot.tr / max(Tot.tr)*100, 
            percent = Tot.tr / sum(Tot.tr)*100) 
+# Total trade normalised from 0 to 100
 
-# Rename this column percent to "%" very bad practice
-names(attributes_COO)[names(attributes_COO)=="percent"] <- "%"
+# This creates the data graph file with linked attributes file!
+data_graph <- graph.data.frame(d = data_frame, vertices = attributes_COO)
+
+
+# Rename this column percent to "%" very bad practice  # perhaps we do not need to do this
+# names(attributes_COO)[names(attributes_COO)=="percent"] <- "%"
 # show begining of table
 kable(head(attributes_COO))
 
 ################################ #
 # Generate network visualisation #
 ################################ #
-options(scipen = 3)
+# this is a penalty for using scientific notations
+options(scipen = 3)    
+# This creates an graph object 
+# data_graph <- graph.data.frame(data_frame) 
 
-data_graph <- graph.data.frame(data_frame) 
-data_graph1 <- delete.edges(data_graph,   E(data_graph)[ weight < 479]    )
-
+# attributes_COO <- cbind(1:length(attributes_COO [,1]), attributes_COO)
+# This deletes ties (trade flows) below the mean value of trade flow.  It is better to tye to do this just under plot! 
+# data_graph1 <- delete.edges(data_graph,   E(data_graph)[ weight < 489]    ) 
 # attributes_COO <- read.csv("docs/development/networkvisualisation/Attributes COO.csv", header=TRUE)
 # attributes_COO <-  attributes_COO %>% filter(!name %in% data_frame$EXPORTER)
 # attributes_COO %>% filter(!name %in% data_frame$IMPORTER)
 
-# attributes_COO = cbind(1:length(attributes_COO [,1]), attributes_COO)
-data_graph <- graph.data.frame(d = data_frame, vertices = attributes_COO)
 
+# data_graph <- graph.data.frame(d = data_frame, vertices = attributes_COO)
+# pdf("Graph_1.pdf")
 # Specify the layout
-Layout_auto <- layout.auto(data_graph1, dim=2)
-V(data_graph1)$size=degree(data_graph)*200000
-E(data_graph1)[ weight > 3147 ]$color <- " grey "
-E(data_graph1)[ weight > 552782 ]$color <- "red"
+Layout_auto <- layout.auto(data_graph, dim=2)
+# Specify the color for trade flows above the mean 
 
-plot(data_graph1,
-     layout= Layout_auto, rescale=FALSE, 
-     edge.arrow.size=0.7, edge.width=E(data_graph1)$weight/350000,
-      xlim=range(attributes_COO[,4]), ylim=range(attributes_COO[,5]), axes=TRUE, 
-#       xlim=round(range(attributes_COO[,4])/1000), ylim=range(attributes_COO[,5]), axes=TRUE, 
-     xlab="Export (1000 USD)", ylab="Import (1000 USD)") 
+# This automatically defines red color for top 10 trade flows, other ones are grey
+
+E(data_graph)[ weight > sort(data_frame[,3], TRUE)[10] ]$color <- "red"
+E(data_graph)[ weight < sort(data_frame[,3], TRUE)[10] ]$color <- " grey "
+
+
+# This plots the graph, where x is export, y is import axis
+plot(data_graph,layout= Layout_auto, vertex.size=V(data_graph)$size/3, edge.arrow.size=0.7, 
+     edge.width=E(data_graph)$weight/150000, rescale=FALSE, xlim=range(attributes_COO[,3]), 
+     ylim=range(attributes_COO[,4]), axes=TRUE, xlab="Export (1000 USD)", ylab="Import (1000 USD)" )   
+
+# dev.off()    
+
+
+
+
+
+
+
+     
 ```
+
+```{r errorvertexnames0}
+# CONCENTRIC CIRCLES VISUALIZATION - WE NEED THE CIRCLE CALCULATION FROM EXCEL!!!
+
+
+```
+
+
+```{r errorvertexnames}
+# WORLD MAP VISUALIZATION
+# This is done through a prepared blank world map (wold-map.gif), and a file that contains coordinates for each
+# coutry (World Map COO.csv). 
+
+# Making of new attributes_COO which do not have coordinates
+attributes_COO1 <- attributes_COO
+attributes_COO1$x <- NULL
+attributes_COO1$y <- NULL
+
+# Read attributes map all.csv
+attributes_map_all <- read.csv("data-raw/World Map COO.csv", header=TRUE)
+
+# Merge attributes_COO1 and attributes_map_all to a new attribute object which has all needed country # ISO 3 codes and coordinates from the map of the world 
+# Coordinates of countries correspond to pixel coordinates of the world map
+# Y coordinates are calculated by 2526-y. This is done within the file itself, no need to do anything # here
+attributes_WM <- merge(attributes_COO1, attributes_map_all, by="name")
+# keep only unique entries
+attributes_WM <- attributes_WM[!duplicated(attributes_WM[,1]),]
+# change column name 'name' to 'label'
+colnames(attributes_WM)[1] <- "label"
+
+
+# Make a graph object                        
+data_graph_WM <- graph.data.frame(d = data_frame, vertices = attributes_WM)
+
+# E(data_graph_WM)[ weight > sort(data_graph_WM[,3], TRUE)[10] ]$color <- "red"
+# E(data_graph_WM)[ weight < sort(data_graph_WM[,3], TRUE)[10] ]$color <- "grey"
+# W_10 <- sort(data_frame[,3], TRUE)[10] 
+# data_graph_WM <- delete.edges(data_graph_WM, E(data_graph_WM) [ weight < "W_10" ])
+
+# This leaves only top 10 trade flows
+data_graph_WM <- delete.edges(data_graph_WM, E(data_graph_WM) [ weight < sort(data_frame[,3], TRUE)[10] ] )
+
+E(data_graph_WM)[ weight > sort(data_frame[,3], TRUE)[10] ]$color <- "red"
+
+Layout_auto_WM <- layout.auto(data_graph_WM, dim=2)
+
+
+# data_graph_WM <- delete.vertices(data_graph_WM,which(degree(data_graph_WM)<1))
+# This adds a column in attributes that represents degree 
+attributes_WM$degree      <- degree(data_graph_WM, mode = c("all", "out", "in", "total"))
+# This sets degree of all connected vertexes to 1
+attributes_WM$degree[attributes_WM$degree >=1] <- 1 
+# This sets vertex label to 0 for all those with degree 0
+attributes_WM$label[which(attributes_WM$degree == 0)] <- 0
+# Change 0 vertex names to NA 
+attributes_WM[,1][which(attributes_WM[,1]<1)] <- NA
+
+
+
+
+
+
+
+
+
+# par(pin=c(20, 10.104))
+
+
+      # plot similar to E/I, but with a fixed aspect ratio, i.e. asp=y/x, and labels are drawn from attributes
+plot(data_graph_WM,layout= Layout_auto_WM, vertex.size=V(data_graph_WM)$size/8, edge.arrow.size=0.7, 
+     edge.width=3, asp=0.5052, vertex.label=attributes_WM[,1] )
+
+
+
+
+# xlim=range(1, 5000), ylim=range(1, 2526)
+
+# MARGINS - A vector of the form c(bottom, left, top, right)  in plot margin=c(-0.15,0,-0.15,-0.15)
+
+##############
+# Map instruction
+map('worldHires', asp=0.5052)
+# To be able to stack chart on map
+par(new=TRUE)
+
+# Plotting instruction
+plot(data_graph_WM,layout= Layout_auto_WM, 
+     vertex.size=V(data_graph_WM)$size/8, edge.arrow.size=0.7, 
+     edge.width=3, vertex.label=attributes_WM[,1], 
+      asp=0.4)
+#       asp=0.5052) 
+
+
+# Without aspect ratio
+# Map instruction
+map('worldHires')
+# To be able to stack chart on map
+par(new=TRUE)
+
+# Plotting instruction
+plot(data_graph_WM, layout= Layout_auto_WM, 
+     vertex.size=V(data_graph_WM)$size/8, edge.arrow.size=0.7, 
+     edge.width=3, vertex.label=attributes_WM[,1])
+
+# Try to plot with ggplot, 
+# here are the name of countries using your coordinate system
+# Do not use this example
+ggplot(attributes_map_all, aes(x,y, label=name)) + 
+    geom_point(size=20,colour="lightgrey") + geom_text() +
+    theme_bw()
+
+# create a layer of borders
+mapWorld <- borders("world", colour="gray50", fill="gray50") 
+mp <- ggplot() + mapWorld
+# Use the list of centre point code in longitude latitude
+# To add centre of countries with name
+
+
+###########UNTIL HERE###################
+```
+
+
+
+```{r tryingggplot}
+library(ggmap)
+library(maptools)
+library(maps)
+ 
+ 
+visited <- c("SFO", "Chennai", "London", "Melbourne", "Johannesbury, SA")
+ll.visited <- geocode(visited)
+visit.x <- ll.visited$lon
+visit.y <- ll.visited$lat 
+#Using GGPLOT, plot the Base World Map
+mp <- NULL
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+mp <- ggplot() + mapWorld
+ 
+#Now Layer the cities on top
+mp <- mp + geom_point(aes(x=visit.x, y=visit.y) ,color="blue", size=3)
+mp 
+
+
+``` 
+
+
+```{r eval=FALSE}
+par(fig=c(0.1, 1, 0, 0.9)
+opar <- par(fin=c(4,2), new=TRUE )
+par(mar = rep(0, 4))
+map('worldHires', asp=0.5052, mar=c(2,2,2,2) )
+plot(data_graph_WM,layout= Layout_auto_WM, vertex.size=V(data_graph_WM)$size/8, edge.arrow.size=0.7, 
+     edge.width=3, vertex.label=attributes_WM[,1], asp=0.5052, margin=c(-0.2,-0.2,-0.2,-0.2))
+
+par(opar)
+# The scale of the trade plot and the map is not adequate, the scale of x,y in plot of trade is too small
+# we need to increase 
+
+par(plt=c(0.75, 0.95, 0.75, 0.95), new=TRUE)
+
+par(new=TRUE)
+
+# This links the map and the trade graph into a same plot. Fig also sets the 'area' where to plot the trade network. 
+# Four elements within Fig are range of x and y plot area. 
+ par(fig=c(0.05, 1, 0, 0.9), oma=c(0, 0, 0, 0), mar=c(0, 0, 0, 0), new=TRUE)
+
+ par(fig=c(0.05, 1, 0, 0.9), oma=c(0, 0, 0, 0),  new=TRUE)
+
+map("worldHires", border=0, ylim=c(-80, 80), fill=TRUE, 
+      col="white",mar=rep(0,4))
+
+
+
+
+#######################
+
+
+WM <-  read.gif("World_map.gif", flip=FALSE)
+n <- dim(WM$image)
+image(t(WM$image)[n[2]:1,n[1]:1],col=WM$col,axes=F)
+WM$col[WM$col=="#000000FF"] <- "#FFFFFFFF"
+op <- par(new=T)
+plot(data_graph_WM,layout= Layout_auto_WM, vertex.size=V(data_graph_WM)$size/6, edge.arrow.size=0.7, 
+     edge.width=3, asp=0.5052, vertex.label=attributes_WM[,1], new=T )
+par(op)
+
+
+
+
+
+
+
+
+###  This is by usage of caTools ### Does not work.... black is white and vice versa!!
+WM <-  read.gif("World_map.gif")
+n <- dim(WM$image)
+image(t(WM$image)[n[2]:1,n[1]:1],axes=F)
+### Changes black to white.... but still lines are double, this is a dead end
+WM$col[WM$col=="#000000FF"] <- "#FFFFFFFF"
+n <- dim(WM$image)
+op <- par(new=T)
+plot(data_graph_WM,layout= Layout_auto_WM, vertex.size=V(data_graph_WM)$size/6, edge.arrow.size=0.7, 
+     edge.width=3, asp=0.5052, vertex.label=attributes_WM[,1] )
+par(op)
+
+image(t(Gif$image)[n[2]:1,n[1]:1],col=Gif$col,axes=F)
+op <- par(new=T)
+plot(1:100,new=T)
+par(op)
+
+###############################
+
+
+Gif <- read.gif("World_map.gif")
+
+n <- dim(Gif$image)
+image(t(Gif$image)[n[2]:1,n[1]:1],col=Gif$col,axes=F)
+op <- par(new=T)
+plot(1:100,new=T)
+par(op)
+
+
+
+
+
+
+
+
+df$Items[which(df$Store.Type == "A" | df$Store.Type == "C" )] <- 0
+
+attributes_WM$name <- with(attributes_WM, if(degree == 0)name <-NA)
+
+
+
+which(V(data_graph_WM)$name [degree>0] )
+V(data_graph_WM)$name = degree(data_graph_WM)
+  
+  degree < W_10
+V(net)$name   vertex.label=V(net)$name 
+in plot               vertex.label=V(data_graph_WM)$label=="USA"
+V(data_graph_WM)[degree>0]
+
+V(data_graph_WM)$label.cex <- attributes_WM$degree-5
+
+V(data_graph_WM)$label.cex = attributes_WM$degree
+
+
+V(data_graph_WM)$label.cex = 0
+
+V(g1)$label.cex[1:20 %% 2 == 0] = 0.
+
+V(net)$name 
+
+V(data_graph_WM)$name=="USA"
+
+
+plot(data_graph_WM,layout= Layout_auto_WM, vertex.size=V(data_graph_WM)$size/8, edge.arrow.size=0.7, 
+     edge.width=3, asp=0.5052,  label.cex=attributes_WM$degree )
+     
+     
+     vertex.label=V(data_graph_WM)$name=="USA")
+
+
+ifelse(attributes_WM$degree = 1, vertex.label=V(data_graph_WM)$name, V(data_graph_WM)$name=NA )
+
+data_graph_WM=delete.vertices(data_graph_WM,which(degree(data_graph_WM)<1))
+
+
+TRY WITH MERGE!!!!!
+
+
+```
+
+
+
+
+
 
 
 ### Error

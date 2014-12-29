@@ -1,0 +1,187 @@
+---
+title: "Network visualisation of forest products trade flows"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_chunk$set(echo=TRUE)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)   # Which package is this?
+library(dplyr)
+library(igraph)
+``` 
+
+```{r load}
+# This chunk can be deleted once this file is converted to a template
+source("R/database.R")
+fibre <- loadrawdata(550410)
+fibre$productcode <- fibre$productdescription
+swd99 <- fibre
+dtf <- fibre
+# load("440799.RData")
+# swd99 <- renamecolumns(dtf, "comtrade", "efi")
+```
+## Load data
+This report is generated automatically based on data from the 
+[UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
+Tables and graphs are in development.
+They are intended for internal use within the TradeFLowsDB project.
+
+### Warning for the igraph package
+* Column name "weight" in the context of the igraph package
+* It has to have a name column
+* Coordinates has to be with x and y
+* Is has to have a "name" column which are these ISO3 codes in the attributes object.
+
+### Warning for unavailable iso codes
+Areas, nes, Free Zones | Other Asia, nes | North America and Central America, nes,
+Other Europe, nes |Other Africa, nes     
+
+See table below. list of partner for which  unavailable iso codes
+```{r}
+swd99 %>% filter(is.na(partneriso)) %>%
+    select(partner, partneriso) %>%
+    unique
+```
+
+## Prepare data
+```{r prepare}
+# reporter2exclude <- reportercomtrade %>% filter(is.na(region))
+#     filter(reportercode %in% reporter2exclude$reportercode |
+#                partnercode %in% reporter2exclude$reportercode )
+
+swd99 <- dtf %>%
+    filter(flow == "Import" & year ==2011) %>%
+    # Remove World and EU28     !!!! Year should not be 2011 fixed, but last one -2!!!!!
+    filter(!reportercode %in% c(0,97) &
+               !partnercode %in% c(0,97)) %>%
+    # Remove those trade flows from a country with itself   !!!!! THIS DID NOT WORK !!!!!!!!! 
+    filter(reportercode != partnercode) %>%
+    # Remove reporteriso and partneriso which are not available
+    filter(!is.na(reporteriso) & !is.na(partneriso))
+
+data_frame <- swd99 %>% 
+  select(EXPORTER = partneriso,
+         IMPORTER = reporteriso,
+         weight = tradevalue) %>%
+  mutate(weight = round(weight/1000))
+# show begining of table
+kable(head(data_frame))
+```
+
+### Prepare attributes tables and Generate network visualisation
+```{r}
+# Sort all countries by alphabetical order
+attributes_COO <- data.frame(name = unique(c(data_frame$EXPORTER, data_frame$IMPORTER))) %>%
+    arrange(name) %>%
+    mutate(name = as.character(name))
+
+############################################### #
+# Experimental, comment this out if not needed  #
+############################################### #
+# Add all combination of EXPORTER and IMPORTER codes 
+# to the data frame to try to avoid the error message "vertex names in edge list..."
+# When running the graph.data.frame function
+# Error in graph.data.frame(d = data_frame, vertices = attributes_COO) : 
+#   Some vertex names in edge list are not listed in vertex data frame
+# dtf <- data.frame()
+# for (v in attributes_COO$name){
+#     dtf <- rbind(dtf,
+#                  data.frame(EXPORTER=v, IMPORTER=attributes_COO$name))
+# }
+# data_frame <- merge(data_frame, dtf, all=TRUE) 
+# data_frame$weight[is.na(data_frame$weight)] <- 0
+# ###################################
+
+attributes_COO$id <- row.names(attributes_COO)
+# Sum of export for each country
+exports <- data_frame %>% group_by(EXPORTER) %>%
+    summarise(x = sum(weight)) %>% rename(name = EXPORTER)
+# Sum of import for each country
+imports <- data_frame %>% group_by(IMPORTER) %>%
+    summarise(y = sum(weight)) %>% rename(name = IMPORTER)
+# Merve sum of export and sum of import into the attributes table   !!! The command below decreases the number of rows in attrib.!
+attributes_COO <- attributes_COO %>%
+    merge(exports, all.x=TRUE) %>% 
+    merge(imports, all.x=TRUE)
+attributes_COO$x[is.na(attributes_COO$x)] <- 0
+attributes_COO$y[is.na(attributes_COO$y)] <- 0
+attributes_COO <- attributes_COO %>%
+  mutate(Tot.tr = x + y, 
+           size = Tot.tr / max(Tot.tr)*100, 
+           percent = Tot.tr / sum(Tot.tr)*100) 
+# Total trade normalised from 0 to 100
+
+# This creates the data graph file with linked attributes file!
+data_graph <- graph.data.frame(d = data_frame, vertices = attributes_COO)
+
+
+# Rename this column percent to "%" very bad practice  # perhaps we do not need to do this
+# names(attributes_COO)[names(attributes_COO)=="percent"] <- "%"
+# show begining of table
+kable(head(attributes_COO))
+
+################################ #
+# Generate network visualisation #
+################################ #
+# this is a penalty for using scientific notations
+options(scipen = 3)    
+# This creates an graph object 
+# data_graph <- graph.data.frame(data_frame) 
+
+# attributes_COO <- cbind(1:length(attributes_COO [,1]), attributes_COO)
+# This deletes ties (trade flows) below the mean value of trade flow.  It is better to tye to do this just under plot! 
+# data_graph1 <- delete.edges(data_graph,   E(data_graph)[ weight < 489]    ) 
+
+# attributes_COO <- read.csv("docs/development/networkvisualisation/Attributes COO.csv", header=TRUE)
+# attributes_COO <-  attributes_COO %>% filter(!name %in% data_frame$EXPORTER)
+# attributes_COO %>% filter(!name %in% data_frame$IMPORTER)
+
+
+# data_graph <- graph.data.frame(d = data_frame, vertices = attributes_COO)
+pdf("Graph_1.pdf")
+# Specify the layout
+Layout_auto <- layout.auto(data_graph, dim=2)
+# V(data_graph1)$size=degree(data_graph)*200000   !!!!! THIS IS NOT GOOD!!!!
+# Need to automatically define mean and top 10 trade flows!!
+E(data_graph)[ weight > 3147 ]$color <- " grey "
+E(data_graph)[ weight > 552782 ]$color <- "red"
+
+plot(data_graph,layout= Layout_auto, vertex.size=V(data_graph)$size/3, edge.arrow.size=0.7, 
+     edge.width=E(data_graph)$weight/150000, rescale=FALSE, xlim=range(attributes_COO[,3]), 
+     ylim=range(attributes_COO[,4]), axes=TRUE, xlab="Export (1000 USD)", ylab="Import (1000 USD)" )   
+ dev.off()    
+
+#     xlim=round(range(attributes_COO[,4])/1000), 
+#     ylim=range(attributes_COO[,5]), axes=TRUE, 
+
+# plot(data_graph,
+#     layout= Layout_auto, rescale=FALSE, 
+#     
+```
+
+
+### Error
+"Some vertex names in edge list are not listed in vertex data frame"
+```{r errorvertexnames, eval=FALSE}
+attributes_COO$name %in% data_graph1
+str(data_graph1)
+
+# Do we loose countries?
+sum(!attributes_COO$name %in% data_frame$EXPORTER)
+attributes_COO$name[!attributes_COO$name %in% data_frame$EXPORTER]
+sum(!data_frame$EXPORTER %in% attributes_COO$name)
+sum(!attributes_COO$name %in% data_frame$IMPORTER)
+sum(duplicated(data_frame[c("EXPORTER","IMPORTER")]))
+
+sum(!data_frame$EXPORTER %in% dtf$EXPORTER)
+unique(data_frame$EXPORTER[!data_frame$EXPORTER %in% dtf$EXPORTER])
+sum(!data_frame$IMPORTER %in% dtf$IMPORTER)
+
+```
+

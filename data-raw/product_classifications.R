@@ -6,8 +6,22 @@ library(dplyr)
 ############################# #
 # ITTO product classification #
 ############################# #
-itto <- read.csv("data-raw/ITTO_products.csv")
-
+classificationitto <- read.csv("data-raw/classificationitto.csv", as.is=TRUE)
+classificationitto <- classificationitto %>%
+    select(product = Names.of.products,
+           productcodeitto = Product.code,
+           # Names are different than in Comtrade API
+           nomenclature = Nomenclature,
+           productcodecomtrade = Code,
+           description = Description,
+           exceptions = Exceptions,
+           tropical = Tropical)
+# Change tropical column to TRUE / FALSE
+unique(classificationitto$tropical)
+classificationitto$tropical[c(classificationitto$tropical=="X")] <- TRUE
+classificationitto$tropical[c(classificationitto$tropical=="")] <- FALSE
+classificationitto$tropical <- as.logical(classificationitto$tropical)
+stopifnot(sum(is.na(classificationitto$tropical))==0)
 
 ########################### #
 # Comtrade Classifications  #
@@ -41,5 +55,10 @@ classificationcomtrade <- lapply(classificationcomtrade,
                                  substr(productcode, 0, 2) %in%
                                      keep_codes_starting_with)
 
-devtools::use_data(classificationcomtrade, overwrite = TRUE)
+################################################# #
+# Save product classifications as package objects #
+################################################# #
+devtools::use_data(classificationcomtrade,
+                   classificationitto,
+                   overwrite = TRUE)
 

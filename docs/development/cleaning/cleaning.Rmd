@@ -4,41 +4,175 @@ author: "Paul Rougieux"
 date: "04/12/2014"
 output: html_document
 ---
+## Purpose
+For wood products, each trade flows 
+should have an estimated volume in m3
+For paper products, each trade flwos
+should have an estimated weight in kg
 
-* If the quantity is in kg or m3 take the quantity
-he doesn't bother with the weight because the volume is already there
-* If he has only the kilos, he will convert using one conversion factor for the entire world.
-* If neither volume nor quantity is there use a unit price to calculate the quantity
+Each tradeflow goes through 2 filters: 
+1. Handling missing data
+    + If the weight is available in kg. Estimate missing quantity from weight using a regional conversion factor. 
+    + If neither volume nor quantity is available, use a regional unit price to convert trade value to a quantity.
+2. Handling out of bounds data
+    + Check if the unit price is above lowerprice and below upperprice
+    correct using medianprice if out of bounds
 
-Goal:
-For wood products Goal is to have a correct volume in m3
-For paper products is to have a correct weight
 
-## Price discrepancies
-Calculate median unit price,
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(RMySQL)
+``` 
+
+
+## Calculate without pre-made functions
+Load data from a file. (in the final system data will be loaded from a database)
+Calculate median unit price by region and by year.
+Calculate median conversion factor by year for the world.
+Median price calculation can be put in a function for further use.
 ```{r}
-print(load("data-raw/comtrade/440799.RData"))
-swd99 <- dtf %>% 
-    renamecolumns %>%
+load("data-raw/comtrade/440799.RData")
+dtfraw <- dtf %>% renamecolumns
+dtf <- dtfraw %>% 
     filter(flow %in% c("Import", "Export")) %>%
-    merge(select(reportercomtrade, reportercode, region, subregion)) %>%
-    mutate(price = tradevalue / quantity)
+    # Remove EU28 reporter
+    filter(!reporter %in%c("EU-28")) %>%
+    # Remove EU-28 and World partner
+    filter(!partner %in%c("EU-28", "World")) %>%
+    # Add regionreporter and regionpartner
+    merge(select(reportercomtrade, reportercode, regionreporter=region)) %>%
+    merge(select(reportercomtrade, 
+                 partnercode = reportercode, regionpartner=region)) %>%
+    mutate(conversion = weight / quantity,
+           price = tradevalue / quantity,
+           # To avoid "integer overflow - use sum(as.numeric(.))" error 
+           # on sum of all values
+           tradevalue = as.numeric(tradevalue),
+           # To avoid Error in swd99$c(NA_integer_,  : 
+           # invalid subscript type 'integer'
+           quantity = as.numeric(quantity))
+```
 
-#table of median flow prices
-swd99subregion <- swd99 %>% 
-    group_by(flow,subregion) %>%
+
+Check for unique flows
+```{r}
+nrow(dtf)
+dtf %>% select(year, flow, reportercode, partnercode, 
+               productcode, classification) %>% unique %>%nrow
+message("There were duplicated lines for the following reporters:")
+dtf %>% duplicates %>% select(year, reporter) %>% unique %>%
+    arrange(reporter) %>% kable
+```
+
+### Prepare Unit prices and conversion factors 
+#### Exclude comtrade estimates of quantity from the unit price calculation
+
+```{r prepare}
+pricesregion <- dtf %>%
+    # Exclude comtrade quantity estimates
+    filter(flag==0 |flag==4 ) %>%
+    group_by(flow, regionreporter, year) %>%
     summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
                                                 names=FALSE, na.rm=TRUE)),
               medianprice = round(median(price, na.rm=TRUE)),
               upperprice = round(2 * quantile(price, 0.75,
                                               names=FALSE, na.rm=TRUE))) %>%
     arrange(-medianprice)
- 
-lowerprice = 
-medianprice = 
+
+
+conversionfactorworld <- dtf %>%
+    group_by(flow, year) %>%
+    summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
+```
+
+### Handling missing quantity data
+* If the quantity is in kg or m3 take the quantity as is
+* If the weight in kilo is available, 
+   convert using one conversion factor for the entire world.
+* If neither volume nor quantity is available, 
+   use a unit price to calculate the quantity
+
+
+### Checking price bounds
+
+
+## Use functions from clean.R
+### Compare with functions from clean.R
+Depending on whether quantity estimates have been removed or not, 
+unit prices will be very different.
+```{r extractpricesusingcleanRfunctions}
+dtf2 <- dtfraw %>% addconversionfactorandprice %>%
+      merge(select(reportercomtrade, 
+                 partnercode = reportercode, regionpartner=region))    
+pricesregion2 <- dtf2 %>% extractprices(excludeqestimates = TRUE)
+# Compare with other chunk
+summary(pricesregion$medianprice - pricesregion2$medianprice)
+
+
+message("There were duplicated lines for the following reporters:")
+dtfraw %>% renamecolumns %>%
+      merge(select(reportercomtrade, 
+                 partnercode = reportercode, regionpartner=region)) %>%
+    duplicates %>% select(year, reporter, partner) %>% unique %>%
+    arrange(reporter) %>% kable
 
 
 ```
 
+### Issue with duplicated Sudan in reportercomtrade
+```{r duplicatedsudaninreportercomtrade, eval=FALSE}
+# What happens when we 
+#       merge(select(reportercomtrade, 
+#                  partnercode = reportercode, regionpartner=region)) 
+bli <- dtfraw %>% addconversionfactorandprice %>%
+      merge(select(reportercomtrade, 
+                 partnercode = reportercode, regionpartner=region)) %>%
+    duplicates
+# For example this flow reported by France is duplicated
+dtf %>% filter(reporter=="France" & partner=="Fmr Sudan") %>% select(-productdescription)
+#  partnercode reportercode classification year flowcode   flow reporter reporteriso
+# 1         736          251             H2 2005        2 Export   France         FRA
+# 2         736          251             H2 2005        2 Export   France         FRA
+#     partner partneriso productcode unitcode                   unit quantity weight
+# 1 Fmr Sudan        SDN      440799       12 Volume in cubic meters        2   2000
+# 2 Fmr Sudan        SDN      440799       12 Volume in cubic meters        2   2000
+#   tradevalue flag regionreporter regionpartner conversion price
+# 1       2488    0         Europe        Africa       1000  1244
+# 2       2488    0         Europe        Africa       1000  1244
 
-## Unit
+# Issue with duplicated Sudan reportercode 729 and Fmr Sudan reportercode 729
+# in the reportercomtrade table with causes duplicates in the merged tables
+reportercomtrade %>% filter(reportercode %in% c(736,729))
+
+# Are there other duplicates in the reportercomtrade table?
+reportercomtrade %>% filter(duplicated(reportercode))  
+#  reportercode  reporter reporteriso reportercodefao regionfao       subregion
+# 1          729     Sudan         SDN             206    Africa Northern Africa
+# 2          736 Fmr Sudan         SDN             206    Africa Northern Africa
+#   reporternamefao region duplicate
+# 1       the Sudan Africa      TRUE
+# 2       the Sudan Africa      TRUE
+
+# This is due to a merge based on duplicated iso codes for Sudan
+filter(reportercomtrade, !is.na(reporteriso) & duplicated(reporteriso))
+#   reportercode  reporter reporteriso reportercodefao regionfao       subregion
+# 1          729     Sudan         SDN             206    Africa Northern Africa
+# 2          736 Fmr Sudan         SDN             276    Africa Northern Africa
+# 3          736 Fmr Sudan         SDN             206    Africa Northern Africa
+#   reporternamefao region
+# 1       the Sudan Africa
+# 2       the Sudan Africa
+# 3       the Sudan Africa
+
+```
+
+## Misceleanous remarks
+### Units
+In 2004 volume was reporter in litres
+```{r}
+dtf %>% filter( unit=="Volume in litres") %>% select(year) %>% unique
+```
+

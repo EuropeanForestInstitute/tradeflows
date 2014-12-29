@@ -4,11 +4,17 @@
 \title{Write data into the database}
 \usage{
 writeenddata(dtf, table = "enddata")
+
+writeenddata(dtf, table = "enddata")
 }
 \arguments{
 \item{dtf}{a data frame containing the data to be inserted}
+
+\item{dtf}{a data frame containing the data to be inserted}
 }
 \description{
+Write data into the DB
+
 Write data into the DB
 }
 
