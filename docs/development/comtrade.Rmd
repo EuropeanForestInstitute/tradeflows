@@ -1,9 +1,9 @@
 ---
-title: "Learning to load data from MySQL"
+title: "Learning to load data from comtrade"
 output:
-  html_document:
-    toc: yes
   pdf_document:
+    toc: yes
+  html_document:
     toc: yes
 ---
 
@@ -13,53 +13,287 @@ library(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
 library(tradeflows)
 library(dplyr)
-library(RMySQL)
 ``` 
 
-## Connection using dplyr, SELECT only
+## UN comtrade API parameters 
+Load data from the [UN Comtrade API](http://comtrade.un.org/data/doc/api/).
 
-* [insert using dplyr](http://stackoverflow.com/questions/26568182/is-it-possible-to-insert-add-a-row-to-a-sqlite-db-table-using-dplyr-package)
-```{r insertdplyr, eval=FALSE}
-tdb <- src_mysql(user="tradeflows", host="localhost",
-                       password="tradeflows", dbname="tradeflows")
-# Create table
-copy_to(tdb, swdhead, "enddata2", temporary = FALSE)
-# Insert into the new table
-db_insert_into(con = tdb$con, table = "enddata2", fields = swdhead) 
+Download a JSON file containing trade flows 
+reported by germany `r=276` 
+with all partners `p=all&rg=all`
+for the product sawnwood `cc=4407`
+in 2011 and 2010 `ps=2011,2010`:
+```{r download_JSON, eval=FALSE}
+download.file("http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2011,2010&px=HS&max=50000&fmt=json",
+              destfile="data-raw/UNCOMTRADE_exp.JSON")
+json <- jsonlite::fromJSON("data-raw/UNCOMTRADE_exp.JSON")
 ```
 
-```{r}
-```
-
-## Connection using RMySQL connection, SELECT and 
-Source of the package : [RMySQL](https://github.com/jeffreyhorner/RMySQL)
-
-Following developments inspired by :
-
-* [a finnish blog](http://gettinggeneticsdone.blogspot.fi/2011/12/query-mysql-database-from-r-using.html).
-* [a question on stackoverflow](http://stackoverflow.com/questions/5431961/connect-to-mysql-database-with-rmysql)
-
-### SELECT
-```{r rmysql_select}
-tdb2 <- dbConnect(MySQL(), user="tradeflows", host="localhost",
-                       password="tradeflows", dbname="tradeflows")
-dbListTables(tdb2)
-querytradedb <-  function(...) dbGetQuery(tdb2, ...)
-swdhead <- querytradedb("SELECT * FROM raw_trade_data LIMIT 10;")
+R function created within this package tradeflows to load data from the 
+Comtrade API:
+```{r loadfunction}
+loadcomtradebycode
 ```
 
 
-### CREATE
+### Usage limit per hour
+According to [the API main page](http://comtrade.un.org/data/doc/api/),
+usage is limited to _100 requests per hour (per IP address)_. 
+
+* "If you hit a usage limit a 409 (conflict) error is returned along with a message specifying why the request was blocked and when requests may resume. "
+
+Here is the error that I get after batch downloading more than 100 
+JSON files:
+```
+trying URL 'http://comtrade.un.org/api/get?cc=440799&r=716&p=all&rg=all&ps=recent&px=HS&max=50000&fmt=json'
+Error in download.file(url, destfile = jsonfile) :
+  cannot open URL 'http://comtrade.un.org/api/get?cc=440799&r=716&p=all&rg=all&ps=recent&px=HS&max=50000&fmt=json'
+In addition: Warning message:
+In download.file(url, destfile = jsonfile) :
+  cannot open: HTTP status was '409 Conflict'
+```
+The error is return as an [HTTP status code](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html). So there is not even a JSON returned. 
+The error happens before JSON is returned.
+Because there are 255 reporter in the db, I have to load them in 3 hours. 
+Or try to group them somehow.
+
+### Limitations in query complexity
+It seems the API is limitted in query complexity.
+Once the max parameter has been set to its maximum: 50000.
+Limits seem to be :
+
+* approx 5 years
+* all reporter coutries or all partner countries but not both
+* A limited number of product codes <17
+
+Further details are given on the [Comtrade data extraction interface](http://comtrade.un.org/data/) beta. Period, reporters and partners are limited to 5. Commodity codes are limited to 20.
+
+Example of query limitation for the different API parameters below.
+
+### Max limit on the number of record
+The API has a limit of 50 000 records per request. 
+But the max parameter is set by default to get only 500 records 
+see for example below Illustration of a problem encountered 
+as I had forgotten to set the max limit.
+The time period below where the max parameter defaults to 500.
+```{r max, eval=FALSE}
+swd89101112 <- tradeflows::loadcomtradebycode(4407, 276, "2012,2011,2010,2009,2008", max=500)
+# Year 2010 and 2011 are not in this table.
+unique(swd89101112$yr)
+# [[1]]
+# [1] 2012
+# 
+# [[2]]
+# [1] 2008
+# 
+# [[3]]
+# [1] 2009
+
+
+# But 2010 and 2011 are available in the comtrade API.
+swd10_11 <- loadcomtradebycode(4407, 276, "2011,2010")
+unique(swd10_11$yr)
+# trying URL 'http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2011,2010&px=HS&max=50000&fmt=json'
+# Content type 'application/json; charset=utf-8' length 177788 bytes (173 Kb)
+# opened URL
+# ==================================================
+# downloaded 173 Kb
+# 
+# > unique(swd10_11$yr)
+# [[1]]
+# [1] 2010
+# 
+# [[2]]
+# [1] 2011
+```
+
+
+### ps Time Period
+To download many years at once, paste them in a character string, separated by commas. I replaced this behavior, now you can use a vector. 
+There is a "query complexity" limit on the number of years that can be used.
+```{r time_query_complexity, eval=FALSE}
+swd20002013 <- loadcomtradebycode(4407, 276, seq(2000,2012))
+trying URL 'http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012&px=HS&max=50000&fmt=json'
+Content type 'application/json; charset=utf-8' length 329 bytes
+opened URL
+==================================================
+downloaded 329 bytes
+
+Error in loadcomtradebycode(4407, 276, seq(2000, 2012)) : 
+  list(name = "Query complexity", value = 5002, category = 0, description = "your query is too complex. Please simplify.", helpUrl = "")Too many years selected.list(value = 0, started = "0001-01-01T00:00:00", finished = "0001-01-01T00:00:00", durationSeconds = 0)NULL
+
+```
+
+
+### px Classification
+by choosing px=HS, one can load all HS codes as reported by the 
+different countries.
+See below, the comparison of different classification schemes.
+
+
+### ps Productcode
+```{r classification, eval=FALSE}
+claswd <- classificationcomtrade$H4 %>%
+    filter(substr(productcode, 0, 4)=="4407")
+# Try to load all 17 sawwood products under 4407 at once
+swd_17_de <- loadcomtradebycode(claswd$productcode, 276, "recent")
+# trying URL 'http://comtrade.un.org/api/get?cc=4407,440710,44072,44079,440721,440722,440725,440726,440727,440728,440729,440791,440792,440793,440794,440795,440799&r=276&p=all&rg=all&ps=recent&px=HS&max=50000&fmt=json'
+# Error in download.file(url, destfile = jsonfile) : 
+#   cannot open URL 'http://comtrade.un.org/api/get?cc=4407,440710,44072,44079,440721,440722,440725,440726,440727,440728,440729,440791,440792,440793,440794,440795,440799&r=276&p=all&rg=all&ps=recent&px=HS&max=50000&fmt=json'
+# In addition: Warning message:
+# In download.file(url, destfile = jsonfile) :
+#   cannot open: HTTP status was '500 Internal Server Error'
+# > 
+```
+It seems the Comtrade API doesn't accept 17 products.
+
+To load all sawnwood products, I created a function:
+`loadcomtradewithpause(claswd$productcode)`
+
+
+### r Reporting Area
+Try to load for all countries
+```{r reporter, eval=FALSE}
+swd <- loadcomtradebycode(4407, "all", 2013)
+
+# trying URL 'http://comtrade.un.org/api/get?cc=4407&r=all&p=all&rg=all&ps=2013&px=HS&max=50000&fmt=json'
+# 
+# Content type 'application/json; charset=utf-8' length 405 bytes
+# opened URL
+# ==================================================
+# downloaded 405 bytes
+# 
+# Quitting from lines 50-51 (input.Rmd) 
+# Error in loadcomtradebycode(4407, "all", 2013) : 
+#   list(name = "Query complexity", value = 5002, category = 0, description = "your query is too complex. Please simplify.", helpUrl = "")Both 'all' reporters and 'all' partners may not be selected. Select a different reporter or partner.list(value = 0, started = "0001-01-01T00:00:00", finished = "0001-01-01T00:00:00", durationSeconds = 0)NA
+``` 
+
+
+## Loading several datasets from the API
+
+### Load Comtrade data with a function
+```{r loadcomtradebycode, eval=FALSE}
+years = seq(2000,2012)
+swd2012 <- loadcomtradebycode(4407, 276, 2012)
+swd20102011 <- loadcomtradebycode(4407, 276, c(2010, 2011))
+swd20002013 <- loadcomtradebycode(4407, 276, seq(2008,2012))
+``` 
+
+
+### r reporting area to be loaded on the server
+The api is limited to 100 downloads per hour. 
+There are 255 reporter in the list of reporting countries.
+I grouped countries by 3, in order to be able to load all flows for
+one product within one hour.
+
+Try to load for 3 countries, server code:
+```{r reporter3, eval=FALSE}
+swd3 <- loadcomtradebycode(440799, c(246, 251, 276) , "recent")
+# trying URL 'http://comtrade.un.org/api/get?cc=440799&r=246,251,276&p=all&rg=all&ps=recent&px=HS&max=50000&fmt=json'
+# Content type 'application/json' length 718528 bytes (701 Kb)
+# opened URL
+# ==================================================
+# downloaded 701 Kb
+unique(swd3$rtTitle)
+# [1] "Finland" "France"  "Germany"
+```
+
+```{r reportergroups, eval=FALSE}
+# Create groups of 3 reporter
+reportercomtrade$group <- round(as.numeric(row.names(reportercomtrade)) /3)
+reporter_list <- split(reportercomtrade$reportercode, 
+                       as.factor(reportercomtrade$group))
+# Remove all, because it won't be accepted
+reporter_list[reporter_list=="all"] <- NULL
+for (g in reporter_list){
+    print(g)
+    swd99 <- loadcomtradebycode(440799, g, "recent")
+    break()
+}
+
+# loop on product a product loop
+for (productcode in products){
+    loadonserver(produccode)
+    Sys.sleep(3601) 
+}
+```
+
+### Loadcomtradewithpause()
+Load all world flows for a product with a pause every hour to overcome 
+the API limit of 100 downloads per hour.
+
 ```{r eval=FALSE}
-querytradedb("CREATE TABLE enddata LIKE tradeflows.raw_trade_data;")
-dbListTables(tdb2)
+furniture <- classificationcomtrade$HS %>% 
+    filter(substr(productcode, 0, 4)=="9401")
+str(furniture)
+# 'data.frame':    14 obs. of  3 variables:
+#  $ productcode: chr  "9401" "940110" "940120" "940130" ...
+#  $ product    : chr  "9401 - Seats (except dentist, barber, etc chairs)" "940110 - Seats, aircraft" "940120 - Seats, motor vehicles" "940130 - Swivel seats with variable height adjustment" ...
+#  $ parentcode : chr  "94" "9401" "9401" "9401" ...
+loadcomtradewithpause(furniture$productcode)
 ```
 
-### INSERT
-```{r rmysql_insert, eval=FALSE}
-dbGetQuery(DB, "INSERT into SELECT * FROM raw_trade_data LIMIT 10;")
-
+Those data set are loaded for a product in a directory
+on the server. I have then put datasets together in this way, 
+in order to generate reports:
+```{r}
+# getwd() is where raw files are located
+dtfall <- data.frame()
+for (f in list.files(".", ".RData")){
+    load(f)
+    dtfall <- rbind(dtf,dtfall)
+}
+dtfall <- tradeflows::renamecolumns(dtfall)
+tradeflows::createcompletenessreport(dtfall, outputdir="../../reports/completeness/woodenfurniture/")
+# save(dtfall, file="sawnwood_all.RData") #optional saving
 ```
 
 
+### Log errors and json validation to a file
+```{r eval=FALSE}
+# Log errors and json validation to a file?
+#     if (logfile != FALSE){
+#         # Write jsonvalidataion to a logfile
+#         logfileconn <- file(logfile)
+#         writeLines(paste("\n\n",url), logfileconn)
+#         writeLines(paste(json$validation), logfileconn)
+#         close(logfileconn)
+#     }
+```
+
+
+## Product classifications
+```{r}
+load("data/classificationcomtrade.rda") 
+H4 <- classificationcomtrade$H4
+H4 %>% filter(productcode=="4407")  %>% kable
+H4 %>% filter(parentcode=="4407")  %>% kable
+H4 %>% filter(productcode=="44")  %>% kable
+H4 %>% filter(parentcode=="44") %>% kable
+# Number of products under chapter 44
+chap44 <- H4 %>% filter(substr(productcode, 0, 2)=="44")
+nrow(chap44)
+# Number of products under sawnwood
+swd <- H4 %>% filter(substr(productcode, 0, 4)=="4407")
+nrow(swd)    
+```
+
+
+### Changes in HS products classifications
+```{r}
+# Keep only chapter 44
+classification44 <- lapply(classificationcomtrade, 
+              function(dtf) filter(dtf, substr(productcode, 0, 2)=="44"))
+HS <- classification44$HS
+H4 <- classification44$H4 
+# HSnotinH4 <- HS %>% filter(!productcode %in% H4$productcode)
+# H4notinHS <- H4 %>% filter(!productcode %in% HS$productcode)
+# Table of products disapearing and appearing
+HS %>%
+    merge(H4, by="productcode", all=TRUE, suffixes=c("HS", "H4")) %>%
+    filter(is.na(productHS) | is.na(productH4)) %>%
+    arrange(productcode) %>% 
+    kable
+# Do the same comparison between H3 and H4  
+```
 
