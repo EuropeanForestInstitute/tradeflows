@@ -2,7 +2,9 @@
 title: "Cleaning procedure"
 author: "Paul Rougieux"
 date: "04/12/2014"
-output: html_document
+output: 
+  html_document:
+    toc: yes
 ---
 ## Purpose
 For wood products, each trade flows 
@@ -33,9 +35,15 @@ Load data from a file. (in the final system data will be loaded from a database)
 Calculate median unit price by region and by year.
 Calculate median conversion factor by year for the world.
 Median price calculation can be put in a function for further use.
-```{r}
+```{r loadrawdata}
 load("data-raw/comtrade/440799.RData")
-dtfraw <- dtf %>% renamecolumns
+dtfraw <- dtf %>% renamecolumns %>% removeduplicatedflows
+
+# Quantity not available but weight is available
+dtfraw %>% filter(is.na(quantity) & !is.na(weight)) %>% nrow
+# Quantity and weight not available
+dtfraw %>% filter(is.na(quantity) & is.na(weight)) %>% nrow
+
 dtf <- dtfraw %>% 
     filter(flow %in% c("Import", "Export")) %>%
     # Remove EU28 reporter
@@ -43,15 +51,17 @@ dtf <- dtfraw %>%
     # Remove EU-28 and World partner
     filter(!partner %in%c("EU-28", "World")) %>%
     # Add regionreporter and regionpartner
-    merge(select(reportercomtrade, reportercode, regionreporter=region)) %>%
+    merge(select(reportercomtrade, reportercode, regionreporter=region), 
+          all.x=TRUE) %>%
     merge(select(reportercomtrade, 
-                 partnercode = reportercode, regionpartner=region)) %>%
+                 partnercode = reportercode, regionpartner=region),
+          all.x=TRUE) %>%
     mutate(conversion = weight / quantity,
            price = tradevalue / quantity,
            # To avoid "integer overflow - use sum(as.numeric(.))" error 
            # on sum of all values
            tradevalue = as.numeric(tradevalue),
-           # To avoid Error in swd99$c(NA_integer_,  : 
+           # To avoid Error in dtf$c(NA_integer_,  : 
            # invalid subscript type 'integer'
            quantity = as.numeric(quantity))
 ```
@@ -63,18 +73,22 @@ nrow(dtf)
 dtf %>% select(year, flow, reportercode, partnercode, 
                productcode, classification) %>% unique %>%nrow
 message("There were duplicated lines for the following reporters:")
-dtf %>% duplicates %>% select(year, reporter) %>% unique %>%
+dtf %>% findduplicatedflows %>% select(year, reporter) %>% unique %>%
     arrange(reporter) %>% kable
 ```
 
-### Prepare Unit prices and conversion factors 
-#### Exclude comtrade estimates of quantity from the unit price calculation
+### Prepare Unit prices and conversion factors
 
-```{r prepare}
+#### Include (or not) comtrade estimates of quantity from the unit price calculation
+Check filter on flag below to see if comtrade estimates are included or not.
+```{r extractpricesandconversionfactors}
+
+
 pricesregion <- dtf %>%
+    filter(!is.na(quantity) & unit !="No Quantity") %>%
     # Exclude comtrade quantity estimates
-    filter(flag==0 |flag==4 ) %>%
-    group_by(flow, regionreporter, year) %>%
+#     filter(flag==0 |flag==4 ) %>%
+    group_by(flow, regionreporter, year, unit) %>%
     summarise(lowerprice = round(0.5 * quantile(price, 0.25, 
                                                 names=FALSE, na.rm=TRUE)),
               medianprice = round(median(price, na.rm=TRUE)),
@@ -82,9 +96,9 @@ pricesregion <- dtf %>%
                                               names=FALSE, na.rm=TRUE))) %>%
     arrange(-medianprice)
 
-
 conversionfactorworld <- dtf %>%
-    group_by(flow, year) %>%
+    filter(!is.na(quantity) & unit !="No Quantity") %>%
+    group_by(flow, year, unit) %>%
     summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
 ```
 
@@ -93,37 +107,144 @@ conversionfactorworld <- dtf %>%
 * If the weight in kilo is available, 
    convert using one conversion factor for the entire world.
 * If neither volume nor quantity is available, 
-   use a unit price to calculate the quantity
+   use a regional unit price to calculate the quantity
+```{r handlingmissingquantity}
+# Quantity based on the weight using a conversion factor
+dtf <- merge(dtf, conversionfactorworld, all.x=TRUE) %>%
+    mutate(quantity_cf = weight / medianconversion)
+# Quantity based on the trade value, using a unit price
+dtf <- merge(dtf, pricesregion, all.x=TRUE) %>%
+    mutate(quantity_up = tradevalue / medianprice,
+           havequantity = !is.na(quantity)) 
+
+summarychange  <- function(dtf){
+    dtf %>% summarise(rows = n(),
+                      quantity = sum(quantity, na.rm=TRUE) ,
+                      quantity_cf = sum(quantity_cf, na.rm=TRUE),
+                      cf_increase = round((quantity_cf-quantity)/ quantity *100),
+                      quantity_up = sum(quantity_up, na.rm=TRUE),
+                      up_increase = round((quantity_up-quantity)/ quantity *100))
+    }
+
+dtf %>% group_by(havequantity, year, flow) %>% summarychange %>% kable
+dtf %>% group_by(havequantity, flag, flow) %>% summarychange %>% kable
+dtf %>% group_by(flag) %>% summarychange %>% kable
+dtf %>% group_by(round(log(quantity)), flag) %>% summarychange %>% kable
+
+# Check if both tables contain the same total world trade flows
 
 
-### Checking price bounds
+print("Percent change in world trade flows ")
+wtf <- sum(dtf$quantity,na.rm=TRUE)
+dtf %>% 
+    #filter(!havequantity) %>% 
+    group_by(havequantity, year, flow, flag) %>%
+    summarise(changeinworldtrade_cf = round((sum(quantity_cf,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / wtf*100,3),
+              changeinworldtrade_up = 
+                  round((sum(quantity_up,na.rm=TRUE) - 
+                             sum(quantity,na.rm=TRUE)) / 
+                            wtf*100,3))  %>%
+    kable
+```
+
+### Handling price bounds
+```{r handlingpricebounds}
+
+```
 
 
-## Use functions from clean.R
-### Compare with functions from clean.R
+### Handling partner information
+```{r handlingpartner}
+
+```
+
+
+## Calculate with functions from clean.R
+### Compare unit prices and conversion factor tables
 Depending on whether quantity estimates have been removed or not, 
 unit prices will be very different.
-```{r extractpricesusingcleanRfunctions}
-dtf2 <- dtfraw %>% addconversionfactorandprice %>%
-      merge(select(reportercomtrade, 
-                 partnercode = reportercode, regionpartner=region))    
-pricesregion2 <- dtf2 %>% extractprices(excludeqestimates = TRUE)
+```{r cleanRextractprices}
+dtf2 <- dtfraw %>% 
+    addconversionfactorandprice %>%
+    addregion
+#     merge(select(reportercomtrade, 
+#                  partnercode = reportercode, regionpartner=region))    
+# Check for duplicated flows
+nrow(findduplicatedflows(dtf2))
+# Extract prices and conversion factors
+pricesregion2 <- dtf2 %>% extractprices(includeqestimates = TRUE)
+conversionfactorworld2 <- dtf2 %>% 
+    extractconversionfactors(includeqwestimates = TRUE)
+
 # Compare with other chunk
 summary(pricesregion$medianprice - pricesregion2$medianprice)
+summary(conversionfactorworld$medianconversion -
+            conversionfactorworld2$medianconversion)
+```
+
+### Handling missing quantity data and price bounds
+```{r cleanRhandlingmissingquantity}
+dtfq <- dtfraw %>% 
+    addconversionfactorandprice %>% 
+    addregion %>%
+    estimatequantity(price=pricesregion2, 
+                     conversionfactor=conversionfactorworld2, shaveprice=FALSE)
+nrow(findduplicatedflows(dtfq))
+
+fr2 <- dtfq %>% filter(reporter =="France") #%>% removeduplicatedflows
+# Check flags
+fr <- estimatequantity(dtf, price=pricesregion2, 
+                       conversionfactor=conversionfactorworld2) %>%
+    filter(reporter=="France") 
+fr2$partner[!fr2$partner %in% fr$partner]
+# World makes the difference
+dtfqn <- dtfq %>% group_by(reporter) %>% summarise(n=n()) %>% arrange(-n)
+dtfn <- dtf %>% group_by(reporter) %>% summarise(n=n())%>% arrange(-n)
+fr1 <- dtf %>% filter(reporter=="France")
+```
+
+### Handling partner information
+```{r cleanRhandlingpartner}
+dtf_p <- addpartnerflow(dtf)
+```
 
 
+### Main clean function
+```{r mainclean}
+dtfclean <- dtfraw %>% 
+    clean(shaveprice=TRUE) 
+dtfdup <- dtfclean %>% findduplicatedflows
+dtfclean %>% addpartnerflow
+dtfclean %>% group_by(flag) %>% summarychange %>% kable
+```
+
+
+### Read from the database, clean, write to the database
+```{r readfromdb}
+charcoal90 <- loadrawdata(440290)
+charcoal90$flag <- 0
+charcoal90 <- clean(charcoal90)
+```
+
+```{r writetodb}
+
+```
+
+
+## Misceleanous remarks
+### Issue with duplicated Sudan in reportercomtrade
+```{r duplicatedsudaninreportercomtrade, eval=FALSE}
 message("There were duplicated lines for the following reporters:")
-dtfraw %>% renamecolumns %>%
+# For example this flow reported by Sudan is duplicated
+dtf %>% filter(reporter=="Fmr Sudan" & partner=="USA") %>% select(-productdescription)
+
+tfraw %>% renamecolumns %>%
       merge(select(reportercomtrade, 
                  partnercode = reportercode, regionpartner=region)) %>%
     duplicates %>% select(year, reporter, partner) %>% unique %>%
     arrange(reporter) %>% kable
 
-
-```
-
-### Issue with duplicated Sudan in reportercomtrade
-```{r duplicatedsudaninreportercomtrade, eval=FALSE}
 # What happens when we 
 #       merge(select(reportercomtrade, 
 #                  partnercode = reportercode, regionpartner=region)) 
@@ -169,10 +290,30 @@ filter(reportercomtrade, !is.na(reporteriso) & duplicated(reporteriso))
 
 ```
 
-## Misceleanous remarks
+```{r beforeremovingduplicates, eval=FALSE}
+nrow(dtf)
+# [1] 47493
+nrow(dtf2)
+# [1] 49082
+# After removing duplicates
+ nrow(dtf)
+# [1] 47351
+nrow(dtf2)
+# [1] 48940
+``` 
+
 ### Units
 In 2004 volume was reporter in litres
 ```{r}
 dtf %>% filter( unit=="Volume in litres") %>% select(year) %>% unique
 ```
 
+### Unit No quantity creates problem while merging price and conversion factor tables
+
+```{r issueflag200, eval=FALSE}
+# look at an issue with the absence of median price and conversion factor in 
+# flag 200
+dtf200 <- dtfclean %>% filter(flag==200)
+dtf200 <- dtf200 %>% merge(conversionfactorworld, all.x=TRUE)
+# That was meainly because of this unit "No Quantity"
+```

@@ -3,20 +3,12 @@
 \alias{loadrawdata}
 \title{Load raw data form the database}
 \usage{
-loadrawdata(productcode_, table = "raw_trade_data")
-
-loadrawdata(productcode_, table = "raw_trade_data")
+loadrawdata(productcode_, table_ = "raw_flow")
 }
 \arguments{
 \item{productcode}{the code of on product}
-
-\item{productcode}{the code of on product}
 }
 \description{
-Connect to the raw database and load all tradeflows
-for the given product code,
-for all years, in all directions, for all reporter and all partners.
-
 Connect to the raw database and load all tradeflows
 for the given product code,
 for all years, in all directions, for all reporter and all partners.

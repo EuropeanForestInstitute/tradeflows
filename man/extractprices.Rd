@@ -3,20 +3,26 @@
 \alias{extractprices}
 \title{Extract median prices at a given geographical aggregation level}
 \usage{
-extractprices(dtf, geoaggregation = "regionreporter",
-  excludeqestimates = FALSE)
+extractprices(dtf, lowercoef = 0.5, uppercoef = 2,
+  geoaggregation = "regionreporter", includeqestimates = TRUE)
 }
 \arguments{
 \item{dtf}{a dataframe containing already available prices}
 
+\item{lowercoef}{numeric multiplier of the lower bound on prices}
+
+\item{uppercoef}{numeric multiplier of the upper bound on prices}
+
 \item{geoaggregation}{a character vector specifying the regional aggregation
 level, a column name in the reportercomtrade table}
 
-\item{excludeqestimates}{logical TRUE when comtrade quantity estimates
-have to be excluded}
+\item{includeqestimates}{logical TRUE when comtrade quantity estimates
+can be included}
 }
 \description{
 Extract median prices by region (default) or at another
 geographical aggregation level (subregion)
+Prices depend on the quantity unit. For some products quantity unit changes
+from litre to m3 along the years.
 }
 

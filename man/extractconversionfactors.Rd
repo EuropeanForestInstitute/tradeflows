@@ -4,7 +4,7 @@
 \title{Extract median converion factor at a given geographical aggregation level}
 \usage{
 extractconversionfactors(dtf, geoaggregation = "World",
-  excludeqwestimates = FALSE)
+  includeqwestimates = TRUE)
 }
 \arguments{
 \item{dtf}{a dataframe containing conversion factors}
@@ -12,8 +12,8 @@ extractconversionfactors(dtf, geoaggregation = "World",
 \item{geoaggregation}{a character string specifying the regional aggregation
 level, a column name in the reportercomtrade table}
 
-\item{excludeqwestimates}{logical TRUE when comtrade quantity and weight
-estimates have to be excluded}
+\item{includeqwestimates}{logical TRUE when comtrade quantity and weight
+estimates can be included}
 }
 \description{
 Extract median converion factors for the whole world (default)

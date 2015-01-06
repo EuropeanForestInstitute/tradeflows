@@ -248,3 +248,9 @@ visualise missing data
 * load from EUROSTAT comext at 10 digit level
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
+### Notes to EFI developpers 
+The configuration table columnnames located in config/column_names.csv
+now contains 2 column specifying which columns names
+are used in the trade flows database:
+"raw_flow" and "validated_flow"
+

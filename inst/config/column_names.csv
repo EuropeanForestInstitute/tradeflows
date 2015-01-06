@@ -1,26 +1,28 @@
-comtrade,eurostat,faostat,efi,efioutput
-pfCode,NA,NA,classification,Trade classification system
-yr,NA,year,year,Year
-period,NA,NA,NA,NA
-periodDesc,NA,NA,NA,NA
-aggrLevel,NA,NA,NA,NA
-IsLeaf,NA,NA,NA,NA
-rgCode,NA,NA,flowcode,NA
-rgDesc,FLOW,ElementName,flow,NA
-rtCode,NA,NA,reportercode,Reporting coutry code
-rtTitle,REPORTER,ReporterName,reporter,Reporting country
-rt3ISO,NA,NA,reporteriso,Reporting ISO code
-ptCode,NA,NA,partnercode,Partner country code
-ptTitle,PARTNER,PartnerName,partner,Partner country code
-pt3ISO,NA,NA,partneriso,Partner ISO code
-cmdCode,NA,NA,productcode,Product code
-cmdDescE,PRODUCT,ItemName,productdescription, Product Description
-qtCode,NA,NA,unitcode,NA
-qtDesc,NA,NA,unit,NA
-TradeQuantity,NA,NA,quantity,Quantity
-NetWeight,NA,NA,weight,Weight
-TradeValue,VALUE_IN_EUROS,NA,tradevalue,Trade Value
-estCode,NA,NA,flag,Flag
-NA,NA,NA,pricecur,NA
-NA,NA,NA,priceconst,NA
-NA,NA,NA,NA,Product definition
+comtrade,eurostat,faostat,efi,raw_flow,validated_flow,efioutput,sql_type
+pfCode,NA,NA,classification,TRUE,TRUE,Trade classification system,VARCHAR(3)
+yr,NA,year,year,TRUE,TRUE,Year,INT(4)
+period,NA,NA,NA,FALSE,FALSE,NA,NA
+periodDesc,NA,NA,NA,FALSE,FALSE,NA,NA
+aggrLevel,NA,NA,NA,FALSE,FALSE,NA,NA
+IsLeaf,NA,NA,NA,FALSE,FALSE,NA,NA
+rgCode,NA,NA,flowcode,TRUE,TRUE,NA,INT(11)
+rgDesc,FLOW,ElementName,flow,TRUE,TRUE,NA,TEXT
+rtCode,NA,NA,reportercode,TRUE,TRUE,Reporting coutry code,int(3)
+rtTitle,REPORTER,ReporterName,reporter,TRUE,TRUE,Reporting country,text
+rt3ISO,NA,NA,reporteriso,TRUE,TRUE,Reporting ISO code,varchar(3)
+ptCode,NA,NA,partnercode,TRUE,TRUE,Partner country code,int(3)
+ptTitle,PARTNER,PartnerName,partner,TRUE,TRUE,Partner country code,text
+pt3ISO,NA,NA,partneriso,TRUE,TRUE,Partner ISO code,varchar(3)
+cmdCode,NA,NA,productcode,TRUE,TRUE,Product code,text
+cmdDescE,PRODUCT,ItemName,productdescription,TRUE,TRUE, Product Description,text 
+qtCode,NA,NA,unitcode,TRUE,TRUE,NA,int(3)
+qtDesc,NA,NA,unit,TRUE,TRUE,NA,text
+TradeQuantity,NA,NA,quantity,TRUE,TRUE,Quantity,bigint(20)
+NetWeight,NA,NA,weight,TRUE,TRUE,Weight,bigint(20)
+TradeValue,VALUE_IN_EUROS,NA,tradevalue,TRUE,TRUE,Trade Value,bigint(20)
+estCode,NA,NA,flag,TRUE,TRUE,Flag,INT(4)
+NA,NA,NA,pricecur,FALSE,FALSE,NA,NA
+NA,NA,NA,priceconst,FALSE,FALSE,NA,NA
+NA,NA,NA,NA,FALSE,FALSE,Product definition,NA
+NA,NA,NA,quantityreporter,FALSE,TRUE,NA,bigint(20)
+NA,NA,NA,quantitypartner,FALSE,TRUE,NA,bigint(20)

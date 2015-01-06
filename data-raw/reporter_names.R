@@ -77,6 +77,11 @@ reportercomtrade <- dtf %>%
     merge(filter(regions, !is.na(reporteriso) & !duplicated(reporteriso)),
           by="reporteriso") %>%
     merge(reportercomtrade, all.y = TRUE)
+
+
+####################################################################### #
+# Check for duplicates introduced by the merger with ITTO or FAO tables #
+####################################################################### #
 nrow(reportercomtrade)
 reportercomtrade$reporter[!reportercomtrade$reporter %in%
                               tradeflows::reportercomtrade$reporter]
@@ -84,11 +89,12 @@ length(unique(reportercomtrade$reporter))
 reportercomtrade[duplicated(reportercomtrade$reporter),]
 nbcountriesincomtrade
 
-# Remove duplicates
-reportercomtrade %>% filter(!duplicated(reportercode))
-
-# reportercomtrade$reporteriso[duplicated(reportercomtrade3$reporteriso)]
-
+if (nrow(filter(reportercomtrade,duplicated(reportercode)))>0){
+    warning("There are duplicated rows for the following reporters")
+    warning(reportercomtrade[duplicated(reportercomtrade$reporter),])
+}
+# Remove duplicates, this shouldn't be necessary
+# reportercomtrade <- reportercomtrade %>% filter(!duplicated(reportercode))
 
 ## Check where region fao and ITTO are different
 

@@ -134,4 +134,16 @@ Change from the `raw_flow` table to the `validated_flow` table.
 ALTER TABLE `tradeflows`.`validated_flow` ADD COLUMN `quantitypartner` BIGINT NULL  AFTER `quantityreporter` , CHANGE COLUMN `quantity2` `quantityreporter` BIGINT(20) NULL DEFAULT NULL    ;
 ```
 
+## Use functions from database.R
+### Load data
+```{r database.R.loadfromdb}
+charcoal90 <- loadrawdata(440290)
+```
+
+
+### Write data
+```{r database.R}
+
+```
+
 
