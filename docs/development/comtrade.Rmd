@@ -13,6 +13,8 @@ library(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
 library(tradeflows)
 library(dplyr)
+library(ggplot2)
+library(lubridate) # To manipulate monthly data
 ``` 
 
 ## UN comtrade API parameters 
@@ -124,6 +126,19 @@ Error in loadcomtradebycode(4407, 276, seq(2000, 2012)) :
 
 ```
 
+There is also a query complexity limit on the number of months that can be 
+downloaded.
+```{r time_query_complexity_months, eval=FALSE}
+swd2012 <- loadcomtradebycode(4407, 276, year=seq(2008,2009), freq="M")
+# trying URL 'http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2008,2009&freq=M&px=HS&max=50000&fmt=json'
+# Content type 'application/json; charset=utf-8' length 330 bytes
+# opened URL
+# ==================================================
+# downloaded 330 bytes
+# 
+# Error in loadcomtradebycode(4407, 276, year = seq(2008, 2009), freq = "M") : 
+#   list(name = "Query complexity", value = 5002, category = 0, description = "your query is too complex. Please simplify.", helpUrl = "")Too many months selected.list(value = 0, started = "0001-01-01T00:00:00", finished = "0001-01-01T00:00:00", durationSeconds = 0)NULL
+```
 
 ### px Classification
 by choosing px=HS, one can load all HS codes as reported by the 
@@ -181,9 +196,67 @@ swd20002013 <- loadcomtradebycode(4407, 276, seq(2008,2012))
 
 ### Load monthly data 
 ```{r loadcomtradebycodemonthly, eval=FALSE}
+# No monthly data in 2009 and before
+swd2009 <- loadcomtradebycode(440799, 276, 2009, freq="M")
+# 3 years of monhtly data
+swd2010 <- loadcomtradebycode(440799, 276, 2010, freq="M")
+swd2011 <- loadcomtradebycode(440799, 276, 2011, freq="M")
+swd2012 <- loadcomtradebycode(440799, 276, 2012, freq="M")
+swd2013 <- loadcomtradebycode(440799, 276, 2013, freq="M")
+swd2014 <- loadcomtradebycode(440799, 276, 2014, freq="M")
+swdm <- rbind(swd2010, swd2011, swd2012, swd2013, swd2014)
+# Change period into a POSIXct date-time object
+swdm$period <- parse_date_time(swdm$period, "%y%m")
+swdsum <- swdm %>% group_by(period, periodDesc) %>%
+    summarise(tradevalue = sum(TradeValue),
+              price = sum(TradeValue/NetWeight, na.rm=TRUE)) 
 
-
+ggplot(swdsum) + geom_point(aes(x=period, y=tradevalue))
+ggplot(swdsum) + geom_point(aes(x=period, y=price))
 ```
+
+
+```{r loadcomtradebycodemonthlyoakfr, eval=FALSE}
+oak2010 <- loadcomtradebycode(440391, 251, 2010, freq="M")
+oak2011 <- loadcomtradebycode(440391, 251, 2011, freq="M")
+oak2012 <- loadcomtradebycode(440391, 251, 2012, freq="M")
+oak2013 <- loadcomtradebycode(440391, 251, 2013, freq="M")
+oak2014 <- loadcomtradebycode(440391, 251, 2014, freq="M")
+oakm <- rbind(oak2010, oak2011, oak2012, oak2013, oak2014) %>%
+    mutate(price = TradeValue/NetWeight)
+oakm$period <- parse_date_time(oakm$period, "%y%m")
+# FOr later use
+oakm$year <- as.factor(year(oakm$period))
+oakm$month <- as.factor(month(oakm$period))
+
+oaksum <- oakm %>% group_by(period, rgDesc) %>%
+    summarise(tradevalue = sum(TradeValue),
+              price = sum(TradeValue/NetWeight, na.rm=TRUE)) 
+oaksum$year <- as.factor(year(oaksum$period))
+oaksum$month <- as.factor(month(oaksum$period))
+ggplot(oaksum) + geom_point(aes(x=period, y=tradevalue)) + 
+    facet_wrap(~rgDesc)
+ggplot(oaksum) + geom_point(aes(x=period, y=price)) +
+        facet_wrap(~rgDesc)
+
+
+# Trade value seasonality?
+p <- ggplot(oaksum) + facet_grid(year~rgDesc)
+p + geom_point(aes(x=month, y=tradevalue, color=year))
+# Price seasonality ? 
+p + geom_point(aes(x=month, y=price, color=year)) + ylim(c(0,30))
+
+
+# One trade flow
+frde <- oakm %>% filter(ptTitle=="Germany")
+p <- ggplot(frde) + facet_grid(year~rgDesc) + 
+    ggtitle("Oak logs trade France Germany")
+p + geom_point(aes(x=month, y=TradeValue, color=year))
+p + geom_point(aes(x=month, y=price, color=year))
+# time series
+p + geom_point(aes(x=period, y=TradeValue)) + facet_grid(~rgDesc)
+```
+
 
 ### r reporting area to be loaded on the server
 The api is limited to 100 downloads per hour. 

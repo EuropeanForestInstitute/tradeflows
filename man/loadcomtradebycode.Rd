@@ -3,8 +3,8 @@
 \alias{loadcomtradebycode}
 \title{load raw data from the COMTRADE API}
 \usage{
-loadcomtradebycode(productcode, reportercode, year, px = "HS", max = 50000,
-  logfile = FALSE)
+loadcomtradebycode(productcode, reportercode, year, freq = "A", px = "HS",
+  max = 50000, logfile = FALSE)
 }
 \arguments{
 \item{productcode}{code of the product}

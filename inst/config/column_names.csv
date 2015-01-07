@@ -1,10 +1,10 @@
 comtrade,eurostat,faostat,efi,raw_flow,validated_flow,efioutput,sql_type
 pfCode,NA,NA,classification,TRUE,TRUE,Trade classification system,VARCHAR(3)
 yr,NA,year,year,TRUE,TRUE,Year,INT(4)
-period,NA,NA,NA,FALSE,FALSE,NA,NA
-periodDesc,NA,NA,NA,FALSE,FALSE,NA,NA
-aggrLevel,NA,NA,NA,FALSE,FALSE,NA,NA
-IsLeaf,NA,NA,NA,FALSE,FALSE,NA,NA
+period,NA,NA,period,TRUE,TRUE,NA,NA
+periodDesc,NA,NA,perioddescription,TRUE,TRUE,NA,NA
+aggrLevel,NA,NA,aggrlevel,TRUE,TRUE,NA,NA
+IsLeaf,NA,NA,isleaf,TRUE,TRUE,NA,NA
 rgCode,NA,NA,flowcode,TRUE,TRUE,NA,INT(11)
 rgDesc,FLOW,ElementName,flow,TRUE,TRUE,NA,TEXT
 rtCode,NA,NA,reportercode,TRUE,TRUE,Reporting coutry code,int(3)

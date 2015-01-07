@@ -4,7 +4,7 @@
 \title{Load flows for all countries, in all directions available in comtrade
 for a given product.}
 \usage{
-loadcomtradeallreporters(productcode, year = "recent")
+loadcomtradeallreporters(productcode, year = "recent", ...)
 }
 \arguments{
 \item{productcode}{a vector of product codes}

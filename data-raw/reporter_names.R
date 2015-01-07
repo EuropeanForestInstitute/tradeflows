@@ -76,7 +76,9 @@ reportercomtrade <- dtf %>%
     # Merge based on iso3 code, remove NA and duplicates (for example SDN)
     merge(filter(regions, !is.na(reporteriso) & !duplicated(reporteriso)),
           by="reporteriso") %>%
-    merge(reportercomtrade, all.y = TRUE)
+    merge(reportercomtrade, all.y = TRUE) %>%
+    arrange(reporter)
+
 
 
 ####################################################################### #

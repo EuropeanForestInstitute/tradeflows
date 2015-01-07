@@ -13,7 +13,8 @@
 #'@examples library(tradeflows)
 #'# Load "other sawnwood" in France for the last 5 years available in comtrade
 #'loadcomtradebycode(440799, 251, "recent")
-loadcomtradebycode <- function(productcode, reportercode, year,
+loadcomtradebycode <- function(productcode, reportercode,
+                               year, freq = "A",
                                 px = "HS", max = 50000,
                                 logfile = FALSE){
     jsonfile <- tempfile(fileext = ".json")
@@ -22,6 +23,7 @@ loadcomtradebycode <- function(productcode, reportercode, year,
                   "&r=", paste0(reportercode, collapse = ","),
                   "&p=all&rg=all", # All partners and flows
                   "&ps=", paste0(year, collapse = ","),
+                  "&freq=",freq,
                   "&px=", px,
                   "&max=", max,
                   "&fmt=json")
@@ -45,9 +47,10 @@ loadcomtradebycode <- function(productcode, reportercode, year,
 #' @param productcode a vector of product codes
 #' @param year a vector of years (maximum 5), or the chain of character "recent"
 #' @export
-loadcomtradeallreporters <- function(productcode, year="recent"){
+loadcomtradeallreporters <- function(productcode, year="recent",...){
     dtf <- data.frame()
     # Create groups of 3 reporter, to overcome API limitation
+    # of 100 downloads per hour
     # more details in docs/development/comtrade.Rmd
     reportercomtrade$group <- round(as.numeric(row.names(reportercomtrade)) /3)
     reporter_list <- split(reportercomtrade$reportercode,
