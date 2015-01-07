@@ -179,6 +179,11 @@ swd20102011 <- loadcomtradebycode(4407, 276, c(2010, 2011))
 swd20002013 <- loadcomtradebycode(4407, 276, seq(2008,2012))
 ``` 
 
+### Load monthly data 
+```{r loadcomtradebycodemonthly, eval=FALSE}
+
+
+```
 
 ### r reporting area to be loaded on the server
 The api is limited to 100 downloads per hour. 

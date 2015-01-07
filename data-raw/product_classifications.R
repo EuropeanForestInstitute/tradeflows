@@ -23,6 +23,18 @@ classificationitto$tropical[c(classificationitto$tropical=="")] <- FALSE
 classificationitto$tropical <- as.logical(classificationitto$tropical)
 stopifnot(sum(is.na(classificationitto$tropical))==0)
 
+# Unique chapter
+# classificationitto$chapter <- round(classificationitto$productcodecomtrade/10000)
+# unique(classificationitto$chapter)
+# Extract table for methodology report
+jfsq <- classificationitto %>%
+    # Filter logs and sawnwood
+    mutate(code4 = round(productcodecomtrade/100)) %>%
+    filter(code4 %in% c(4407,4404)) %>%
+    select(product, jfsqcode  = productcodeitto, productcodecomtrade) %>%
+    unique
+print.xtable(jfsq)#,include.rownames=FALSE, type = "latex", floating=FALSE)
+
 ########################### #
 # Comtrade Classifications  #
 ########################### #
