@@ -4,8 +4,7 @@
 \alias{cleandb}
 \title{Combine cleaning functions}
 \usage{
-clean(dtf, writetodb = FALSE, shaveprice = FALSE,
-  deleteextracolumns = TRUE)
+clean(dtf, shaveprice = FALSE, deleteextracolumns = TRUE)
 
 cleandb(productcode, delete = FALSE)
 }
@@ -17,24 +16,19 @@ column_names$validated_flow}
 
 \item{delete}{}
 
-\item{write2db}{logical}
-
 \item{productcode_}{code of the product trade flows to be validated}
 }
 \description{
 Use unit prices and conversion factors to complete missing quantity data.
 Handle unit prices that are out of bound.
 Add quantity estimates reported by the trade partner.
-If writetodb ==TRUE, the outcome will be written to the default database.
-Otherwise the outcome is returned as a data frame.
+The outcome is returned as a data frame.
 
 For one product (at the 6 digit level),
 read and clean all trade flows, then
 Write flows into the database table(s) validated_flow
 updates will be done on a product basis,
 The function will:
-}
-\details{
 1. Read all flows for a product
 2. Delete all flows for a product
   (between all reporter and partner countries in all years),
