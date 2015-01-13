@@ -223,8 +223,9 @@ Calling the javascript files should be possible within a YAML document, see
 
 
 ### TODO by order of ease / importance
-discrepancy report
-
+* calculate regional prices as a ponderation of import and export prices
+  as done in Chasamil2000
+* discrepancy report
 in the server function,
 add a parameter to the loadcomtrade_bycode function to render this optional
 log validataion status of jsonfiles with
@@ -253,4 +254,15 @@ The configuration table columnnames located in config/column_names.csv
 now contains 2 column specifying which columns names
 are used in the trade flows database:
 "raw_flow" and "validated_flow"
+Database configuration file and column names are located under:
+```
+system.file("config", package="tradeflows")
+```
+
+The function cleandb() will feed data into the database table(s) validated_flow
+updates will be done on a product basis, at the 6 digit level. The cleaning script will:
+
+1. Delete all flows for a product
+  (between all reporter and partner countries in all years),
+2. Enter All validated flows for that product.
 

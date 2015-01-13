@@ -292,6 +292,7 @@ addpartnerflow <- function(dtf){
     dtf <- merge(dtf, swap, all.x=TRUE, suffixes = c("", "partner"),
                  by = c("reportercode", "partnercode",
                         "productcode", "flow", "year"))
+    dtf$quantityreporter <- dtf$quantity
     return(dtf)
 }
 
@@ -334,15 +335,12 @@ calculatediscrepancies <- function(dtf){
 #' Use unit prices and conversion factors to complete missing quantity data.
 #' Handle unit prices that are out of bound.
 #' Add quantity estimates reported by the trade partner.
-#' If writetodb ==TRUE, the outcome will be written to the default database.
-#' Otherwise the outcome is returned as a data frame.
+#' The outcome is returned as a data frame.
 #' @param dtf data frame
-#' @param write2db logical
 #' @param deleteextracolumns when TRUE, keep only columns from
 #' column_names$validated_flow
 #' @export
-clean <- function(dtf, writetodb=FALSE,
-                  shaveprice=FALSE, deleteextracolumns=TRUE){
+clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
     dtf <- dtf %>%
         removeduplicatedflows %>%
         addconversionfactorandprice %>%
@@ -369,34 +367,42 @@ clean <- function(dtf, writetodb=FALSE,
         dtf <- dtf %>% select_(.dots = columnstokeep)
     }
 
-    # Write to database if required.
-    if (writetodb){
-        message(paste("writing", nrow(dtf),"flows to the database"))
-        tryCatch(result <- writeenddata(dtf),
-                 # Return if write to db succesded,
-                 # otherwise return false
-                 finally = return(result))
-    }
+
     return(dtf)
 }
 
 
-# An alias for the clean() function
+#' Write flows into the database table(s) validated_flow
+#'
+#' For one product (at the 6 digit level),
+#' read and clean all trade flows, then
+#' Write flows into the database table(s) validated_flow
+#' updates will be done on a product basis,
+#' The function will:
+#' 1. Read all flows for a product
+#' 2. Delete all flows for a product
+#'   (between all reporter and partner countries in all years),
+#' 3. Use  \code{\link{clean}()} to clean the data frame and write it to the database
+#' 4. Write All validated flows for that product.
 #' @rdname clean
-#' @param write2db logical TRUE to write the result in the configured database
-#' @param ... arguments passed to \code{\link{clean}()}
-#'     from \code{\link{cleantodb}()}
+#' @param productcode_ code of the product trade flows to be validated
+#' @param delete
 #' @export
-cleantodb <- function(..., writetodb = TRUE){
-        clean(write2db = write2db, ...)
+cleandb <- function(productcode, delete=FALSE){
+    checkdbcolumns(c("raw_flow", "validated_flow"))
+    dtf <- loadrawdata(productcode)
+    dtf <- clean(dtf)
+    message(paste("writing", nrow(dtf),"flows to the database"))
+    tryCatch(result <- writeenddata(dtf),
+             # Return if write to db succesded,
+             # otherwise return false
+             finally = return(result))
 }
-
-
 
 
 if(FALSE){
     library(dplyr)
-    load("data-raw/sawnwood_all.RData")
+    load("data-raw/comtrade/sawnwood_all.RData")
     # Step by step
     sawnwood <- swdall %>%
         renamecolumns %>%

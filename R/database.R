@@ -22,6 +22,36 @@ setdatabaseconfig <- function(reload=FALSE){
 }
 
 
+#' Control the presence of required columns in the
+#' given database tables
+#'
+#' Database connection parameters are given by the global option
+#' getOption("tradeflowsDB").
+#' @param tables character vector containing the name of
+#' database tables to check
+#' @export
+checkdbcolumns <- function(tables = c("raw_flow", "validated_flow")){
+    require(dplyr)
+    if(is.null(getOption("tradeflowsDB"))){
+        setdatabaseconfig()
+    }
+    db <- getOption("tradeflowsDB")
+    DBread <- src_mysql(user=db["user"], host=db["host"],
+                        password=db["password"], dbname=db["dbname"])
+    for(table in tables){
+        rawdata <- tbl(DBread, table)
+        dtf <- rawdata %>% head
+        missingcolumns <- column_names$efi[column_names[c(table)] &
+                                               !column_names$efi %in% names(dtf)]
+        if (length(missingcolumns)>0){
+            warning("Following column_names are missing from the ",
+                    table," table: \n",
+                    paste(missingcolumns, collapse=", "))
+        }
+    }
+}
+
+
 #' Load raw data form the database
 #'
 #' Connect to the raw database and load all tradeflows
@@ -37,7 +67,7 @@ loadrawdata <- function(productcode_, table_ = "raw_flow"){
     db <- getOption("tradeflowsDB")
     DBread <- src_mysql(user=db["user"], host=db["host"],
                         password=db["password"], dbname=db["dbname"])
-    rawdata <- tbl(DBread, sql(paste("SELECT * FROM",table_)))
+    rawdata <- tbl(DBread, table_)
     dtf <- rawdata %>% filter(productcode == productcode_) %>%
         # Remove id as it is database specific and should not be carried through cleaning
         # Change this to remove all fields that are not part of column_names$efi
@@ -58,9 +88,11 @@ writeenddata <- function(dtf, table="validated_flow"){
         setdatabaseconfig()
     }
     require(RMySQL)
-    DBwrite <- dbConnect(MySQL(), user="pauloef", host="hades.efi.int",
-                      password="OEF4t4f", dbname="tradeflows")
-    result <- dbWriteTable(DBwrite, name=table, value=dtf, append=TRUE, row.names = FALSE)
+    db <- getOption("tradeflowsDB")
+    DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                         password=db["password"], dbname=db["dbname"])
+    result <- dbWriteTable(DBwrite, name=table,
+                           value=data.frame(dtf), append=TRUE, row.names = FALSE)
     dbDisconnect(DBwrite)
     return(result)
 }

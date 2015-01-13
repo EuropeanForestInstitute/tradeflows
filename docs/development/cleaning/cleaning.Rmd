@@ -221,14 +221,33 @@ dtfclean %>% group_by(flag) %>% summarychange %>% kable
 
 
 ### Read from the database, clean, write to the database
-```{r readfromdb}
+```{r readfromdb, eval=FALSE}
 charcoal90 <- loadrawdata(440290)
+# Add missing fields as of January 2015 # should be fixed later
 charcoal90$flag <- 0
-charcoal90 <- clean(charcoal90)
+# Check that all required columns are there
+stopifnot(column_names$efi[column_names$raw_flow] %in% names(dtf))
+missingcolumnsraw <- column_names$efi[column_names$raw_flow &
+                                          !column_names$efi %in% names(dtf)]
+if (length(missingcolumnsraw)>0){
+    warning("Missing columns in the raw_flow table: \n",
+            paste(missingcolumnsraw, collapse=", "))
+}
+charcoal90 <- clean(charcoal90, deleteextracolumns = FALSE)
+```
+
+```{r cleandbfunction, eval=FALSE}
+checkdbcolumns()
+cleandb(440290)
 ```
 
 ```{r writetodb}
-
+# Remove missing fields as of January 2015
+columnstokeep <- column_names$efi[column_names$validated_flow] 
+columnstokeep <- columnstokeep[columnstokeep %in%  names(charcoal90)]
+charcoal90 <- charcoal90 %>% select_(.dots = columnstokeep) %>%
+    select(-flag)
+writeenddata(charcoal90)
 ```
 
 
