@@ -243,7 +243,7 @@ charcoal90 <- clean(charcoal90, deleteextracolumns = FALSE)
 
 ### Clean in detail again using all functions 
 ```{r cleandbfunction, eval=FALSE}
-swd99 <- readdbproduct(440799, dbtable = "raw_flow_yearly") %>% 
+swd99 <- readdbproduct(440799, tableread = "raw_flow_yearly") %>% 
     removeduplicatedflows %>%
     addconversionfactorandprice %>%
     addregion
@@ -272,7 +272,9 @@ writedbproduct(swd99, dbtable = "validated_flow_yearly" )
 
 ### Cleandb 
 ```{r cleandb}
-cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
+cleandbproduct(440799, 
+               tableread =  "raw_flow_yearly", 
+               tablewrite = "validated_flow_yearly")
 
 # Wrong writetable to test failure
 cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly_wrong")

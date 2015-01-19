@@ -18,12 +18,20 @@ Examples and demonstration:
   and a procedure to prepare volume and weight data
   
 ## Installation
-You can install this package using the devtools package.
+This package can be installed with the devtools package.
 ```
 library(devtools)
 install_bitbucket("paul4forest/tradeflows")
 ```
+Load the package and configure the database with:
+```
+library(tradeflows)
+setdatabaseconfig()
+```
+The database configuration file can be edited and reloaded.
+`setdatabaseconfig(reload=TRUE)` displays the location of the database configuration file.
 
+### Devtools package installation
 If the devtools package is not installed on your system.
 ```
 install.packages("devtools")
@@ -32,6 +40,8 @@ You may need to upgrade the libcurl library on your system shell
 ```
 sudo apt-get install libcurl4-gnutls-dev 
 ```
+
+
 ### Installation on a server 
 More details on the server configuration in this 
 [google doc](https://docs.google.com/document/d/1pY6HL0kOqulsdWzgZ7ic5ibJP4wrlF0Fl1wbhV3Kxdg/edit#heading=h.4fw0eqfvx5sz)

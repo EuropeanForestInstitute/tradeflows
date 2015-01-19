@@ -77,7 +77,8 @@ readdbproduct <- function(productcode_, tableread ){
         # Change this to remove all fields that are not part of column_names$efi
          select(-id, -lastchanged) %>%
         collect # forces computation and brings data back into a data.frame
-    stopifnot(names(dtf) %in% column_names$efi)
+    # Comment out this check which might not be needed
+    # stopifnot(names(dtf) %in% column_names$efi)
     return(dtf)
 }
 
