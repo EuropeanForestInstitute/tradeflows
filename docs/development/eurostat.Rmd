@@ -24,12 +24,12 @@ For example [Fuel wood Austria](http://epp.eurostat.ec.europa.eu/newxtweb/submit
 
 
 ### Bulk download
-* Eurostat used to provide [DVD of bulk data](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/publications/comext_dvd). Now available as [bulk download](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2013S2_DVD_image)
-* Into the [COMEXT folder](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext)
-    * [2014S1](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S1) contains monthly data since 1988
-    * [2014S2](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S2) contains yearly data
-    * [2014S3](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S3) contains montly and yearly data by mode of transport
-    * More details in the [Instructions on how to use the bulk download facility.pdf](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=comext%2FInstructions+on+how+to+use+the+bulk+download+facility.pdf) and explanation of data format in the [readme.txt](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
+* Eurostat used to provide [DVD of bulk data](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/publications/comext_dvd). Now available as [bulk download](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2013S2_DVD_image)
+* Into the [COMEXT folder](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext)
+    * [2014S1](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S1) contains monthly data since 1988
+    * [2014S2](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S2) contains yearly data
+    * [2014S3](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S3) contains montly and yearly data by mode of transport
+    * More details in the [Instructions on how to use the bulk download facility.pdf](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2FInstructions+on+how+to+use+the+bulk+download+facility.pdf) and explanation of data format in the [readme.txt](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
 
 ### SDMX SOAP and Rest APIs
 Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/rest_sdmx_2.1#ind_18_1) and a [SOAP API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/soap_sdmx_2.1).
@@ -41,21 +41,25 @@ Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/port
 * download a subset of a given dataset or a full dataset. "
 
 ## Bulk download of comext data
-Yearly data from the [2014S2](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&dir=comext%2F2014S2) folder 
+Yearly data from the [2014S2](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S2) folder 
 on eurostat's bulk download facility. 
 
 
 ### Download and decompress
+```{r}
+# Prepare the filename to 
+# download all comext trade flows for a given year
+year <- 2013
+bulkfile <- paste0("nc",year, "52.7z")
+```
 Data is downloaded in 7z format. 
 It can be uncompressed in Debian GNU linux with the
 [p7zip program](https://packages.debian.org/wheezy/p7zip). 
 Use system2 to invoque the decompression utility.
 Example downloading 2012 data:
+
 ```{r, eval=FALSE}
-# Download all comext trade flows for a given year
-year <- 2012
-bulkfile <- paste0("nc",year, "52.7z")
-download.file(paste0("http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=comext%2F2014S2%2Fdata%2F",bulkfile), 
+download.file(paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2F2014S2%2Fdata%2F",bulkfile), 
               destfile = paste0("data-raw/",bulkfile))
 
 # Change to the raw-data directory
@@ -71,7 +75,7 @@ tryCatch(system2("p7zip", args=c("-d", bulkfile)),
 Comext bulk files are over 400 Mb in size and cannot be read in one slice.
 One has to extract a slice of interesting product codes first.
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 # This takes more than 10 minutes to run on a laptop
 # nc2012 <- read.table("data-raw/nc201252.dat", header = TRUE)
 bulkfile <- gsub(".7z", ".dat", bulkfile)
@@ -89,9 +93,9 @@ header <- strsplit(header,",")[[1]]
 setwd(curdir)
 
 # read the data file
-nc2012 <- read.table("data-raw/4407nc201252.dat", sep=",",
-                     col.names = header, as.is=TRUE)
-str(nc2012)
+nc <- read.table(paste0("data-raw/", productcode, bulkfile),
+                     sep=",", col.names = header, as.is=TRUE)
+str(nc)
 # 'data.frame':    24364 obs. of  9 variables:
 #  $ DECLARANT    : chr  "001" "001" "001" "001" ...
 #  $ PARTNER      : int  3 3 3 3 3 3 3 3 3 3 ...
@@ -102,10 +106,39 @@ str(nc2012)
 #  $ VALUE_1000ECU: num  64.8 147.4 126.2 213.8 725.1 ...
 #  $ QUANTITY_TON : num  44.2 977.3 179.8 207.6 1142.3 ...
 #  $ SUP_QUANTITY : int  91 1042 388 498 3891 506 2 311 4218 192 ...
-unique(nc2012$PRODUCT_NC) 
-
-
+#unique(nc2012$PRODUCT_NC) 
 ```
+
+### Stat regime
+[Definition p 16](http://ec.europa.eu/eurostat/documents/64445/4439642/FAQ-XT-WEB-EN-final-January2012.pdf/2c387c03-5064-45bc-a949-2d3c75567973) There are broadly two approaches, closely linked with customs procedures, used for the compilation of external trade in goods: general trade system and the special trade system
+.
+
+```{r statregime}
+unique(nc$STAT_REGIME)
+nc %>% group_by(STAT_REGIME) %>%
+    summarise(n = n())
+```
+
+### Products
+Products which do not start with 44 should be removed.
+```{r productseurostat}
+nc %>% group_by(PRODUCT_NC) %>%
+    summarise(nblines = n(),
+              tradevalue = sum(VALUE_1000ECU),
+              weight = sum(QUANTITY_TON),
+              quantity = sum(SUP_QUANTITY)) %>%
+    mutate(conversion_factor = weight / quantity,
+           price = tradevalue / quantity) %>%
+    arrange(-nblines) %>% 
+    head(10) %>% kable 
+```
+
+## Add information to the Eurostat bulk data
+
+* Quantity units should be obtained from a product code table
+* Reporter and partner names should be obtained from 
+the Declarant and partner columns,  using a country codes and names matching tables
+
 
 
 ## Other tools 
@@ -116,7 +149,7 @@ unique(nc2012$PRODUCT_NC)
 Load data from the [Eurostat trade database](http://epp.eurostat.ec.europa.eu/portal/page/portal/international_trade/data/database), using the smarterpoland package
 
 The SmarterPoland package is downloading data tables from the
-[bulkdownload listing](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing) but these data tables do not contain bilateral trade.
+[bulkdownload listing](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing) but these data tables do not contain bilateral trade.
 
 
 Example use of the function SmarterPoland::getEurostatRCV
@@ -131,7 +164,7 @@ head(tmp)
 Download a sample dataset containing Sawnwood trade by species (for_swspec).
 This is downloading from the [Eurostat bulkdownload listing]
 
-* [URL downloading the compressed dataset for_swspec](http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=data%2Ffor_swspec.tsv.gz)
+* [URL downloading the compressed dataset for_swspec](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=data%2Ffor_swspec.tsv.gz)
 ```{r download_swd, eval=FALSE}
 swd <- SmarterPoland::getEurostatRCV(kod = "for_swspec")
 head(swd)
@@ -202,7 +235,7 @@ SmarterPoland::getEurostatRCV
 SmarterPoland::getEurostatRaw
 # function (kod = "educ_iste") 
 # {
-#     adres <- paste("http://epp.eurostat.ec.europa.eu/NavTree_prod/everybody/BulkDownloadListing?sort=1&file=data%2F", 
+#     adres <- paste("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=data%2F", 
 #         kod, ".tsv.gz", sep = "")
 #     tfile <- tempfile()
 #     download.file(adres, tfile)

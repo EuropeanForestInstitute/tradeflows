@@ -16,6 +16,12 @@ library(dplyr)
 library(RMySQL)
 ``` 
 
+## Load dump
+The following commands can be used to load mysql dump files:
+```
+cat raw_flow_yearly.sql | mysql -u paul -p  tradeflows
+cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows¹``
+
 ## SELECT using dplyr
 * Description and examples in the `?src_mysql` documentation
     To connect to a database :
@@ -39,7 +45,7 @@ library(RMySQL)
 DB <- src_mysql(user="R", host="localhost",
                        password="localhost", dbname="tradeflows")
 # Create `tbl`
-rawdata <- tbl(DB, sql("SELECT * FROM raw_flow"))
+rawdata <- tbl(DB, sql("SELECT * FROM raw_flow_yearly"))
 
 # number of rows
 rawdata %>% summarise(nrow = n()) %>%

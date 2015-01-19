@@ -7,7 +7,7 @@
 #' Use reload=TRUE to force reloading the file after modification.
 #' @param reload logical
 #' @export
-setdatabaseconfig <- function(reload=FALSE){
+setdatabaseconfig <- function(reload=FALSE, message=TRUE){
     # Path to the databasesonfig.R file
     databaseconfig <- system.file("config/databaseconfig.R",
                                   package="tradeflows")
@@ -16,8 +16,10 @@ setdatabaseconfig <- function(reload=FALSE){
                       databaseconfig))
         source(databaseconfig)
     } else {
-        message("Database configuration file already loaded.")
-        message("Use the option reload=TRUE if you want to reload it.")
+        if (message){
+            message("Database configuration file already loaded.")
+            message("Use the option reload=TRUE if you want to reload it.")
+        }
     }
 }
 
@@ -30,7 +32,7 @@ setdatabaseconfig <- function(reload=FALSE){
 #' @param tables character vector containing the name of
 #' database tables to check
 #' @export
-checkdbcolumns <- function(tables = c("raw_flow", "validated_flow")){
+checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly")){
     require(dplyr)
     if(is.null(getOption("tradeflowsDB"))){
         setdatabaseconfig()
@@ -39,6 +41,9 @@ checkdbcolumns <- function(tables = c("raw_flow", "validated_flow")){
     DBread <- src_mysql(user=db["user"], host=db["host"],
                         password=db["password"], dbname=db["dbname"])
     for(table in tables){
+        if(!table %in% names(column_names)){
+            stop("Add ", table ," to the column_names table")
+        }
         rawdata <- tbl(DBread, table)
         dtf <- rawdata %>% head
         missingcolumns <- column_names$efi[column_names[c(table)] &
@@ -52,22 +57,21 @@ checkdbcolumns <- function(tables = c("raw_flow", "validated_flow")){
 }
 
 
-#' Load raw data form the database
+#' Load trade flows for one product from a database table of choice
 #'
 #' Connect to the raw database and load all tradeflows
 #' for the given product code,
 #' for all years, in all directions, for all reporter and all partners.
-#' @param productcode the code of on product
+#' @param productcode_ the code of a product
+#' @param tableread the database table to read from
 #' @export
-loadrawdata <- function(productcode_, table_ = "raw_flow"){
+readdbproduct <- function(productcode_, tableread ){
     require(dplyr)
-    if(is.null(getOption("tradeflowsDB"))){
-        setdatabaseconfig()
-    }
+    setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")
     DBread <- src_mysql(user=db["user"], host=db["host"],
                         password=db["password"], dbname=db["dbname"])
-    rawdata <- tbl(DBread, table_)
+    rawdata <- tbl(DBread, tableread)
     dtf <- rawdata %>% filter(productcode == productcode_) %>%
         # Remove id as it is database specific and should not be carried through cleaning
         # Change this to remove all fields that are not part of column_names$efi
@@ -78,23 +82,46 @@ loadrawdata <- function(productcode_, table_ = "raw_flow"){
 }
 
 
-#' Write data into the database
+#' Write validated flows for one product into the database
 #'
 #' Write data into the DB
 #' @param dtf a data frame containing the data to be inserted
+#' @param tablewrite character vector of a database table to write to
 #' @export
-writeenddata <- function(dtf, table="validated_flow"){
-    if(is.null(getOption("tradeflowsDB"))){
-        setdatabaseconfig()
-    }
+writedbproduct <- function(dtf, tablewrite){
+    # Write only to a validated_flow table
+    stopifnot(tablewrite %in% c("validated_flow_yearly", "validated_flow_monthly"))
+    setdatabaseconfig(message=FALSE)
     require(RMySQL)
     db <- getOption("tradeflowsDB")
     DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
                          password=db["password"], dbname=db["dbname"])
-    result <- dbWriteTable(DBwrite, name=table,
-                           value=data.frame(dtf), append=TRUE, row.names = FALSE)
+    dtf <- data.frame(dtf)
+    result <- dbWriteTable(DBwrite, name = tablewrite,
+                           value=dtf, append=TRUE, row.names = FALSE)
     dbDisconnect(DBwrite)
     return(result)
+}
+
+
+#' Delete validated data for one product
+#'@param product name
+#'@export
+deletedbproduct <- function(productcode, tabledelete){
+    # Delete only in a validated_flow table
+    stopifnot(tabledelete %in% c("validated_flow_yearly", "validated_flow_monthly"))
+    setdatabaseconfig(message=FALSE)
+    db <- getOption("tradeflowsDB")
+    DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                         password=db["password"], dbname=db["dbname"])
+    sqlproduct <- paste("DELETE FROM ",tabledelete,
+                         "WHERE productcode = ", productcode)
+    res <- dbSendQuery(DBwrite, sqlproduct)
+    # See ?dbSendQuery
+    nbrowsdeleted <- dbGetRowsAffected(res)
+    message(nbrowsdeleted," rows were deleted.")
+    dbClearResult(res)
+    return(nbrowsdeleted)
 }
 
 
@@ -111,7 +138,7 @@ nrowinDB <- function(table){
 
 if (FALSE){
     #fibre <- loadrawdata(550410)
-    charcoal90 <- loadrawdata(440290)
-    fibre$quantity2 <- 0
-    writeenddata(fibre)
+#     charcoal90 <- readdb(440290)
+    swd99 <- readdb(440799, tableread = "raw_flow_yearly" )
+# See clean.R script for write example
 }

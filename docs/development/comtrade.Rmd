@@ -23,12 +23,14 @@ Load data from the [UN Comtrade API](http://comtrade.un.org/data/doc/api/).
 Download a JSON file containing trade flows 
 reported by germany `r=276` 
 with all partners `p=all&rg=all`
-for the product sawnwood `cc=4407`
+for the product sawnwood `cc=440799`
 in 2011 and 2010 `ps=2011,2010`:
-```{r download_JSON, eval=FALSE}
-download.file("http://comtrade.un.org/api/get?cc=4407&r=276&p=all&rg=all&ps=2011,2010&px=HS&max=50000&fmt=json",
+```{r download_JSON, eval=TRUE}
+download.file("http://comtrade.un.org/api/get?cc=440799&r=276&p=all&rg=all&ps=2011,2010&px=HS&max=50000&fmt=json",
               destfile="data-raw/UNCOMTRADE_exp.JSON")
 json <- jsonlite::fromJSON("data-raw/UNCOMTRADE_exp.JSON")
+# Remove too large description column in output 
+head(json$dataset) %>% select(-cmdDescE) %>% kable
 ```
 
 R function created within this package tradeflows to load data from the 

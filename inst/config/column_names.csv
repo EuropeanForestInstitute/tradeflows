@@ -1,28 +1,29 @@
-comtrade,eurostat,faostat,efi,raw_flow,validated_flow,efioutput,sql_type
+comtrade,eurostat_bulk,faostat,efi,raw_flow_yearly,validated_flow_yearly,efioutput,sql_type
 pfCode,NA,NA,classification,TRUE,TRUE,Trade classification system,VARCHAR(3)
-yr,NA,year,year,TRUE,TRUE,Year,INT(4)
-period,NA,NA,period,TRUE,TRUE,NA,NA
-periodDesc,NA,NA,perioddescription,TRUE,TRUE,NA,NA
-aggrLevel,NA,NA,aggrlevel,TRUE,TRUE,NA,NA
-IsLeaf,NA,NA,isleaf,TRUE,TRUE,NA,NA
-rgCode,NA,NA,flowcode,TRUE,TRUE,NA,INT(11)
-rgDesc,FLOW,ElementName,flow,TRUE,TRUE,NA,TEXT
-rtCode,NA,NA,reportercode,TRUE,TRUE,Reporting coutry code,int(3)
-rtTitle,REPORTER,ReporterName,reporter,TRUE,TRUE,Reporting country,text
-rt3ISO,NA,NA,reporteriso,TRUE,TRUE,Reporting ISO code,varchar(3)
-ptCode,NA,NA,partnercode,TRUE,TRUE,Partner country code,int(3)
-ptTitle,PARTNER,PartnerName,partner,TRUE,TRUE,Partner country code,text
-pt3ISO,NA,NA,partneriso,TRUE,TRUE,Partner ISO code,varchar(3)
-cmdCode,NA,NA,productcode,TRUE,TRUE,Product code,text
-cmdDescE,PRODUCT,ItemName,productdescription,TRUE,TRUE, Product Description,text 
-qtCode,NA,NA,unitcode,TRUE,TRUE,NA,int(3)
-qtDesc,NA,NA,unit,TRUE,TRUE,NA,text
-TradeQuantity,NA,NA,quantity,TRUE,TRUE,Quantity,bigint(20)
-NetWeight,NA,NA,weight,TRUE,TRUE,Weight,bigint(20)
-TradeValue,VALUE_IN_EUROS,NA,tradevalue,TRUE,TRUE,Trade Value,bigint(20)
-estCode,NA,NA,flag,TRUE,TRUE,Flag,INT(4)
+yr,NA,year,year,TRUE,TRUE,Year,YEAR(4)
+period,PERIOD,NA,period,TRUE,TRUE,NA,INT
+periodDesc,NA,NA,perioddescription,TRUE,TRUE,NA,VARCHAR(255)
+aggrLevel,NA,NA,aggrlevel,TRUE,TRUE,NA,TINYINT
+IsLeaf,NA,NA,isleaf,TRUE,TRUE,NA,TINYINT(1)
+rgCode,FLOW,NA,flowcode,TRUE,TRUE,NA,TINYINT
+rgDesc,NA,ElementName,flow,TRUE,TRUE,NA,VARCHAR(32)
+rtCode,DECLARANT,NA,reportercode,TRUE,TRUE,Reporting coutry code,SMALLINT
+rtTitle,NA,ReporterName,reporter,TRUE,TRUE,Reporting country,VARCHAR(255)
+rt3ISO,NA,NA,reporteriso,TRUE,TRUE,Reporting ISO code,CHAR(3)
+ptCode,NA,NA,partnercode,TRUE,TRUE,Partner country code,SMALLINT
+ptTitle,PARTNER,PartnerName,partner,TRUE,TRUE,Partner country code,VARCHAR(255)
+pt3ISO,NA,NA,partneriso,TRUE,TRUE,Partner ISO code,CHAR(3)
+cmdCode,PRODUCT_NC,NA,productcode,TRUE,TRUE,Product code,MEDIUMINT
+cmdDescE,NA,ItemName,productdescription,TRUE,TRUE,Product Description,TEXT
+qtCode,NA,NA,unitcode,TRUE,TRUE,NA,TINYINT
+qtDesc,NA,NA,unit,TRUE,TRUE,NA,VARCHAR(255)
+TradeQuantity,SUP_QUANTITY,NA,quantity,TRUE,TRUE,Quantity,BIGINT
+NetWeight,QUANTITY_TON,NA,weight,TRUE,TRUE,Weight,BIGINT
+TradeValue,VALUE_1000ECU,NA,tradevalue,TRUE,TRUE,Trade Value,BIGINT
+estCode,NA,NA,flag,TRUE,TRUE,Flag,TINYINT
 NA,NA,NA,pricecur,FALSE,FALSE,NA,NA
 NA,NA,NA,priceconst,FALSE,FALSE,NA,NA
 NA,NA,NA,NA,FALSE,FALSE,Product definition,NA
-NA,NA,NA,quantityreporter,FALSE,TRUE,NA,bigint(20)
-NA,NA,NA,quantitypartner,FALSE,TRUE,NA,bigint(20)
+NA,NA,NA,quantityreporter,FALSE,TRUE,NA,BIGINT
+NA,NA,NA,quantitypartner,FALSE,TRUE,NA,BIGINT
+NA,NA,NA,lastchanged,TRUE,TRUE,NA,INT

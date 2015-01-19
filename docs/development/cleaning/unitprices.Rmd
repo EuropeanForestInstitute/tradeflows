@@ -23,11 +23,13 @@ library(reshape2)
 
 ```{r loadandprepare}
 # Remove this chunk in the template file
-load("data-raw/comtrade/440799.RData")
+# load("data-raw/comtrade/440799.RData")
+# replace file by database source
+dtf <- loadrawdata(440799, "raw_flow_yearly")
 regionpartner <- reportercomtrade %>%
     select(reportercode = reportercode, regionpartner=region)
 swd99 <- dtf %>% 
-    renamecolumns %>%
+#     renamecolumns %>%
     filter(flow %in% c("Import", "Export")) %>%
     # Remove EU28 reporter
     filter(!reporter %in%c("EU-28")) %>%
@@ -55,7 +57,7 @@ swd99 <- dtf %>%
 ### Flows for which there is no quantity
 Not all quantities are available. which percentage of the trade value cannot be taken into account for the unit price calculation? 
 
-* There are `r nrow(swd99)` flows in the  `r unique(swd99$productcode)` dataset. 
+* There are `r nrow(swd99)` flows in the  `r as.character(unique(swd99$productcode))` dataset. 
 * `r nrow(filter(swd99, is.na(tradevalue)))` don't have a trade value
 * `r nrow(filter(swd99, is.na(weight)))` don't have a weight
 * `r nrow(filter(swd99, is.na(quantity)))` don't have a quantity
@@ -88,7 +90,7 @@ swd99 %>%
 
 
 ## Unit prices at various aggregation level
-Calculate prices for product code `r unique(swd99$productcode)`.
+Calculate prices for product code `r as.character(unique(swd99$productcode))`.
 Calculate median prices and an upper and lower bound. Upper price is the third quartile multiplied by 2, lower price is the first quartile divided by 2.
 In a boxplot, the upper and lower "hinges" correspond to the first and third quartiles (the 25th and 75th percentiles).
 
@@ -160,7 +162,7 @@ swd99region2 %>%
 
 ### Median unit price and comtrade estimated quantities
 ```{r}
-medianprice
+# medianprice
 
 ```
 

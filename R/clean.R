@@ -92,7 +92,7 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
         filter(!partner %in%c("EU-28", "World")) %>%
         # Remove missing quantity
         filter(!is.na(quantity)& unit !="No Quantity") %>%
-
+        # Calculate yearly regional prices
         group_by(flow, regionreporter, year, unit) %>%
         summarise(lowerprice = round(lowercoef * quantile(price, 0.25,
                                                     names=FALSE, na.rm=TRUE)),
@@ -347,7 +347,6 @@ clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
         addregion
     priceregion <- extractprices(dtf)
     conversionfactorworld <- extractconversionfactors(dtf)
-
     # Complete missing quantity
     # and check for out of bound price
     dtf <- dtf %>%
@@ -364,10 +363,10 @@ clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
     if(deleteextracolumns){
         # Add or remove colum names here if needed
         columnstokeep <- column_names$efi[column_names$validated_flow]
+        # Remove lastchanged because is in the databasebut it is not an outcome of this function
+        columnstokeep <- columnstokeep[!columnstokeep == "lastchanged"]
         dtf <- dtf %>% select_(.dots = columnstokeep)
     }
-
-
     return(dtf)
 }
 
@@ -384,19 +383,26 @@ clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
 #'   (between all reporter and partner countries in all years),
 #' 3. Use  \code{\link{clean}()} to clean the data frame and write it to the database
 #' 4. Write All validated flows for that product.
+
+#' @return TRUE if write to db succesded, otherwise return FALSE
 #' @rdname clean
 #' @param productcode_ code of the product trade flows to be validated
-#' @param delete
+#' @param tableread name of the table to read from
+#' @param tablewrite name of the table to write to (all rows for productcode
+#' will be deleted in this table before writing)
 #' @export
-cleandb <- function(productcode, delete=FALSE){
-    checkdbcolumns(c("raw_flow", "validated_flow"))
-    dtf <- loadrawdata(productcode)
+cleandbproduct <- function(productcode, tableread, tablewrite){
+    checkdbcolumns(c(tableread, tablewrite))
+    dtf <- readdbproduct(productcode, tableread = tableread)
     dtf <- clean(dtf)
-    message(paste("writing", nrow(dtf),"flows to the database"))
-    tryCatch(result <- writeenddata(dtf),
-             # Return if write to db succesded,
-             # otherwise return false
-             finally = return(result))
+    deletedbproduct(productcode, tablewrite)
+    message(paste("writing", nrow(dtf), "flows to the database"))
+    # Message concerning the database read
+    dbmessage<- data.frame(result = c(TRUE, FALSE), message =  c("Write to the database succeeded",
+                                                                 "Write to the database failed"))
+    result <- FALSE
+    tryCatch(result <- writedbproduct(dtf, tablewrite),
+             finally = return(message(dbmessage$message[dbmessage$result == result])))
 }
 
 

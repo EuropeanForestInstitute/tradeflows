@@ -219,7 +219,7 @@ dtfclean %>% addpartnerflow
 dtfclean %>% group_by(flag) %>% summarychange %>% kable
 ```
 
-
+## Clean from the database
 ### Read from the database, clean, write to the database
 ```{r readfromdb, eval=FALSE}
 charcoal90 <- loadrawdata(440290)
@@ -236,18 +236,92 @@ if (length(missingcolumnsraw)>0){
 charcoal90 <- clean(charcoal90, deleteextracolumns = FALSE)
 ```
 
-```{r cleandbfunction, eval=FALSE}
-checkdbcolumns()
-cleandb(440290)
+
+```{r readfromdb2, eval=FALSE}
 ```
 
-```{r writetodb}
-# Remove missing fields as of January 2015
-columnstokeep <- column_names$efi[column_names$validated_flow] 
-columnstokeep <- columnstokeep[columnstokeep %in%  names(charcoal90)]
-charcoal90 <- charcoal90 %>% select_(.dots = columnstokeep) %>%
-    select(-flag)
-writeenddata(charcoal90)
+
+### Clean in detail again using all functions 
+```{r cleandbfunction, eval=FALSE}
+swd99 <- readdbproduct(440799, dbtable = "raw_flow_yearly") %>% 
+    removeduplicatedflows %>%
+    addconversionfactorandprice %>%
+    addregion
+priceregion <- extractprices(swd99)
+conversionfactorworld <- extractconversionfactors(swd99)
+swd99 <- swd99 %>%
+        estimatequantity(priceregion, conversionfactorworld,
+                         shaveprice = TRUE) %>%
+        addpartnerflow
+names(swd99)
+deletedbproduct(440799, dbtable= "validated_flow_yearly")
+writedbproduct(swd99, dbtable = "validated_flow_yearly" )
+```
+
+
+### Clean using the main clean function
+```{r cleanfromdbmain, eval = FALSE}
+swd99 <- readdbproduct(440799, dbtable = "raw_flow_yearly")
+rawnames <- names(swd99)
+swd99 <- clean(swd99)
+# Only 2 new columns because clean removed extracolumns
+names(swd99)[!names(swd99) %in% rawnames]
+writedbproduct(swd99, dbtable = "validated_flow_yearly" )
+```
+
+
+### Cleandb 
+```{r cleandb}
+cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
+
+# Wrong writetable to test failure
+cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly_wrong")
+
+```
+
+
+### Other experiments with dbwrite
+```{r writetodbexperimental, eval=FALSE}
+setdatabaseconfig(message=FALSE)
+require(RMySQL)
+db <- getOption("tradeflowsDB")
+DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                     password=db["password"], dbname=db["dbname"])
+result <- dbWriteTable(DBwrite, name="validated_flow_yearly",
+                       value=data.frame(swd99), append=TRUE, row.names = FALSE)
+dbDisconnect(DBwrite)
+
+writedbpaul <-function(dtf, dbtable){
+    # Write only to a validated_flow table
+    stopifnot(dbtable %in% c("validated_flow_yearly", "validated_flow_monthly"))
+    setdatabaseconfig(message=FALSE)
+    require(RMySQL)
+    db <- getOption("tradeflowsDB")
+    DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                         password=db["password"], dbname=db["dbname"])
+    result <- dbWriteTable(DBwrite, name="validated_flow_yearly",
+                           value=data.frame(dtf), append=TRUE, row.names = FALSE)
+    dbDisconnect(DBwrite)
+    return(result)
+    }
+writedbpaul(swd99, "validated_flow_yearly")
+
+
+writedbproduct <- function(dtf, dbtable){
+    # Write only to a validated_flow table
+    stopifnot(dbtable %in% c("validated_flow_yearly", "validated_flow_monthly"))
+    setdatabaseconfig(message=FALSE)
+    require(RMySQL)
+    db <- getOption("tradeflowsDB")
+    DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                         password=db["password"], dbname=db["dbname"])
+    dtf <- data.frame(dtf)
+    result <- dbWriteTable(DBwrite, name=table,
+                           value=dtf, append=TRUE, row.names = FALSE)
+    dbDisconnect(DBwrite)
+    return(result)
+}
+writedbproduct(swd99, "validated_flow_yearly")
 ```
 
 
