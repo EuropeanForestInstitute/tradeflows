@@ -20,7 +20,7 @@ library(RMySQL)
 The following commands can be used to load mysql dump files:
 ```
 cat raw_flow_yearly.sql | mysql -u paul -p  tradeflows
-cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows¹``
+cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows?``
 
 ## SELECT using dplyr
 * Description and examples in the `?src_mysql` documentation
@@ -39,6 +39,36 @@ cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows¹``
    It is intended to create temporary test tables.
    The email exchange ends by suggesting to to use `RMySQL::dbWriteTable()` 
    to append data to an existing table.
+
+
+### Check the presence of database columns
+```{r dplyrselectcolumns}
+# ai'nt working baby
+
+checkdbcolumns(c("validated_flow_yearly"))
+# Connect to db
+setdatabaseconfig(message=FALSE)
+db <- getOption("tradeflowsDB")
+DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                     password=db["password"], dbname=db["dbname"])
+tableread <- "validated_flow_yearly"
+sqlquery <- paste(c("SELECT `COLUMN_NAME`", 
+                    "FROM `INFORMATION_SCHEMA`.`COLUMNS` ",
+                    "WHERE `TABLE_SCHEMA`='tradeflows' ",
+                    "AND `TABLE_NAME`='",tableread,"';"), collapse = "")
+res <- dbSendQuery(DBwrite, sqlquery)
+columnname <- dbFetch(res)
+columnname <- columnname$COLUMN_NAME
+# See ?dbSendQuery
+
+# delete colums
+deletedbproduct(440799, "validated_flow_yearly")
+sqlquery <- "SELECT `COLUMN_NAME` 
+FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+WHERE `TABLE_SCHEMA`='tradeflows' 
+AND `TABLE_NAME`='validated_flow_yearly';"
+
+```
 
 ### Query the database using tbl, verbs and collect
 ```{r dplyrselect}

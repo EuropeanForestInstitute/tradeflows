@@ -34,23 +34,29 @@ setdatabaseconfig <- function(reload=FALSE, message=TRUE){
 #' @export
 checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly")){
     require(dplyr)
-    if(is.null(getOption("tradeflowsDB"))){
-        setdatabaseconfig()
-    }
+    setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")
-    DBread <- src_mysql(user=db["user"], host=db["host"],
-                        password=db["password"], dbname=db["dbname"])
-    for(table in tables){
-        if(!table %in% names(column_names)){
-            stop("Add ", table ," to the column_names table")
+    DBread <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+                         password=db["password"], dbname=db["dbname"])
+    for(tableread in tables){
+        print(str(tableread))
+        if(!tableread %in% names(column_names)){
+            stop("Add ", tableread ," to the column_names table")
         }
-        rawdata <- tbl(DBread, table)
-        dtf <- rawdata %>% head
-        missingcolumns <- column_names$efi[column_names[c(table)] &
-                                               !column_names$efi %in% names(dtf)]
+        sqlquery <- paste(c("SELECT `COLUMN_NAME`",
+                            "FROM `INFORMATION_SCHEMA`.`COLUMNS` ",
+                            "WHERE `TABLE_SCHEMA`='tradeflows' ",
+                            "AND `TABLE_NAME`='",tableread,"';"), collapse = "")
+        res <- dbSendQuery(DBread, sqlquery)
+        columnname <- dbFetch(res)
+        columnname <- columnname$COLUMN_NAME
+        # For that table, find the efi column names which are supposed to
+        # be in there, but which are not in the data frame
+        missingcolumns <- column_names$efi[column_names[c(tableread)] &
+                                               !column_names$efi %in% columnname]
         if (length(missingcolumns)>0){
             warning("Following column_names are missing from the ",
-                    table," table: \n",
+                    tableread," table: \n",
                     paste(missingcolumns, collapse=", "))
         }
     }
@@ -110,6 +116,7 @@ writedbproduct <- function(dtf, tablewrite){
 #'@export
 deletedbproduct <- function(productcode, tabledelete){
     # Delete only in a validated_flow table
+    require(RMySQL)
     stopifnot(tabledelete %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")

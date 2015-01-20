@@ -1,0 +1,31 @@
+---
+title: "Learning to load data from MySQL"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+setdatabaseconfig(message=FALSE)
+db <- getOption("tradeflowsDB")
+DBread <- src_mysql(user=db["user"], host=db["host"],
+                    password=db["password"], dbname=db["dbname"])
+rawflow <- tbl(DBread, "raw_flow_yearly")
+``` 
+
+
+See docs/development/MySQL.Rmd for the development history of accessing mysql.
+```{r}
+#' Create a tbl_df object on a given table
+rawflow %>% group_by(productcode) %>% 
+    summarise(n = n(), tradevalue = sum(tradevalue)) %>% kable    
+```
+
+

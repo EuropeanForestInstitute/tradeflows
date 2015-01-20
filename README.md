@@ -233,8 +233,20 @@ Calling the javascript files should be possible within a YAML document, see
 
 
 ### TODO by order of ease / importance
-* calculate regional prices as a ponderation of import and export prices
-  as done in Chasamil2000
+* Create a trac system with externam accesss to track progress.
+* in checkdbcolumns() Use sqlquery <- "SELECT `COLUMN_NAME` 
+FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+WHERE `TABLE_SCHEMA`='tradeflows' 
+AND `TABLE_NAME`='validated_flow_yearly';"
+instead of loading a data frame to check the column names.
+Because loading a data frame doesn't work when the table is
+empty.
+* create a function to display product codes available
+or a function that returns an uncollected tbl dplyr object
+on which to run arbitrary dplyr statements. 
+--> This might not actually be needed.
+* calculate regional prices as a ponderation of 
+import and export prices as done in Chasamil2000
 * discrepancy report
 in the server function,
 add a parameter to the loadcomtrade_bycode function to render this optional
@@ -276,3 +288,8 @@ updates will be done on a product basis, at the 6 digit level. The cleaning scri
   (between all reporter and partner countries in all years),
 2. Enter All validated flows for that product.
 
+The main clean instruction 
+can also run from a system shell directly
+```
+Rscript -e 'library(tradeflows)' -e 'cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
+```
