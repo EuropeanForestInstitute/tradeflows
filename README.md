@@ -233,6 +233,8 @@ Calling the javascript files should be possible within a YAML document, see
 
 
 ### TODO by order of ease / importance
+* use an environmennt variable for the yearbegin and yearend of the
+function that chooses between reporter and partner volume
 * Create a trac system with externam accesss to track progress.
 * in checkdbcolumns() Use sqlquery <- "SELECT `COLUMN_NAME` 
 FROM `INFORMATION_SCHEMA`.`COLUMNS` 
@@ -272,6 +274,13 @@ visualise missing data
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
 ### Notes to EFI developpers 
+Which directories I want to read at
+https://bitbucket.org/paul4forest/tradeflows/?
+You want to look at files in the R folders.
+
+* database.R is doing the database interaction
+* clean.R is cleaning the datai
+
 The configuration table columnnames located in config/column_names.csv
 now contains 2 column specifying which columns names
 are used in the trade flows database:

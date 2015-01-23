@@ -150,10 +150,8 @@ extractconversionfactors <- function(dtf, geoaggregation="World",
 #' @param price a data frame of unit prices which can be merge with dtf
 #' @param conversionfactor a data frame of conversion factors which can be
 #'      merged with dtf
-#' @param shave logical, TRUE when upper and lower bound on prices have to be
-#'      checked and quantity replaced accordingly
 #' @export
-estimatequantity <- function(dtf, price, conversionfactor, shaveprice = TRUE){
+estimatequantity <- function(dtf, price, conversionfactor){
     # check if at least 4 common columns are present in dtf
     # for the merge with price (Flow, regionreporter, year, unit)
     stopifnot(sum(names(price) %in% names(dtf))>=4)
@@ -167,7 +165,9 @@ estimatequantity <- function(dtf, price, conversionfactor, shaveprice = TRUE){
     # before merging price and conversion factor tables
     dtf$unit[dtf$unit=="No Quantity"] <- unitprefered
 
-    # For all flows
+    ### For all flows
+    # Keep raw quantity for further analysis
+    dtf <- dtf %>% mutate(quantityraw = quantity)
     # Estimate quantity based on the weight using a conversion factor
     dtf <- merge(dtf, conversionfactor, all.x=TRUE) %>%
         mutate(quantity_cf = weight / medianconversion)
@@ -176,43 +176,108 @@ estimatequantity <- function(dtf, price, conversionfactor, shaveprice = TRUE){
         mutate(quantity_up = tradevalue / medianprice,
                havequantity = !is.na(quantity))
 
-    # Split flows which have a quantity from those which don't
+    ### Split flows which have a quantity from those which don't
     # Replace quantity by quantity_cf or quantity_up
     dtfq <- dtf %>% filter(!is.na(quantity))
     dtfnoqw <- dtf %>% filter(is.na(quantity) & !is.na(weight)) %>%
         mutate(quantity = quantity_cf,
-               flag = flag + 200)
+               flag = flag + 10)
     dtfnoqnow <- dtf %>% filter(is.na(quantity) & is.na(weight)) %>%
         mutate(quantity = quantity_up,
-               flag = flag + 600)
+               flag = flag + 20)
     stopifnot(nrow(dtf)==nrow(dtfq) + nrow(dtfnoqw) + nrow(dtfnoqnow))
     # Messages about the number of rows affected
     nrow(dtfnoqw) %>% message(" rows where quantity was not available but weight was available")
     nrow(dtfnoqnow) %>% message(" rows where neither quantity nor weight were available")
     # Put data frames back together
     dtf <- rbind(dtfq, dtfnoqw, dtfnoqnow)
+    return(dtf)
+}
 
-    if (shaveprice){
-        # Check unit price for all flows
-        # Those which have been estimated from tradevalue will have correct prices
-        # those which have been estimated from weight might be changed as well
 
-        # Split flows which have prices out of bounds from those which don't
-        dtfinbound <- dtf %>% filter(lowerprice<=price & price<=upperprice|
-                                         is.na(price) |
-                                         # These conditions are problematic
-                                         # In general NA values should be avoided for the
-                                         # upper and lower bounds on prices
-                                         is.na(lowerprice)|is.na(upperprice))
-        dtfoutbound <- dtf %>% filter(price<lowerprice | upperprice<price) %>%
-            mutate(quantity = quantity_up,
-                   flag = flag + 900)
-        cat("nrow dtfinbound",nrow(dtfinbound))
-        cat("nrow dtfoutbound",nrow(dtfoutbound))
-        stopifnot(nrow(dtf) == nrow(dtfinbound) + nrow(dtfoutbound))
-        nrow(dtfoutbound) %>% message(" rows had a price too high or too low")
-        dtf <- rbind(dtfinbound, dtfoutbound)
-    }
+#' Compare reporter and partner flow
+#'
+#' The data frame outcome of this function
+#' will be use by replacebypartnerquantity()
+#' to decide which of the reporter or partner flow to favor
+#' @para dtf data frame
+#' @param yearbegin change this to global parameter
+#' @param yearend change this to global parameter
+choosereporterorpartner <- function(dtf,
+                                    yearbegin=2009, yearend=2013,
+                                    sdratiolimit = 0.8){
+    choice <- dtf %>%
+        filter(yearbegin <= year & year<= yearend) %>%
+        mutate(pricereporter = tradevalue / quantityreporter,
+               pricepartner = tradevaluepartner / quantitypartner) %>%
+        group_by(flow, reportercode, partnercode,
+                 reporter, partner) %>%
+        summarise(
+            ### Reporter quantity q and price p
+            meanqreporter = mean(quantityreporter, na.rm=TRUE),
+            meanpreporter = mean(pricereporter, na.rm=TRUE),
+            sdpreporter = sd(pricereporter, na.rm=TRUE),
+            ### Partner price p
+            meanppartner = mean(pricepartner, na.rm=TRUE),
+            sdppartner = sd(pricepartner, na.rm=TRUE),
+            ### Ratio of the standard deviation on price
+            sdratio = sdppartner / sdpreporter,
+            favorpartner = sdratio < sdratiolimit)
+    return(choice)
+}
+
+
+#' Replace quantity by quantity partner when the price variation in
+#' recent years was greater than that of the partner country for the same flow
+#'
+#' @param dtf data frame
+#' @param choice a data frame of choice between reporter and partner
+replacebypartnerquantity <- function(dtf, choice){
+    choice <- choice %>% select(reportercode, partnercode, favorpartner)
+    dtf <- merge(dtf, choice, all.x=TRUE)
+    # cut the dataframe between the lines which favor partner and the others
+    dtffavor <- dtf %>% filter(favorpartner) %>%
+        mutate(quantity = quantitypartner,
+               flag = flag + 300)
+    dtfrest <- dtf %>% filter(!favorpartner | is.na(favorpartner))
+    stopifnot(nrow(dtf) == nrow(dtffavor) + nrow(dtfrest))
+    message(nrow(dtffavor), "rows where quantity reporter was replaced by quantity partner")
+    dtf <- rbind(dtffavor, dtfrest)
+    return(dtf)
+}
+
+
+#' Change quantities when unit prices are too high or too low
+#'
+#' Upper and lower bound on prices have to be
+#' checked and quantity replaced accordingly
+#' This function comes after estimatequantity()
+#' and after addpartnerflow()
+#' check this order in the source of the clean() function.
+#' Check unit price for all flows
+#' recalculate unit price based on quantity estimate
+#' Those which have been estimated from tradevalue will have correct prices
+#' those which have been estimated from weight might be changed as well
+#' @param dtf data frame
+#' @export
+shaveprice <- function(dtf){
+    # Split flows which have prices out of bounds from those which don't
+    dtf <- dtf %>% mutate(rawprice = price,
+                          price = tradevalue / quantity)
+    dtfinbound <- dtf %>%
+        filter(lowerprice<=price & price<=upperprice|
+                   is.na(price) |
+                   # These conditions are problematic
+                   # In general NA values should be avoided for the
+                   # upper and lower bounds on prices
+                   is.na(lowerprice)|is.na(upperprice))
+    dtfoutbound <- dtf %>%
+        filter(price<lowerprice | upperprice<price) %>%
+        mutate(quantity = quantity_up,
+               flag = flag + 4000)
+    stopifnot(nrow(dtf) == nrow(dtfinbound) + nrow(dtfoutbound))
+    message(nrow(dtfoutbound), " rows had a price too high or too low")
+    dtf <- rbind(dtfinbound, dtfoutbound)
     return(dtf)
 }
 
@@ -280,7 +345,7 @@ addpartnerflow <- function(dtf){
                reportercode = partnercode) %>%
         select(reportercode, partnercode,
                productcode, flow, year,
-               quantity) %>% #Add weight, tradevalue here if you want them from the partner
+               quantity, tradevalue) %>% #Add weight, tradevalue here if you want them from the partner
         mutate(flow = gsub("Import","aaaaaaa",flow),
                flow = gsub("Export","Import",flow),
                flow = gsub("aaaaaaa","Export",flow))
@@ -337,23 +402,39 @@ calculatediscrepancies <- function(dtf){
 #' Add quantity estimates reported by the trade partner.
 #' The outcome is returned as a data frame.
 #' @param dtf data frame
+#' @param replacebypartnerquantity, when TRUE call replacebypartnerquantity()
+#' @param shaveprice when TRUE, call shaveprice()
 #' @param deleteextracolumns when TRUE, keep only columns from
-#' column_names$validated_flow
+#' tradeflows::column_names$validated_flow
+#' @param outputalltables when TRUE return a list of data frames
+#' containing the cleaned dataset and all tables used to compute it
+#' conversion factors, regional unit prices, choice between
+#' reporter and partner flows
 #' @export
-clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
+clean <- function(dtf,
+                  replacebypartnerquantity = TRUE,
+                  shaveprice = TRUE,
+                  deleteextracolumns = FALSE,
+                  outputalltables = FALSE){
+    ### Prepare conversion factor and prices
     dtf <- dtf %>%
         removeduplicatedflows %>%
         addconversionfactorandprice %>%
         addregion
     priceregion <- extractprices(dtf)
     conversionfactorworld <- extractconversionfactors(dtf)
-    # Complete missing quantity
-    # and check for out of bound price
+
+    ### Estimate quantity
     dtf <- dtf %>%
-        estimatequantity(priceregion, conversionfactorworld,
-                         shaveprice = shaveprice) %>%
-    # Add partner information
+        estimatequantity(priceregion, conversionfactorworld) %>%
         addpartnerflow
+    if (replacebypartnerquantity){
+        choice <- choosereporterorpartner(dtf)
+        dtf <- dtf %>% replacebypartnerquantity(choice)
+    }
+    if (shaveprice){
+        dtf <- dtf %>% shaveprice # based on upper and lower prices added above
+    }
     # This is where you could change quantity to quantityreporter
     # Or make another decision based on what is considered best estimates
     # For example to always favor export flows.
@@ -361,11 +442,20 @@ clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
     # Remove column names added by the merge with price and conversionfactor tables
     # Keep only column names in the final table validated_flow
     if(deleteextracolumns){
-        # Add or remove colum names here if needed
         columnstokeep <- column_names$efi[column_names$validated_flow]
-        # Remove lastchanged because is in the databasebut it is not an outcome of this function
+        # Add or remove colum names here if needed
+        # Remove lastchanged because is in the database
+        # raw_flow table but we want the database to compute it again
+        # for the validated flow
         columnstokeep <- columnstokeep[!columnstokeep == "lastchanged"]
         dtf <- dtf %>% select_(.dots = columnstokeep)
+    }
+    if(outputalltables){
+        return(list(dtf = dtf,
+                    priceregion = priceregion,
+                    conversionfactorworld = conversionfactorworld,
+                    choice = choosereporterorpartner(dtf))
+        )
     }
     return(dtf)
 }
@@ -394,15 +484,17 @@ clean <- function(dtf, shaveprice=FALSE, deleteextracolumns=TRUE){
 cleandbproduct <- function(productcode, tableread, tablewrite){
     checkdbcolumns(c(tableread, tablewrite))
     dtf <- readdbproduct(productcode, tableread = tableread)
-    dtf <- clean(dtf)
+    dtf <- clean(dtf, shaveprice = TRUE,
+                 deleteextracolumns = TRUE)
     deletedbproduct(productcode, tablewrite)
     message(paste("writing", nrow(dtf), "flows to the database"))
     # Message concerning the database read
-    dbmessage<- data.frame(result = c(TRUE, FALSE), message =  c("Write to the database succeeded",
-                                                                 "Write to the database failed"))
+    dbmessage<- data.frame(result = c(TRUE, FALSE),
+                           message =  c("Write to the database succeeded",
+                                        "Write to the database failed"))
     result <- FALSE
     tryCatch(result <- writedbproduct(dtf, tablewrite),
-             finally = return(message(dbmessage$message[dbmessage$result == result])))
+             finally = message(dbmessage$message[dbmessage$result == result]))
 }
 
 

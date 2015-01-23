@@ -23,7 +23,7 @@ will be deleted in this table before writing)}
 \item{productcode_}{code of the product trade flows to be validated}
 }
 \value{
-TRUE if write to db succesded, otherwise return false
+TRUE if write to db succesded, otherwise return FALSE
 }
 \description{
 Use unit prices and conversion factors to complete missing quantity data.

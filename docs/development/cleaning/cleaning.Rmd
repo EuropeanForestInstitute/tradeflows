@@ -211,7 +211,7 @@ dtf_p <- addpartnerflow(dtf)
 
 
 ### Main clean function
-```{r mainclean}
+```{r mainclean, eval=FALSE}
 dtfclean <- dtfraw %>% 
     clean(shaveprice=TRUE) 
 dtfdup <- dtfclean %>% findduplicatedflows
@@ -273,11 +273,11 @@ writedbproduct(swd99, dbtable = "validated_flow_yearly" )
 
 ### Cleandb 
 ```{r cleandb}
+checkdbcolumns()
 cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
 
 # Wrong writetable to test failure
-cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly_wrong")
-
+try(cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly_wrong"))
 ```
 
 

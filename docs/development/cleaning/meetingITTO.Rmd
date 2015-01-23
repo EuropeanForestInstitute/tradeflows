@@ -1,0 +1,205 @@
+---
+title: "Choice between reporter and partner flow"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: 
+  html_document:
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(RMySQL)
+library(reshape2)
+``` 
+
+```{r loadrawdata}
+load("data-raw/comtrade/440799.RData")
+dtfraw <- dtf %>% renamecolumns %>% filter(flowcode %in% c(1,2))
+dtfclean <- clean(dtfraw, shaveprice = TRUE)
+```
+
+### Shave prices only
+```{r shaveprices}
+dtfclean <- clean(dtfraw, shaveprice = TRUE)
+# 729 rows where quantity was not available but weight was available
+# 119 rows where neither quantity nor weight were available
+# 5071 rows had a price too high or too low
+```
+
+### Look at the average of the last 5 years
+```{r}
+dtfclean %>% filter(reportercode == 8, partnercode == 300,
+                    flow == "Import") %>%
+    select(reporter, partner, year, flow, price, 
+           quantityraw, quantityreporter, quantitypartner, 
+           quantity) %>%
+    arrange(flow, year)
+```
+
+### Choose between reporter and partner quantity (historical see below)
+Not interesting keep for historical purposes
+```{r}
+# Choose between reporterna dn partner quantity 
+# based on the one which has the least standard deviation 
+# in quantity between the recent years
+# years are between yearbegin and yearend
+# replace quantity by partner quantity if needed
+# that is 
+# replacebypartnerquantity <- function(dtf, yearbegin, yearend){
+yearbegin <- 2009
+yearend <- 2013
+choice <- dtfclean %>%
+    filter(yearbegin <= year & year<= yearend) %>%
+    group_by(reportercode, partnercode, 
+             reporter, partner) %>%
+    summarise(meanqreporter = mean(quantityreporter, na.rm=TRUE),
+              sdqreporter = sd(quantityreporter, na.rm=TRUE),
+              meanqpartner = mean(quantitypartner, na.rm=TRUE),
+              sdqpartner = sd(quantitypartner, na.rm=TRUE), 
+              favorpartner = sdqpartner )
+# choice %>% filter(is.na(meanqpartner)) %>% nrow
+# 4974 # in the basecase
+# 3180 # when I remove na value inthe meanqpartner calculation
+# }
+```
+
+### Clean to Excel java.lang.OutOfMemoryError
+Putting the cleaned data frame in Excel creates an out of memmory error. 
+```{r eval=FALSE}
+# use zip archive instead
+filenamestart <- "data-raw/excel/440799"
+write.csv(dtfclean,
+          paste0(filenamestart, ".csv"), row.names = FALSE)
+zip(paste0(filenamestart, ".zip"),
+    paste0(filenamestart, ".csv"))
+# arrange by year
+bli <- results$dtf %>%
+        # remove product description to get a smaller csv file
+#         select(-productdescription) %>%
+        # arrange by year, reporter and flow
+        data.frame %>%
+        arrange(year, reporter, flow) %>%
+    head(100)
+
+
+source('~/R/tradeflows/R/expertexcel.R')
+dtf %>% renamecolumns %>%
+    clean2excel(filename = "data-raw/excel/440799.xlsx")
+# 739 rows where quantity was not available but weight was available
+# 119 rows where neither quantity nor weight were available
+# 5840rows where quantity reporter was replaced by quantity partner
+# 6176 rows had a price too high or too low
+# Error in .jarray(aux) : 
+#   java.lang.OutOfMemoryError: GC overhead limit exceeded
+```
+
+### Choose between reporter and partner quantity, based on price
+```{r}
+dtfclean <- clean(dtfraw)
+
+results <- clean(dtfraw, outputalltables = TRUE)
+
+dtfclean %>% group_by(flag) %>%
+    summarise(n = n()) %>% data.frame %>% 
+    # Build a correspondance table with all flags in rows and in columns
+    # containing the number of flags at each intersection
+    mutate(flag1 = substr(as.character(flag),3,3))
+choice <- choosereporterorpartner(dtfclean)
+
+# Product description
+dtfraw %>% select(productcode, classification,productdescription) %>%
+    unique %>% arrange(classification)
+
+# Product description with number of reporter country
+dtfraw %>% 
+    select(productcode, classification, year, productdescription, reporter) %>%
+    unique %>%
+    group_by(productcode, classification, year, productdescription) %>%
+    summarise(n = n()) %>% arrange(classification) %>% data.frame %>%
+    dcast(productcode + classification + productdescription ~ year,
+          value.var = "n")
+
+# Choice by sdprice ratio 
+choice %>% mutate(sdratiocut = cut(sdratio,c(0, 0.5, 0.8, 1, 1.2, 1.5, Inf))) %>%
+    group_by(sdratiocut, favorpartner) %>% summarise(n = n())
+# Choice for the 10 highest mean volumes
+str(choice)
+
+dtfr <- replacebypartnerquantity(dtfclean, choice)
+summary(dtfclean$quantity - dtfclean$quantityreporter)
+summary(dtfr$quantity - dtfr$quantityreporter)
+```
+
+
+```{r eval=FALSE}
+# Choose between reporterna dn partner quantity 
+# based on the one which has the least standard deviation 
+# in price between the recent years
+# years are between yearbegin and yearend
+# replace quantity by partner quantity if needed
+# that is 
+# replacebypartnerquantity <- function(dtf, yearbegin, yearend){
+    yearbegin <- 2009
+    yearend <- 2013
+    choice <- dtfclean %>%
+        filter(yearbegin <= year & year<= yearend) %>%
+    mutate(pricereporter = tradevalue / quantityreporter,
+           pricepartner = tradevaluepartner / quantitypartner) %>%
+        group_by(flow, reportercode, partnercode, 
+                 reporter, partner) %>%
+    summarise(
+        minprice = min(price),
+        maxprice = max(price),
+        minpreporter = min(pricereporter),
+        maxpreporter = max(pricereporter),
+        diffminprice = minpreporter - minprice,
+        diffmaxprice = maxpreporter - maxprice,
+        meanqreporter = mean(quantityreporter, na.rm=TRUE),
+        meanpreporter = mean(pricereporter, na.rm=TRUE),
+        sdpreporter = sd(pricereporter, na.rm=TRUE),
+        meanppartner = mean(pricepartner, na.rm=TRUE),
+        sdppartner = sd(pricepartner, na.rm=TRUE), 
+        sdratio = sdppartner / sdpreporter,
+        favorpartner = sdratio < 1 )
+# }
+# Forgot to distinguish between imports and exports
+# favorpartner   
+#  Mode :logical  
+#  FALSE:1134     
+#  TRUE :1424     
+#  NA's :4096  
+# Taking into account imports and exports
+# favorpartner   
+# Mode :logical  
+# FALSE:1516     
+# TRUE :1629     
+# NA's :5681 
+
+#import albania from Greece
+
+choice %>% filter(reporter == "Albania"& partner =="Greece" &
+                  flow == "Import") %>% 
+    select(partner, sdratio, favorpartner)
+
+choice %>% filter(reporter == "Greece" & partner =="Albania" &
+                  flow == "Export") %>% 
+    select(partner, sdratio, favorpartner)
+
+# Is favor partner more true for import or export values?
+choice %>% group_by(flow, favorpartner) %>%
+    summarise(n = n())
+
+# What quantities are concerned?
+choice %>% mutate(logquantity = round(log10(meanqreporter))) %>%
+    group_by(flow, logquantity, favorpartner) %>%
+    summarise(n = n(),
+              meanq = mean(meanqreporter)) %>%
+    data.frame %>% arrange(flow, favorpartner)
+#     dcast(flow + logquantity ~ favorpartner, 
+#           value.var = meanq) 
+
+```
