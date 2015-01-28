@@ -157,9 +157,16 @@ sawnwood %>% select(yr, rtCode ) %>% head
 ### Documentation in long form
 [How to create package vignettes](http://r-pkgs.had.co.nz/vignettes.html).
 
-Change the docs/development folder into vignettes.
+> You can build all vignettes from 
+> the console with devtools::build_vignettes()
+
+> RStudio’s “Build & reload” does not build vignettes to save time. Similarly, devtools::install_github() (and friends) will not build vignettes by default because they’re time consuming and may require additional packages. You can force building with devtools::install_github(build_vignettes = TRUE). This will also install all suggested packages.
+
 
 ### Function documentation using roxygen2
+Export documentation in a pdf document at the command line in the man folder run
+R CMD Rd2pdf *
+
 You should be able to see the documentation of exported functions by placing a 
 question mark before the function name at the R command prompt.
 
@@ -233,6 +240,7 @@ Calling the javascript files should be possible within a YAML document, see
 
 
 ### TODO by order of ease / importance
+* Change the docs/development folder into vignettes.
 * use an environmennt variable for the yearbegin and yearend of the
 function that chooses between reporter and partner volume
 * Create a trac system with externam accesss to track progress.
@@ -273,7 +281,8 @@ visualise missing data
 * load from EUROSTAT comext at 10 digit level
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
-### Notes to EFI developpers 
+### Notes to EFI developpers
+Change this to a vignette installation and configuration
 Which directories I want to read at
 https://bitbucket.org/paul4forest/tradeflows/?
 You want to look at files in the R folders.

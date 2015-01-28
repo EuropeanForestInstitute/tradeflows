@@ -1,0 +1,73 @@
+---
+title: "Installation and configuration"
+author: "Paul Rougieux"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+ 
+ 
+## Installation
+This package can be installed with the devtools package.
+```
+library(devtools)
+install_bitbucket("paul4forest/tradeflows")
+```
+
+### Devtools package installation
+If the devtools package is not installed on your system.
+```
+install.packages("devtools")
+```
+You may need to upgrade the libcurl library on your system shell
+```
+sudo apt-get install libcurl4-gnutls-dev 
+```
+
+
+## Configuration
+Database configuration file and column names are located under the locale package installation directory. 
+This directory is shown by the R command:
+```
+system.file("config", package="tradeflows")
+```
+Database connection parameters can be entered
+in the databaseconfig.R file.
+
+Load the package and use the database configuration
+with the commands:
+```
+library(tradeflows)
+setdatabaseconfig(reload=TRUE)
+```
+The database configuration file can be edited and reloaded.
+`setdatabaseconfig(reload=TRUE)` displays the location of the database configuration file.
+
+
+The configuration table columnnames located in config/column_names.csv
+contains columns specifying which efi 
+columns names are used in the trade flows database
+raw_flow and validated_flow tables.
+
+
+### Digging into the code
+Start by looking at files in the R/ directory
+
+* database.R is doing the database interaction
+* clean.R is cleaning the datai
+
+
+The function cleandb() will feed data into the database table(s) validated_flow
+updates will be done on a product basis, at the 6 digit level. The cleaning script will:
+
+1. Delete all flows for a product
+  (between all reporter and partner countries in all years),
+2. Enter All validated flows for that product.
+
+The clean() function can also run from a bash shell
+```
+Rscript -e 'library(tradeflows)' -e 'cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
+```

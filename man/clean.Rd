@@ -22,6 +22,10 @@ containing the cleaned dataset and all tables used to compute it
 conversion factors, regional unit prices, choice between
 reporter and partner flows}
 }
+\value{
+data frame with the same information as the original
+data frame. With columnes added by the various clean functions.
+}
 \description{
 Use unit prices and conversion factors to complete missing quantity data.
 Handle unit prices that are out of bound.
