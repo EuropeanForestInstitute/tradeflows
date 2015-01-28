@@ -21,7 +21,8 @@ Examples and demonstration:
 This package can be installed with the devtools package.
 ```
 library(devtools)
-install_bitbucket("paul4forest/tradeflows")
+install_bitbucket("paul4forest/tradeflows",
+    build_vignettes = TRUE)
 ```
 Load the package and configure the database with:
 ```
