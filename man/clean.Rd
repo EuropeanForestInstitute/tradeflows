@@ -2,44 +2,30 @@
 % Please edit documentation in R/clean.R
 \name{clean}
 \alias{clean}
-\alias{cleandbproduct}
 \title{Combine cleaning functions}
 \usage{
-clean(dtf, shaveprice = FALSE, deleteextracolumns = TRUE)
-
-cleandbproduct(productcode, tableread, tablewrite)
+clean(dtf, replacebypartnerquantity = TRUE, shaveprice = TRUE,
+  deleteextracolumns = FALSE, outputalltables = FALSE)
 }
 \arguments{
 \item{dtf}{data frame}
 
+\item{replacebypartnerquantity,}{when TRUE call replacebypartnerquantity()}
+
+\item{shaveprice}{when TRUE, call shaveprice()}
+
 \item{deleteextracolumns}{when TRUE, keep only columns from
-column_names$validated_flow}
+tradeflows::column_names$validated_flow}
 
-\item{tableread}{name of the table to read from}
-
-\item{tablewrite}{name of the table to write to (all rows for productcode
-will be deleted in this table before writing)}
-
-\item{productcode_}{code of the product trade flows to be validated}
-}
-\value{
-TRUE if write to db succesded, otherwise return FALSE
+\item{outputalltables}{when TRUE return a list of data frames
+containing the cleaned dataset and all tables used to compute it
+conversion factors, regional unit prices, choice between
+reporter and partner flows}
 }
 \description{
 Use unit prices and conversion factors to complete missing quantity data.
 Handle unit prices that are out of bound.
 Add quantity estimates reported by the trade partner.
 The outcome is returned as a data frame.
-
-For one product (at the 6 digit level),
-read and clean all trade flows, then
-Write flows into the database table(s) validated_flow
-updates will be done on a product basis,
-The function will:
-1. Read all flows for a product
-2. Delete all flows for a product
-  (between all reporter and partner countries in all years),
-3. Use  \code{\link{clean}()} to clean the data frame and write it to the database
-4. Write All validated flows for that product.
 }
 

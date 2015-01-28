@@ -200,7 +200,7 @@ estimatequantity <- function(dtf, price, conversionfactor){
 #' The data frame outcome of this function
 #' will be use by replacebypartnerquantity()
 #' to decide which of the reporter or partner flow to favor
-#' @para dtf data frame
+#' @param dtf data frame
 #' @param yearbegin change this to global parameter
 #' @param yearend change this to global parameter
 choosereporterorpartner <- function(dtf,
@@ -468,14 +468,14 @@ clean <- function(dtf,
 #' Write flows into the database table(s) validated_flow
 #' updates will be done on a product basis,
 #' The function will:
-#' 1. Read all flows for a product
-#' 2. Delete all flows for a product
-#'   (between all reporter and partner countries in all years),
-#' 3. Use  \code{\link{clean}()} to clean the data frame and write it to the database
-#' 4. Write All validated flows for that product.
-
+#' \enumerate{
+#'  \item{Read all flows having the given productcode in tableread}
+#'  \item{Delete all flows having the given productcode
+#'  in tablewrite (between all reporter and partner countries in all years)}
+#'  \item{Use  \code{\link{clean}()} to clean the data frame}
+#'  \item{Write validated flows to tablewrite}
+#' }
 #' @return TRUE if write to db succesded, otherwise return FALSE
-#' @rdname clean
 #' @param productcode_ code of the product trade flows to be validated
 #' @param tableread name of the table to read from
 #' @param tablewrite name of the table to write to (all rows for productcode

@@ -4,7 +4,7 @@
 \alias{estimatequantity}
 \title{Estimate quantity}
 \usage{
-estimatequantity(dtf, price, conversionfactor, shaveprice = TRUE)
+estimatequantity(dtf, price, conversionfactor)
 }
 \arguments{
 \item{dtf}{data frame}
@@ -13,9 +13,6 @@ estimatequantity(dtf, price, conversionfactor, shaveprice = TRUE)
 
 \item{conversionfactor}{a data frame of conversion factors which can be
 merged with dtf}
-
-\item{shave}{logical, TRUE when upper and lower bound on prices have to be
-checked and quantity replaced accordingly}
 }
 \description{
 Estimate missing quantity

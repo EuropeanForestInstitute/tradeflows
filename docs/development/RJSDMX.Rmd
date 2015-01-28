@@ -1,0 +1,43 @@
+---
+title: "Learning to load data using RJSDMX"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(RMySQL)
+library(RJSDMX)
+# getProviders()
+# eurostat <- getFlows("EUROSTAT")
+``` 
+
+## Load time series from EUROSTAT
+```{r rjsdmx}
+ans=getTimeSeries('EUROSTAT', 'prc_hicp_midx/..CP00.EU+DE+FR')
+names(ans)
+# [1] "prc_hicp_midx.M.I2005.CP00.DE"
+# [2] "prc_hicp_midx.M.I2005.CP00.EU"
+# [3] "prc_hicp_midx.M.I2005.CP00.FR"
+plot(ans[[1]], main=names(ans)[[1]])
+
+# Trade
+trade = getTimeSeries('EUROSTAT', 
+                      'DS-041719/..CP00.EU+DE+FR')
+trade2 = getTimeSeries('EUROSTAT',
+                       '')
+getTxtProgressBar()
+
+``` 
+
+### Sample plot and base representation of R time series
+```{r}
+plot(EuStockMarkets)
+``` 
