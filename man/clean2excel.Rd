@@ -2,18 +2,25 @@
 % Please edit documentation in R/expertexcel.R
 \name{clean2excel}
 \alias{clean2excel}
+\alias{cleanrdata2excel}
 \title{Clean and export to Excel for the expert users}
 \usage{
 clean2excel(dtf, filenamestart)
+
+cleanrdata2excel(rawfilename)
 }
 \arguments{
 \item{dtf}{data frame}
 
 \item{filename}{path and name of the output files,
 without extensions}
+
+\item{rawfile}{name of a .RData file containing raw trade flows}
 }
 \description{
 Keep price, conversion factor andflow choice in a separate table
 for further analysis
+
+Clean from raw data file to Excel and a csv file
 }
 

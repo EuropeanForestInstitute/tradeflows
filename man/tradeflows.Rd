@@ -19,7 +19,8 @@ that estimate a trade flow quantity.}
  from a database table, cleans with the clean() function
  and write data to a database}
 }
-To learn more about tradeflows, start with the vignettes:
+To learn more about the tradeflows package,
+start with the vignettes:
 \code{browseVignettes(package = "tradeflows")}
 }
 

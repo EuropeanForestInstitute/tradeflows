@@ -1,0 +1,86 @@
+---
+title: "Flags"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: 
+  html_document:
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(RMySQL)
+library(reshape2)
+``` 
+
+```{r loadrawdata}
+load("data-raw/comtrade/440799.RData")
+dtfraw <- dtf %>% renamecolumns %>% filter(flowcode %in% c(1,2))
+dtfclean <- clean(dtfraw, shaveprice = TRUE)
+```
+### World quantity change
+```{r}
+dtfclean %>% filter(is.na(quantityraw)) %>% nrow
+# [1] 858
+dtfclean %>% filter(is.na(quantity)) %>% nrow
+# [1] 765
+dtfclean %>% filter(quantity!=quantityraw) %>% nrow
+# [1] 9411
+dtfclean %>% filter(quantity==quantityraw) %>% nrow
+# [1] 14053
+# Percentage change in world trade
+# Replace na values by 0 to compute the difference in quantity
+dtfclean[is.na(dtfclean)] <- 0
+dtfclean %>% group_by(year) %>%
+    mutate(quantitychange = quantity - quantityraw) %>%
+    summarise(quantityraw = sum(quantityraw),
+              quantity = sum(quantity),
+              quantitychange = sum(quantitychange),
+              changeratio = quantitychange / quantityraw,
+              nrow = n()) %>%
+    mutate(changeratio = quantitychange / quantityraw)
+```
+
+
+## Extract flags
+Using the function
+```{r extractflagsfunction}
+extractflags(dtfclean)
+```
+
+### World quantity change by flag and year
+```{r}
+# Replace na values by 0 to compute the difference in quantity
+dtfclean[is.na(dtfclean)] <- 0
+flag <- dtfclean %>% arrange(year) %>%
+    mutate(quantitychange = quantity - quantityraw) %>%
+    group_by(flag, year) %>%
+    summarise(quantityraw = sum(quantityraw),
+              quantity = sum(quantity),
+              quantitychange = sum(quantitychange),
+              changeratio = quantitychange / quantityraw,
+              nrow = n()) %>%
+    melt(id=c("flag", "year")) %>%
+    data.frame %>% 
+    arrange(variable, flag) %>%
+    dcast(variable + flag ~ year, value.var = "value")
+nrow(flag)
+```
+
+### Flag 310
+```{r}
+flag310 <- dtfclean %>% filter(flag==310)
+```
+
+### Original version
+```{r}
+dtfclean %>% arrange(year) %>%
+    group_by(flag) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE),
+              nrow = n(),
+              years=paste(unique(year), collapse=", ")) %>%
+    arrange(desc(quantity))
+```

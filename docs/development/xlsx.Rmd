@@ -1,0 +1,40 @@
+---
+title: "Xlsx"
+author: "Paul Rougieux"
+date: "30/01/2015"
+output: 
+  html_document:
+    toc: true
+---
+
+
+```{r loadpackage}
+library(knitr)
+library(xlsx)
+file <- system.file("tests", "test_import.xlsx", 
+                    package = "xlsx")
+```
+
+## From an Excel sheet to a data frame
+### Simple function read.xlsx()
+```{r}
+sheet <- read.xlsx(file, 2)
+kable(sheet)
+```
+
+### Lower level, with access to workbook and sheet objects
+```{r}
+wb <- loadWorkbook(file)  
+sheets <- getSheets(wb)
+sheet  <- sheets[[2]]  # extract the second sheet
+```
+
+
+## List of java methods available
+```{r}
+# see all the available java methods that you can call
+.jmethods(sheet)
+
+# for example
+sheet$getLastRowNum()
+```

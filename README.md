@@ -18,12 +18,21 @@ Examples and demonstration:
   and a procedure to prepare volume and weight data
   
 ## Installation
-This package can be installed with the devtools package.
+This package can be installed on a server or
+desktop with the devtools package.
+```
+library(devtools)
+install_bitbucket("paul4forest/tradeflows")
+```
+
+On a desktop machine, install and build vignettes
+containing tutorials:
 ```
 library(devtools)
 install_bitbucket("paul4forest/tradeflows",
     build_vignettes = TRUE)
 ```
+
 Load the package and configure the database with:
 ```
 library(tradeflows)
@@ -96,6 +105,12 @@ jsonlite::fromJSON("http://comtrade.un.org/data/cache/classificationHS.json")
 Warning message:
 Unexpected Content-Type: application/x-javascript 
 
+##  Database input
+Mysql command to load a database dump:
+```
+cat raw_flow_comext.sql | mysql -u username -p tradeflows
+```
+
 ### Raw data
 Inspired by the way hadley prepares this [flight planes data](https://github.com/hadley/nycflights13/tree/master/data-raw).
 The package includes a training dataset:
@@ -166,6 +181,7 @@ sawnwood %>% select(yr, rtCode ) %>% head
 
 ### Function documentation using roxygen2
 Export documentation in a pdf document at the command line in the man folder run
+
 R CMD Rd2pdf *
 
 You should be able to see the documentation of exported functions by placing a 
@@ -296,8 +312,9 @@ now contains 2 column specifying which columns names
 are used in the trade flows database:
 "raw_flow" and "validated_flow"
 Database configuration file and column names are located under:
+a location available from shell command prompt, run:
 ```
-system.file("config", package="tradeflows")
+Rscript  -e 'library(tradeflows)' -e 'system.file("config", package="tradeflows")'
 ```
 
 The function cleandb() will feed data into the database table(s) validated_flow

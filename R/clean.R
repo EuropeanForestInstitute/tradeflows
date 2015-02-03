@@ -80,7 +80,6 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
     # Geoaggregation should be a column of the data frame
     # for example regionreporter
     stopifnot(geoaggregation %in% names(dtf))
-
     if(includeqestimates==FALSE){ # Condition easier to understand for user of the function
         dtf <- dtf %>% filter(flag==0 |flag==4 )
     }
@@ -98,7 +97,8 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
                                                     names=FALSE, na.rm=TRUE)),
                   medianprice = round(median(price, na.rm=TRUE)),
                   upperprice = round(uppercoef * quantile(price, 0.75,
-                                                  names=FALSE, na.rm=TRUE))) %>%
+                                                  names=FALSE, na.rm=TRUE)),
+                  weightedaverageprice = sum()) %>%
         arrange(-medianprice)
 }
 
@@ -108,24 +108,30 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
 #' Extract median converion factors for the whole world (default)
 #' @param dtf a dataframe containing conversion factors
 #' @param geoaggregation a character string specifying the regional aggregation
-#'     level, a column name in the reportercomtrade table
+#'     level, "world" to extract world conversion factors,
+#'      "region" to extract regional conversion factors.
 #' @param  includeqwestimates logical TRUE when comtrade quantity and weight
 #'          estimates can be included
 #' @export
-extractconversionfactors <- function(dtf, geoaggregation="World",
+extractconversionfactors <- function(dtf, geoaggregation="region",
                                      includeqwestimates=TRUE){
     if(includeqwestimates==FALSE){
         dtf <- dtf %>% filter(flag==0)
     }
-    dtf %>%
+    dtf <- dtf %>%
         filter(flow %in% c("Import", "Export")) %>%
         # Remove EU28 reporter
         filter(!reporter %in% c("EU-28")) %>%
         # Remove World partner
         filter(!partner %in%c("EU-28", "World")) %>%
         # Remove missing quantity
-        filter(!is.na(quantity) & unit !="No Quantity") %>%
-        group_by(flow, year, unit) %>%
+        filter(!is.na(quantity) & unit !="No Quantity")
+    if(geoaggregation == "region"){
+        dtf <- dtf %>%  group_by(flow, regionreporter, year, unit)
+    } else {
+        dtf <- dtf %>% group_by(flow, year, unit)
+    }
+    dtf %>%
         summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
 }
 
@@ -187,6 +193,7 @@ estimatequantity <- function(dtf, price, conversionfactor){
                flag = flag + 20)
     stopifnot(nrow(dtf)==nrow(dtfq) + nrow(dtfnoqw) + nrow(dtfnoqnow))
     # Messages about the number of rows affected
+    nrow(dtf) %>% message(" rows in the dataset")
     nrow(dtfnoqw) %>% message(" rows where quantity was not available but weight was available")
     nrow(dtfnoqnow) %>% message(" rows where neither quantity nor weight were available")
     # Put data frames back together
@@ -302,7 +309,7 @@ changecolumntype <- function(dtf){
 findduplicatedflows <- function(dtf){
     # This checks only the selected columns in dtf
     dtf$duplicate <- duplicated(select(dtf, reportercode, partnercode,
-                                       productcode, flow, year))
+                                       productcode, flow, period))
     filter(dtf, duplicate)
 }
 
@@ -414,35 +421,36 @@ calculatediscrepancies <- function(dtf){
 #' data frame. With columnes added by the various clean functions.
 #' @export
 clean <- function(dtf,
+                  geoaggregation = "region",
                   replacebypartnerquantity = TRUE,
                   shaveprice = TRUE,
                   deleteextracolumns = FALSE,
                   outputalltables = FALSE){
-    ### Prepare conversion factor and prices
+    nrowbeforechange <- nrow(dtf)
+
+    ### Prepare conversion factors and prices
     dtf <- dtf %>%
         removeduplicatedflows %>%
         addconversionfactorandprice %>%
         addregion
-    priceregion <- extractprices(dtf)
-    conversionfactorworld <- extractconversionfactors(dtf)
+    price <- extractprices(dtf)
+    conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregation)
 
     ### Estimate quantity
     dtf <- dtf %>%
-        estimatequantity(priceregion, conversionfactorworld) %>%
+        estimatequantity(price, conversionfactor) %>%
         addpartnerflow
     if (replacebypartnerquantity){
-        choice <- choosereporterorpartner(dtf)
+        choice <- choosereporterorpartner(dtf,sdratiolimit = 1 )
         dtf <- dtf %>% replacebypartnerquantity(choice)
     }
     if (shaveprice){
         dtf <- dtf %>% shaveprice # based on upper and lower prices added above
     }
-    # This is where you could change quantity to quantityreporter
-    # Or make another decision based on what is considered best estimates
-    # For example to always favor export flows.
 
     # Remove column names added by the merge with price and conversionfactor tables
     # Keep only column names in the final table validated_flow
+    # This is mostly usefull for database output
     if(deleteextracolumns){
         columnstokeep <- column_names$efi[column_names$validated_flow]
         # Add or remove colum names here if needed
@@ -452,13 +460,19 @@ clean <- function(dtf,
         columnstokeep <- columnstokeep[!columnstokeep == "lastchanged"]
         dtf <- dtf %>% select_(.dots = columnstokeep)
     }
+    # Check if the number of rows has changed (it shouldn't)
+    stopifnot(nrow(dtf) == nrowbeforechange)
+
+    ### 2 different kinds of output
+    # List output
     if(outputalltables){
         return(list(dtf = dtf,
-                    priceregion = priceregion,
-                    conversionfactorworld = conversionfactorworld,
+                    price = price,
+                    conversionfactor = conversionfactor,
                     choice = choosereporterorpartner(dtf))
         )
     }
+    # Data frame output
     return(dtf)
 }
 

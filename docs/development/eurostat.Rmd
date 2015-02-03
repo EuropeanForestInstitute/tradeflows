@@ -31,6 +31,13 @@ For example [Fuel wood Austria](http://epp.eurostat.ec.europa.eu/newxtweb/submit
     * [2014S3](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S3) contains montly and yearly data by mode of transport
     * More details in the [Instructions on how to use the bulk download facility.pdf](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2FInstructions+on+how+to+use+the+bulk+download+facility.pdf) and explanation of data format in the [readme.txt](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
 
+#### Renaming columns from the bulk download
+```{r}
+column_names %>% filter(!is.na(eurostat_bulk)) %>%
+    select(eurostat_bulk, efi) %>%kable
+
+```
+
 ### SDMX SOAP and Rest APIs
 Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/rest_sdmx_2.1#ind_18_1) and a [SOAP API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/soap_sdmx_2.1).
 
