@@ -4,15 +4,15 @@
 \alias{choosereporterorpartner}
 \title{Compare reporter and partner flow}
 \usage{
-choosereporterorpartner(dtf, yearbegin = 2009, yearend = 2013,
+choosereporterorpartner(dtf, periodbegin = 2009, periodend = 2013,
   sdratiolimit = 0.8)
 }
 \arguments{
 \item{dtf}{data frame}
 
-\item{yearbegin}{change this to global parameter}
+\item{periodbegin}{change this to global parameter}
 
-\item{yearend}{change this to global parameter}
+\item{periodend}{change this to global parameter}
 }
 \description{
 The data frame outcome of this function

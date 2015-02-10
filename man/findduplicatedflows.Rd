@@ -8,7 +8,7 @@ findduplicatedflows(dtf)
 }
 \arguments{
 \item{dtf}{a dataframe contiaining trade flows, the funciton
-tests for duplicated reportercode, partnercode, productcode, flow, year}
+tests for duplicated reportercode, partnercode, productcode, flow, period}
 }
 \description{
 Return a dataframe of duplicated flows

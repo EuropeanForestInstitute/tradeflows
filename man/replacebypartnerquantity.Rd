@@ -3,7 +3,7 @@
 \name{replacebypartnerquantity}
 \alias{replacebypartnerquantity}
 \title{Replace quantity by quantity partner when the price variation in
-recent years was greater than that of the partner country for the same flow}
+recent periods was greater than that of the partner country for the same flow}
 \usage{
 replacebypartnerquantity(dtf, choice)
 }
@@ -14,6 +14,6 @@ replacebypartnerquantity(dtf, choice)
 }
 \description{
 Replace quantity by quantity partner when the price variation in
-recent years was greater than that of the partner country for the same flow
+recent periods was greater than that of the partner country for the same flow
 }
 

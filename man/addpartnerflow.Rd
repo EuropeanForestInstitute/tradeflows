@@ -11,6 +11,6 @@ addpartnerflow(dtf)
 With column names following the efi convention.}
 }
 \description{
-For the same country, year, item, add the corresponding partner flow.
+For the same country, period, item, add the corresponding partner flow.
 }
 

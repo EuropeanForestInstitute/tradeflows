@@ -8,12 +8,22 @@ output:
   pdf_document:
     toc: true
 ---
-```{r packages}
+
+
+```{r packages, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(dplyr)
 library(reshape2)
 ```
 Explore some of the ggplot2 functions for use in the project
+
+
+## Sample plot
+```{r irisplot}
+ggplot(iris, 
+       aes(x=Petal.Length, y=Petal.Width, color=Species)) + 
+    geom_point()
+```
 
 ## Alpha
 

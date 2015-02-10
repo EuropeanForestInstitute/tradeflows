@@ -5,17 +5,21 @@
 \alias{cleanrdata2excel}
 \title{Clean and export to Excel for the expert users}
 \usage{
-clean2excel(dtf, filenamestart)
+clean2excel(dtf, filenamestart, ...)
 
-cleanrdata2excel(rawfilename)
+cleanrdata2excel(rawfilename, ...)
 }
 \arguments{
 \item{dtf}{data frame}
 
-\item{filename}{path and name of the output files,
+\item{...}{furhter arguments passed to clean()
 without extensions}
 
+\item{filename}{path and name of the output files,}
+
 \item{rawfile}{name of a .RData file containing raw trade flows}
+
+\item{...}{further arguements passed to clean()}
 }
 \description{
 Keep price, conversion factor andflow choice in a separate table

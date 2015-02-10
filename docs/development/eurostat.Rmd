@@ -113,7 +113,8 @@ str(nc)
 #  $ VALUE_1000ECU: num  64.8 147.4 126.2 213.8 725.1 ...
 #  $ QUANTITY_TON : num  44.2 977.3 179.8 207.6 1142.3 ...
 #  $ SUP_QUANTITY : int  91 1042 388 498 3891 506 2 311 4218 192 ...
-#unique(nc2012$PRODUCT_NC) 
+unique(nc$PRODUCT_NC) 
+unique(nc$PRODUCT_NC[grepl("440799", nc$PRODUCT_NC)])
 ```
 
 ### Stat regime

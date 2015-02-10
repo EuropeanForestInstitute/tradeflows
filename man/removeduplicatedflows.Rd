@@ -14,7 +14,7 @@ Print the number of duplicated entries and remove them if needed.
 The function tests for all duplicated columns
 (contrary to findduplicatedflows() which looks only for some columns).
 This might be an issue if 2 flows have duplicated
-reportercode, partnercode, productcode, flow, year but
+reportercode, partnercode, productcode, flow, period but
 their quantity column is different.
 }
 

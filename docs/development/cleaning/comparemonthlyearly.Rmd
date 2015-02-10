@@ -1,0 +1,57 @@
+---
+title: "Cleaning procedure"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: 
+  html_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(RMySQL)
+``` 
+
+
+## Monthly data
+```{r clean}
+dtfm <- readdbproduct(440799, tableread = "raw_flow_monthly")
+dtfy <- readdbproduct(440799, tableread = "raw_flow_yearly")
+cleaned <- cleanmonthly(dtfm, dtfy, shaveprice = TRUE, outputalltable=TRUE)
+m <- cleaned$dtf %>% filterworldeu28 
+y <- clean(dtfy) %>% filterworldeu28
+```
+
+
+### Compare by flow and year
+```{r compareflowyear}
+# Global trade flows per year
+# Remove world and EU aggregates
+y %>% group_by(flow, year) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE),
+              tradevalue = sum(tradevalue, na.rm=TRUE))
+m %>% group_by(flow, year) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE),
+              tradevalue = sum(tradevalue))
+```
+
+
+### Compare by flow, year and country
+```{r compareflowyearcountry}
+yfyr <- y %>% group_by(flow, year, reporter) %>%
+    summarise(quantityy = sum(quantity, na.rm=TRUE),
+              tradevaluey = sum(tradevalue))
+mfyr <- m %>% group_by(flow, year, reporter) %>%
+    summarise(quantitym = sum(quantity, na.rm=TRUE),
+              tradevaluem = sum(tradevalue))
+cfyr <- merge(yfyr, mfyr) %>%
+    mutate(quantitydiff = quantitym - quantityy,
+           quantitydiffp = signif(quantitydiff / quantityy, 2),
+           tradevaluediff = tradevaluem - tradevaluey,
+           tradevaluediffp = signif(tradevaluediff / tradevaluey, 2)) %>%
+    arrange(tradevaluediffp)
+```

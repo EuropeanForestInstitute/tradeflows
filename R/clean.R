@@ -60,6 +60,19 @@ addconversionfactorandprice <- function(dtf){
 }
 
 
+#' Filter world and EU28
+#'
+#' Remove EU28 reporter
+#' Remove EU-28 and World partner
+#' @param dtf data frame containing comtrade trade flows
+#' @export
+filterworldeu28 <- function(dtf){
+     dtf %>%
+        filter(!reporter %in% c("EU-28")) %>%
+        filter(!partner %in%c("EU-28", "World"))
+}
+
+
 #' Extract median prices at a given geographical aggregation level
 #'
 #' Extract median prices by region (default) or at another
@@ -159,17 +172,20 @@ extractconversionfactors <- function(dtf, geoaggregation="region",
 #' @export
 estimatequantity <- function(dtf, price, conversionfactor){
     # check if at least 4 common columns are present in dtf
-    # for the merge with price (Flow, regionreporter, year, unit)
+    # for the merge with price (Flow, regionreporter, period, unit)
     stopifnot(sum(names(price) %in% names(dtf))>=4)
     # Check if at leat 3 common columns are present with dtf
     # for the merge with conversionfactor
     stopifnot(sum(names(conversionfactor) %in% names(dtf))>=3)
-    # Extract the unit most present in the data frame
-    unitprefered <-  dtf %>% group_by(unit) %>% summarise(n=n())
+
+    ### Specify quantity unit
+    # Extract the unit most present in the price data frame
+    unitprefered <-  price %>% group_by(unit) %>% summarise(n=n())
     unitprefered <- unitprefered$unit[unitprefered$n==max(unitprefered$n)]
-    # Replace unit "No Quantity" by the most prefered unit
+    # Replace unit "No Quantity" and unit NA by the most prefered unit
     # before merging price and conversion factor tables
     dtf$unit[dtf$unit=="No Quantity"] <- unitprefered
+    dtf$unit[is.na(dtf$unit)] <- unitprefered
 
     ### For all flows
     # Keep raw quantity for further analysis
@@ -208,13 +224,13 @@ estimatequantity <- function(dtf, price, conversionfactor){
 #' will be use by replacebypartnerquantity()
 #' to decide which of the reporter or partner flow to favor
 #' @param dtf data frame
-#' @param yearbegin change this to global parameter
-#' @param yearend change this to global parameter
+#' @param periodbegin change this to global parameter
+#' @param periodend change this to global parameter
 choosereporterorpartner <- function(dtf,
-                                    yearbegin=2009, yearend=2013,
+                                    periodbegin=2009, periodend=2013,
                                     sdratiolimit = 0.8){
     choice <- dtf %>%
-        filter(yearbegin <= year & year<= yearend) %>%
+        filter(periodbegin <= period & period<= periodend) %>%
         mutate(pricereporter = tradevalue / quantityreporter,
                pricepartner = tradevaluepartner / quantitypartner) %>%
         group_by(flow, reportercode, partnercode,
@@ -235,7 +251,7 @@ choosereporterorpartner <- function(dtf,
 
 
 #' Replace quantity by quantity partner when the price variation in
-#' recent years was greater than that of the partner country for the same flow
+#' recent periods was greater than that of the partner country for the same flow
 #'
 #' @param dtf data frame
 #' @param choice a data frame of choice between reporter and partner
@@ -304,7 +320,7 @@ changecolumntype <- function(dtf){
 #' Return a dataframe of duplicated flows
 #'
 #' @param dtf a dataframe contiaining trade flows, the funciton
-#'  tests for duplicated reportercode, partnercode, productcode, flow, year
+#'  tests for duplicated reportercode, partnercode, productcode, flow, period
 #' @export
 findduplicatedflows <- function(dtf){
     # This checks only the selected columns in dtf
@@ -320,7 +336,7 @@ findduplicatedflows <- function(dtf){
 #' The function tests for all duplicated columns
 #' (contrary to findduplicatedflows() which looks only for some columns).
 #' This might be an issue if 2 flows have duplicated
-#' reportercode, partnercode, productcode, flow, year but
+#' reportercode, partnercode, productcode, flow, period but
 #' their quantity column is different.
 #' @param dtf a dataframe contiaining trade flows,
 #' @export
@@ -338,7 +354,7 @@ removeduplicatedflows <- function(dtf){
 
 #' Add volume and value of the partner flow
 #'
-#' For the same country, year, item, add the corresponding partner flow.
+#' For the same country, period, item, add the corresponding partner flow.
 #'@param dtf data frame containing trade flow data.
 #'   With column names following the efi convention.
 #'@export
@@ -351,7 +367,7 @@ addpartnerflow <- function(dtf){
         rename(partnercode = reportercode,
                reportercode = partnercode) %>%
         select(reportercode, partnercode,
-               productcode, flow, year,
+               productcode, flow, period,
                quantity, tradevalue) %>% #Add weight, tradevalue here if you want them from the partner
         mutate(flow = gsub("Import","aaaaaaa",flow),
                flow = gsub("Export","Import",flow),
@@ -363,7 +379,7 @@ addpartnerflow <- function(dtf){
     # Merge
     dtf <- merge(dtf, swap, all.x=TRUE, suffixes = c("", "partner"),
                  by = c("reportercode", "partnercode",
-                        "productcode", "flow", "year"))
+                        "productcode", "flow", "period"))
     dtf$quantityreporter <- dtf$quantity
     return(dtf)
 }
@@ -424,7 +440,6 @@ clean <- function(dtf,
                   geoaggregation = "region",
                   replacebypartnerquantity = TRUE,
                   shaveprice = TRUE,
-                  deleteextracolumns = FALSE,
                   outputalltables = FALSE){
     nrowbeforechange <- nrow(dtf)
 
@@ -448,19 +463,8 @@ clean <- function(dtf,
         dtf <- dtf %>% shaveprice # based on upper and lower prices added above
     }
 
-    # Remove column names added by the merge with price and conversionfactor tables
-    # Keep only column names in the final table validated_flow
-    # This is mostly usefull for database output
-    if(deleteextracolumns){
-        columnstokeep <- column_names$efi[column_names$validated_flow]
-        # Add or remove colum names here if needed
-        # Remove lastchanged because is in the database
-        # raw_flow table but we want the database to compute it again
-        # for the validated flow
-        columnstokeep <- columnstokeep[!columnstokeep == "lastchanged"]
-        dtf <- dtf %>% select_(.dots = columnstokeep)
-    }
     # Check if the number of rows has changed (it shouldn't)
+    # It might change if there are duplicated flows
     stopifnot(nrow(dtf) == nrowbeforechange)
 
     ### 2 different kinds of output
@@ -476,6 +480,65 @@ clean <- function(dtf,
     return(dtf)
 }
 
+#' Clean monthly trade flows
+#'
+#' The function uses regional conversion factors
+#' and unit prices generated from the yearly data frame.
+#' @param dtfmonthly data frame of monthly trade flows
+#' @export
+cleanmonthly <- function(dtfmonthly,
+                         dtfyearly,
+                         geoaggregation = "region",
+                         replacebypartnerquantity = TRUE,
+                         shaveprice = TRUE,
+                         outputalltables = FALSE){
+    ### Prepare yearly conversion factors and prices
+    y <- clean(dtfyearly, geoaggregation = geoaggregation, outputalltables = TRUE)
+
+    ### Prepare monthly data
+    # Keep only columns usefull for R,
+    # Those efi column names that are in config/column_names.csv
+    columnsread <- names(dtfmonthly)[names(dtfmonthly) %in%
+                                   column_names$efi[column_names[,"raw_flow_monthly"]]]
+    dtfmonthly <- dtfmonthly %>%
+        select_(.dots= columnsread) %>%
+        removeduplicatedflows %>%
+        #     no quantity means no conversion factor and price
+        #     addconversionfactorandprice %>%
+        addregion
+    nrowbeforechange <- nrow(dtfmonthly)
+
+    ### Estimate quantity
+    # Replace "exports" and "import" by "export" and "import"
+    dtfmonthly$flow <-gsub("ports", "port", dtfmonthly$flow)
+    dtfmonthly <- dtfmonthly %>%
+        estimatequantity(y$price, y$conversionfactor) %>%
+        addpartnerflow
+    if (replacebypartnerquantity){
+        dtfmonthly <- dtfmonthly %>% replacebypartnerquantity(y$choice)
+    }
+    if (shaveprice){
+        dtfmonthly <- dtfmonthly %>%
+            mutate(price = tradevalue / quantity) %>% # Recaculate  price
+            shaveprice # based on yearly upper and lower prices added above
+    }
+
+    # Check if the number of rows has changed (it shouldn't)
+    # It might change if there are duplicated flows
+    stopifnot(nrow(dtfmonthly) == nrowbeforechange)
+
+    ### 2 different kinds of output
+    # List output
+    if(outputalltables){
+        return(list(dtf = dtfmonthly,
+                    price = y$price,
+                    conversionfactor = y$conversionfactor,
+                    choice = y$choice)
+        )
+    }
+    # Data frame output
+    return(dtfmonthly)
+}
 
 #' Write flows into the database table(s) validated_flow
 #'
@@ -500,11 +563,27 @@ clean <- function(dtf,
 cleandbproduct <- function(productcode, tableread, tablewrite){
     checkdbcolumns(c(tableread, tablewrite))
     dtf <- readdbproduct(productcode, tableread = tableread)
-    dtf <- clean(dtf, shaveprice = TRUE,
-                 deleteextracolumns = TRUE)
+    ### Remove database specific columns keep only columns usefull for R
+    # Those efi column names that are in config/column_names.csv
+    columnsread <- names(dtf)[names(dtf) %in%
+                                     column_names$efi[column_names[,tableread]]]
+    dtf <- dtf %>% select_(.dots= columnsread)
+    dtf <- removeduplicatedflows(dtf)
+    dtf <- clean(dtf,
+                 shaveprice = TRUE)
+    # Remove column names added by the merge with price and conversionfactor tables
+    # Keep only column names in the final table validated_flow
+    # This is usefull for database output
+    columnswrite <- column_names$efi[column_names[,tablewrite]]
+    # Add or remove colum names here if needed
+    # Remove lastchanged because is in the database
+    # raw_flow table but we want the database to compute it again
+    # for the validated flow
+    columnswrite <- columnswrite[!columnswrite == "lastchanged"]
+    dtf <- dtf %>% select_(.dots = columnswrite)
     deletedbproduct(productcode, tablewrite)
     message(paste("writing", nrow(dtf), "flows to the database"))
-    # Message concerning the database read
+    # Message concerning the database write
     dbmessage<- data.frame(result = c(TRUE, FALSE),
                            message =  c("Write to the database succeeded",
                                         "Write to the database failed"))

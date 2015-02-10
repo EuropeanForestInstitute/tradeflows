@@ -4,8 +4,8 @@
 \alias{clean}
 \title{Combine cleaning functions}
 \usage{
-clean(dtf, replacebypartnerquantity = TRUE, shaveprice = TRUE,
-  deleteextracolumns = FALSE, outputalltables = FALSE)
+clean(dtf, geoaggregation = "region", replacebypartnerquantity = TRUE,
+  shaveprice = TRUE, outputalltables = FALSE)
 }
 \arguments{
 \item{dtf}{data frame}
@@ -14,13 +14,13 @@ clean(dtf, replacebypartnerquantity = TRUE, shaveprice = TRUE,
 
 \item{shaveprice}{when TRUE, call shaveprice()}
 
-\item{deleteextracolumns}{when TRUE, keep only columns from
-tradeflows::column_names$validated_flow}
-
 \item{outputalltables}{when TRUE return a list of data frames
 containing the cleaned dataset and all tables used to compute it
 conversion factors, regional unit prices, choice between
 reporter and partner flows}
+
+\item{deleteextracolumns}{when TRUE, keep only columns from
+tradeflows::column_names$validated_flow}
 }
 \value{
 data frame with the same information as the original

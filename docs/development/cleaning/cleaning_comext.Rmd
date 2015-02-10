@@ -7,6 +7,7 @@ output:
     toc: yes
 ---
 
+
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
@@ -16,7 +17,9 @@ library(RMySQL)
 ``` 
 
 
-
 ```{r cleancomext}
+dtf <- readdbproduct(440799, tableread = "raw_flow_comext")
 
 ``` 
+
+
