@@ -2,15 +2,17 @@
 % Please edit documentation in R/clean.R
 \name{cleandbproduct}
 \alias{cleandbproduct}
-\title{Write flows into the database table(s) validated_flow}
+\title{Write flows into the database table validated_flow}
 \usage{
-cleandbproduct(productcode, tableread, tablewrite)
+cleandbproduct(productcode, tableread, tablewrite, ...)
 }
 \arguments{
 \item{tableread}{name of the table to read from}
 
 \item{tablewrite}{name of the table to write to (all rows for productcode
 will be deleted in this table before writing)}
+
+\item{...}{further arguments passed to the clean function}
 
 \item{productcode_}{code of the product trade flows to be validated}
 }

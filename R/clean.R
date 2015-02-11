@@ -540,7 +540,7 @@ cleanmonthly <- function(dtfmonthly,
     return(dtfmonthly)
 }
 
-#' Write flows into the database table(s) validated_flow
+#' Write flows into the database table validated_flow
 #'
 #' For one product (at the 6 digit level),
 #' read and clean all trade flows, then
@@ -559,8 +559,9 @@ cleanmonthly <- function(dtfmonthly,
 #' @param tableread name of the table to read from
 #' @param tablewrite name of the table to write to (all rows for productcode
 #' will be deleted in this table before writing)
+#' @param ... further arguments passed to the clean function
 #' @export
-cleandbproduct <- function(productcode, tableread, tablewrite){
+cleandbproduct <- function(productcode, tableread, tablewrite, ...){
     checkdbcolumns(c(tableread, tablewrite))
     dtf <- readdbproduct(productcode, tableread = tableread)
     ### Remove database specific columns keep only columns usefull for R
@@ -569,8 +570,7 @@ cleandbproduct <- function(productcode, tableread, tablewrite){
                                      column_names$efi[column_names[,tableread]]]
     dtf <- dtf %>% select_(.dots= columnsread)
     dtf <- removeduplicatedflows(dtf)
-    dtf <- clean(dtf,
-                 shaveprice = TRUE)
+    dtf <- clean(dtf, ...)
     # Remove column names added by the merge with price and conversionfactor tables
     # Keep only column names in the final table validated_flow
     # This is usefull for database output

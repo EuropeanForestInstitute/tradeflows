@@ -111,7 +111,9 @@ extractflags <- function(dtf){
 #'
 #' @param productcode code of a product
 #' @param tableread names of the database table to read
+#' @export
 cleandb2excel <-function(productcode, tableread){
+
 
 }
 

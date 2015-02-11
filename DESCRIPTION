@@ -12,7 +12,8 @@ License: GNU GPLV3
 LazyData: true
 Imports: 
     dplyr,
-    jsonlite
+    jsonlite,
+    RMySQL
 Suggests: 
     ggplot2,
     testthat,

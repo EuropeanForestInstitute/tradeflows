@@ -18,7 +18,7 @@ library(RMySQL)
 
 
 ```{r cleancomext}
-dtf <- readdbproduct(440799, tableread = "raw_flow_comext")
+dtf <- readdbproduct(44079998, tableread = "raw_flow_comext")
 
 ``` 
 
