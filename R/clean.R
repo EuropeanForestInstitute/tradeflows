@@ -264,7 +264,7 @@ replacebypartnerquantity <- function(dtf, choice){
                flag = flag + 300)
     dtfrest <- dtf %>% filter(!favorpartner | is.na(favorpartner))
     stopifnot(nrow(dtf) == nrow(dtffavor) + nrow(dtfrest))
-    message(nrow(dtffavor), "rows where quantity reporter was replaced by quantity partner")
+    message(nrow(dtffavor), " rows where quantity reporter was replaced by quantity partner")
     dtf <- rbind(dtffavor, dtfrest)
     return(dtf)
 }

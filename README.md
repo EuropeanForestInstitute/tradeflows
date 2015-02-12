@@ -274,6 +274,7 @@ on which to run arbitrary dplyr statements.
 --> This might not actually be needed.
 * calculate regional prices as a ponderation of 
 import and export prices as done in Chasamil2000
+--> Actually regional import and export price should be different
 * discrepancy report
 in the server function,
 add a parameter to the loadcomtrade_bycode function to render this optional
@@ -305,7 +306,7 @@ https://bitbucket.org/paul4forest/tradeflows/?
 You want to look at files in the R folders.
 
 * database.R is doing the database interaction
-* clean.R is cleaning the datai
+* clean.R is cleaning the data
 
 The configuration table columnnames located in config/column_names.csv
 now contains 2 column specifying which columns names

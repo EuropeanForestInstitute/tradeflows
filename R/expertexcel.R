@@ -3,10 +3,12 @@
 #' Keep price, conversion factor andflow choice in a separate table
 #' for further analysis
 #' @param dtf data frame
-#' @param filename path and name of the output files,
+#' @param filename path and name of the output files
+#' @param returnresults TRUE if the list of results should be returned
+#' usefull for the function cleanrdata2excel.
 #' @param ... furhter arguments passed to clean()
 #'  without extensions
-clean2excel <- function(dtf, filenamestart, ...){
+clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
     require(xlsx)
     require(reshape2)
     results <- clean(dtf,outputalltables = TRUE, ...)
@@ -42,11 +44,6 @@ clean2excel <- function(dtf, filenamestart, ...){
         mutate(changeratio = quantitychange / quantityraw)
 
 
-    # Write trade flows data frame to  csv
-    # (to be compressed later)
-    write.csv(results$dtf,
-              paste0(filenamestart, ".csv"), row.names = FALSE)
-
     # Write other data frames to Excel
     # Convert all data frame to data frames
     # some are grouped data frames and this causers issues
@@ -69,12 +66,11 @@ clean2excel <- function(dtf, filenamestart, ...){
                  sheet = createSheet(wb, sheetName="Quantity change by flag"))
     sheet7  <- createSheet(wb, sheetName="Quantity change world")
     addDataFrame(results$worldchange, sheet7, row.names=FALSE)
-    saveWorkbook(wb, paste0(filenamestart, "_cfupchoice.xlsx"))
+    saveWorkbook(wb, paste0(filenamestart, ".xlsx"))
 
-    # Compress csv and excel file in a zip archive
-    zip(paste0(filenamestart, ".zip"),
-        files = c(paste0(filenamestart, ".csv"),
-                     paste0(filenamestart, "_cfupchoice.xlsx")))
+    if(returnresults){
+        return(results)
+    }
 }
 
 #' Extract information from flag estimates
@@ -109,12 +105,14 @@ extractflags <- function(dtf){
 
 #' Clean from a database table to Excel, for expert analysis.
 #'
+#' Use the argument filenamestart to specify where the Excel file will be located.
 #' @param productcode code of a product
 #' @param tableread names of the database table to read
+#' @param ... further arguments passed to clean()
 #' @export
-cleandb2excel <-function(productcode, tableread){
-
-
+cleandb2excel <-function(productcode, tableread = "raw_flow_yearly" , ...){
+    readdbproduct(productcode, tableread) %>%
+        clean2excel(returnresults = FALSE, ...)
 }
 
 
@@ -127,12 +125,24 @@ cleanrdata2excel <- function(rawfilename, ...){
     load(rawfilename)
     filenamestart <- gsub("comtrade", "excel", rawfilename)
     filenamestart <- gsub(".RData", "", filenamestart)
-    dtf %>% renamecolumns %>%
-        clean2excel(filenamestart = filenamestart, ...)
+    results <- dtf %>% renamecolumns %>%
+        clean2excel(filenamestart = filenamestart,
+                    returnresults = TRUE, ...)
+
+    # Write trade flows data frame to  csv
+    # (to be compressed later)
+    write.csv(results$dtf,
+              paste0(filenamestart, ".csv"), row.names = FALSE)
+
+    # Compress csv and excel file in a zip archive
+    zip(paste0(filenamestart, ".zip"),
+        files = c(paste0(filenamestart, ".csv"),
+                     paste0(filenamestart, ".xlsx")))
 }
 
 
 if (FALSE){
+    #### Based on raw RDATA files
     # Write other sawnwood to Excel for expert analysis
     # 440799
     # All changes, including replacing quantity by partner value
@@ -157,11 +167,16 @@ if (FALSE){
     cleanrdata2excel("data-raw/comtrade/440799.RData",
                      replacebypartnerquantity = FALSE,
                      shaveprice = TRUE)
-
     # 440721 - Lumber, Meranti red, Meranti Bakau, White Lauan etc
     cleanrdata2excel("data-raw/comtrade/440721.RData")
     # 440729 - Lumber, tropical wood ne
     cleanrdata2excel("data-raw/comtrade/440729.RData")
     # 940161- Wooden seates
     cleanrdata2excel("data-raw/comtrade/940161.RData")
+}
+
+
+if(FALSE){
+    ### Data loaded from the database
+    cleandb2excel(440799, filenamestart = "data-raw/excel/440799fromdb")
 }

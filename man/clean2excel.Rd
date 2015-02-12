@@ -5,17 +5,20 @@
 \alias{cleanrdata2excel}
 \title{Clean and export to Excel for the expert users}
 \usage{
-clean2excel(dtf, filenamestart, ...)
+clean2excel(dtf, filenamestart, returnresults = FALSE, ...)
 
 cleanrdata2excel(rawfilename, ...)
 }
 \arguments{
 \item{dtf}{data frame}
 
+\item{returnresults}{TRUE if the list of results should be returned
+usefull for the function cleanrdata2excel.}
+
 \item{...}{furhter arguments passed to clean()
 without extensions}
 
-\item{filename}{path and name of the output files,}
+\item{filename}{path and name of the output files}
 
 \item{rawfile}{name of a .RData file containing raw trade flows}
 

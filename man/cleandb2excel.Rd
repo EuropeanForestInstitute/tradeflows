@@ -4,14 +4,16 @@
 \alias{cleandb2excel}
 \title{Clean from a database table to Excel, for expert analysis.}
 \usage{
-cleandb2excel(productcode, tableread)
+cleandb2excel(productcode, tableread = "raw_flow_yearly", ...)
 }
 \arguments{
 \item{productcode}{code of a product}
 
 \item{tableread}{names of the database table to read}
+
+\item{...}{further arguments passed to clean()}
 }
 \description{
-Clean from a database table to Excel, for expert analysis.
+Use the argument filenamestart to specify where the Excel file will be located.
 }
 
