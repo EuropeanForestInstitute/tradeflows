@@ -21,4 +21,5 @@
 *.tex
 *.toc
 *.swp
+*.xlsx
 inst/doc

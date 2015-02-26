@@ -25,7 +25,7 @@ library(reshape2)
 # Remove this chunk in the template file
 # load("data-raw/comtrade/440799.RData")
 # replace file by database source
-dtf <- loadrawdata(440799, "raw_flow_yearly")
+dtf <- readdbproduct(440799, "raw_flow_yearly")
 regionpartner <- reportercomtrade %>%
     select(reportercode = reportercode, regionpartner=region)
 swd99 <- dtf %>% 
@@ -150,8 +150,11 @@ swd99region2 <- swd99 %>%
                                               names=FALSE, na.rm=TRUE))) %>%
     arrange(-medianprice)
 
-ggplot(swd99region2, aes(x=year, y=medianprice, color=withinregion)) +
-    geom_point() + facet_grid(flow+flag~ region)
+ggplot(swd99region2,
+       aes(x=year, y=medianprice, color=withinregion)) +
+    geom_point() + facet_grid(flow+flag~ region) + 
+    ylim(c(0,1000))
+
 
 
 swd99region2 %>%
@@ -184,6 +187,7 @@ kable(swd99subregion)
 
 
 #### Analyse upper and lower prices by subregions in 2011.
+
 ```{r medianpricessubregion2011}
 # Transform subregion to an ordered vector by import prices
 f = "Import"

@@ -12,6 +12,7 @@ load("data/sawnwoodexample.rda")
 ############################################### #
 # Outdated, see R/template.R for recent version #
 ############################################### #
+message("This script is outdated, R/template.R for recent versions.")
 #' Create product reports
 #'
 #' @param products

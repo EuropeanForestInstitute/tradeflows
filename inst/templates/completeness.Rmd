@@ -12,15 +12,20 @@ This report is generated automatically based on data from the
 [UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
 Tables and graphs are in development.
 They are intended for internal use within the TradeFLowsDB project.
-As of November 2014, some aggregates such as EU-28 might be counted as countries.
-Therefore, country numbers in tables below might be slightly
+Country numbers in tables below might be slightly
 overestimated, use them as a rough indication only.
 
+
 ```{r prepare_completeness_table}
+tfdata2 <- readdbproduct(440799, "raw_flow_yearly")
+productcodeinreport <- 440799
+
 # This report is intended for one product only
-rawdata2 <- rawdata %>% 
-    filter(productcode == productcodeinreport)
-completeness <- rawdata2 %>%
+tfdata2 <- tfdata %>% 
+    filter(productcode == productcodeinreport) %>%
+    filterworldeu28
+
+completeness <- tfdata2 %>%
     select(reporter, classification, year, quantity, weight, tradevalue) %>%
     melt(id=c("reporter", "classification", "year"))  %>%
     mutate(value = !is.na(value)) %>%
@@ -32,7 +37,7 @@ completeness <- rawdata2 %>%
 ## Product definitions
 Product `r productcodeinreport` has the following definitions:
 ```{r productdefinition, results='asis'}
-productname <- rawdata2 %>% 
+productname <- tfdata2 %>% 
     select(classification, productdescription) %>%
     arrange(classification) %>%
     unique
@@ -73,11 +78,11 @@ for (code in unique(reporterbyclassif$classification)){
 
 
 ## Completeness by country and by classification type 
-```{r plot, results='asis'}
+```{r plot, results='asis', eval=FALSE}
 # Prepare table to show partner countries
 # remove world
-rawdata3 <- rawdata2 %>% 
-    filter(!reporter == "World" & !partner == "World") %>%
+tfdata3 <- tfdata2 %>% 
+    filterworldeu28 %>%
     select(year, classification, flow, reporter, partner) %>%
     arrange(year, classification, flow)
 for (r in unique(completeness$reporter)){
@@ -85,9 +90,9 @@ for (r in unique(completeness$reporter)){
     
     # plot completeness
     p <- ggplot(data=filter(completeness, reporter == r), 
-                aes(x=year, y=variable, 
-                    xend=year+1, yend=variable, 
-                    color=value, linetype=value)) +
+                aes(x = year, y = variable, 
+                    xend = year + 1, yend = variable, 
+                    color = value, linetype = value)) +
         scale_colour_manual(values = c("TRUE" = "blue", "FALSE" = "red")) +
         scale_linetype_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
         geom_segment(size=3) + 
@@ -101,14 +106,14 @@ for (r in unique(completeness$reporter)){
     # Number of trade partners per classification and year #
     ###################################################### #
     # Reported by the country
-    npartnersbyr <- rawdata3 %>% 
+    npartnersbyr <- tfdata3 %>% 
         filter(reporter == r) %>%
         dcast(year + classification ~ flow, value.var="partner", length) 
     try(print(kable(npartnersbyr,
                     caption = paste("Number of trade partners reported by", r))))
     
     # Reported by partner countries
-    try(npartnersbyothers <- rawdata3 %>% 
+    try(npartnersbyothers <- tfdata3 %>% 
             filter(partner == r) %>%
             dcast(year + classification ~ flow, value.var="reporter", length))
     try(print(kable(npartnersbyothers,

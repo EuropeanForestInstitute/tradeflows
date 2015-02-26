@@ -8,6 +8,7 @@
 #' usefull for the function cleanrdata2excel.
 #' @param ... furhter arguments passed to clean()
 #'  without extensions
+#' @export
 clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
     require(xlsx)
     require(reshape2)

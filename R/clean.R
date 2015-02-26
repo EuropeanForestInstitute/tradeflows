@@ -96,6 +96,9 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
     if(includeqestimates==FALSE){ # Condition easier to understand for user of the function
         dtf <- dtf %>% filter(flag==0 |flag==4 )
     }
+    # replace infinite price values by NA for the mean price
+    # calculation
+    dtf$price[is.infinite(dtf$price)] <- NA
     dtf %>%
         filter(flow %in% c("Import", "Export")) %>%
         # Remove EU28 reporter
@@ -107,12 +110,26 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
         # Calculate yearly regional prices
         group_by(flow, regionreporter, year, unit) %>%
         summarise(lowerprice = round(lowercoef * quantile(price, 0.25,
-                                                    names=FALSE, na.rm=TRUE)),
+                                                          names=FALSE, na.rm=TRUE)),
                   medianprice = round(median(price, na.rm=TRUE)),
                   upperprice = round(uppercoef * quantile(price, 0.75,
-                                                  names=FALSE, na.rm=TRUE)),
-                  weightedaverageprice = sum()) %>%
-        arrange(-medianprice)
+                                                          names=FALSE, na.rm=TRUE)),
+                  # The average price often cannot be computed because there
+                  # are infinite prices when quantity is = 0
+                  averageprice = round(mean(price, na.rm=TRUE)),
+                  weightedaverageprice = round(sum(tradevalue, na.rm=TRUE)/
+                                                   sum(quantity, na.rm=TRUE)) #,
+                  # Price weighted by the quantity, same value as above
+                  # weightedaverageprice1 = sum(price * quantity, na.rm=TRUE)/
+                  #  sum(quantity, na.rm=TRUE),
+                  # Price weighted by the tradevalue
+                  # Infinite prices are an issue to calculate
+                  # sum(price * tradevalue, na.rm=TRUE)
+                  # One could replace Inf by NA values
+                  # weightedaverageprice2 = sum(price * tradevalue, na.rm=TRUE)/
+                  #  sum(tradevalue, na.rm=TRUE),
+                  ) %>%
+        arrange(desc(medianprice))
 }
 
 
@@ -406,11 +423,8 @@ calculatediscrepancies <- function(dtf){
     #                             "tradevaluepartner")]
     #     stopifnot(length(ids) + 6 == length(names(dtf)))
     dtf %>% #melt(dtf, id=ids)
-        mutate(discrw = weightpartner - weight,
-               discrq = quantitypartner - quantity,
+        mutate(discrq = quantitypartner - quantity,
                discrv = tradevaluepartner - tradevalue,
-               reldiscrw = signif((weightpartner - weight)/
-                                          (weight + weightpartner),2),
                reldiscrq = signif((quantitypartner - quantity)/
                                             (quantity + quantitypartner),2),
                reldiscrv = signif((tradevalue - tradevaluepartner)/
@@ -480,6 +494,7 @@ clean <- function(dtf,
     return(dtf)
 }
 
+
 #' Clean monthly trade flows
 #'
 #' The function uses regional conversion factors
@@ -492,7 +507,11 @@ cleanmonthly <- function(dtfmonthly,
                          replacebypartnerquantity = TRUE,
                          shaveprice = TRUE,
                          outputalltables = FALSE){
+
     ### Prepare yearly conversion factors and prices
+    message("\nIn an ideal world conversion factors, prices and choice table would be placed
+in a database table, and not recalculated each time from the raw_flow_yearly.
+We sacrificed a few seconds of execution time for an easier implementation.\n")
     y <- clean(dtfyearly, geoaggregation = geoaggregation, outputalltables = TRUE)
 
     ### Prepare monthly data
@@ -540,6 +559,7 @@ cleanmonthly <- function(dtfmonthly,
     return(dtfmonthly)
 }
 
+
 #' Write flows into the database table validated_flow
 #'
 #' For one product (at the 6 digit level),
@@ -564,6 +584,7 @@ cleanmonthly <- function(dtfmonthly,
 cleandbproduct <- function(productcode, tableread, tablewrite, ...){
     checkdbcolumns(c(tableread, tablewrite))
     dtf <- readdbproduct(productcode, tableread = tableread)
+
     ### Remove database specific columns keep only columns usefull for R
     # Those efi column names that are in config/column_names.csv
     columnsread <- names(dtf)[names(dtf) %in%

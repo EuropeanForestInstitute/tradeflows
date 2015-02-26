@@ -36,7 +36,7 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
     require(dplyr)
     setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")
-    DBread <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+    DBread <- RMySQL::dbConnect(RMySQL::MySQL(), user=db["user"], host=db["host"],
                          password=db["password"], dbname=db["dbname"])
     for(tableread in tables){
         print(str(tableread))
@@ -81,8 +81,9 @@ readdbproduct <- function(productcode_, tableread ){
     dtf <- rawdata %>% filter(productcode == productcode_) %>%
         # Remove id as it is database specific and should not be carried through cleaning
         # Change this to remove all fields that are not part of column_names$efi
-         select(-id, -lastchanged) %>%
-        collect # forces computation and brings data back into a data.frame
+        select(-id, -lastchanged) %>%
+        collect  %>% # forces computation and brings data back into a data.frame
+        mutate(year = as.integer(year)) # Change year to an integer
     # Comment out this check which might not be needed
     # stopifnot(names(dtf) %in% column_names$efi)
     return(dtf)

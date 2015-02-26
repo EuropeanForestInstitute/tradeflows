@@ -1,5 +1,3 @@
-library(testthat)
-library(tradeflows)
 
 # This test suite assumes that
 # The package contains a test dataset called sawnwoodexample.

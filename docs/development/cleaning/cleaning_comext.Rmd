@@ -17,9 +17,77 @@ library(RMySQL)
 ``` 
 
 
-```{r cleancomext}
-dtf <- readdbproduct(44079998, tableread = "raw_flow_comext")
+### Needed
+I need a matching table betwen comext country codes and comtrade country codes.
+```{r load}
+dtfmonthly <- readdbproduct(44079998, tableread = "raw_flow_comext")
+dtfyearly <- readdbproduct(440799, tableread = "raw_flow_yearly")
+```
 
+```{r cleancomext}
+#' Clean comext monthly trade flows
+#'
+#' The function uses regional conversion factors
+#' and unit prices generated from the yearly data frame.
+#' @param dtfmonthly data frame of monthly trade flows
+#' @export
+cleancomextmonthly <- function(dtfmonthly,
+                         dtfyearly,
+                         geoaggregation = "region",
+                         replacebypartnerquantity = TRUE,
+                         shaveprice = TRUE,
+                         outputalltables = FALSE){
+
+    ### Prepare yearly conversion factors and prices
+    message("\nIn an ideal world conversion factors, prices and choice table would be placed
+in a database table, and not recalculated each time from the raw_flow_yearly.
+We sacrificed a few seconds of execution time for an easier implementation.\n")
+    y <- clean(dtfyearly, geoaggregation = geoaggregation, outputalltables = TRUE)
+
+    ### Prepare monthly data
+    # Keep only columns usefull for R,
+    # Those efi column names that are in config/column_names.csv
+    columnsread <- names(dtfmonthly)[names(dtfmonthly) %in%
+                                   column_names$efi[column_names[,"raw_flow_comext"]]]
+    dtfmonthly <- dtfmonthly %>%
+        select_(.dots= columnsread) %>%
+        removeduplicatedflows %>%
+        #     no quantity means no conversion factor and price
+        #     addconversionfactorandprice %>%
+        addregion
+    nrowbeforechange <- nrow(dtfmonthly)
+
+    ### Estimate quantity
+    # Replace "exports" and "import" by "export" and "import"
+    dtfmonthly$flow <-gsub("ports", "port", dtfmonthly$flow)
+    dtfmonthly <- dtfmonthly %>%
+        estimatequantity(y$price, y$conversionfactor) %>%
+        addpartnerflow
+    if (replacebypartnerquantity){
+        dtfmonthly <- dtfmonthly %>% replacebypartnerquantity(y$choice)
+    }
+    if (shaveprice){
+        dtfmonthly <- dtfmonthly %>%
+            mutate(price = tradevalue / quantity) %>% # Recaculate  price
+            shaveprice # based on yearly upper and lower prices added above
+    }
+
+    # Check if the number of rows has changed (it shouldn't)
+    # It might change if there are duplicated flows
+    stopifnot(nrow(dtfmonthly) == nrowbeforechange)
+
+    ### 2 different kinds of output
+    # List output
+    if(outputalltables){
+        return(list(dtf = dtfmonthly,
+                    price = y$price,
+                    conversionfactor = y$conversionfactor,
+                    choice = y$choice)
+        )
+    }
+    # Data frame output
+    return(dtfmonthly)
+}
 ``` 
 
 

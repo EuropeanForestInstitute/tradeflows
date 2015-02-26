@@ -1,0 +1,5 @@
+# Ignore all files except R scrips that load the data
+*
+!.gitignore
+!*.R
+!*.csv # Except configuration file columnnames.csv and classificationitto.csv

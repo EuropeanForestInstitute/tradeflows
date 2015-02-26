@@ -152,7 +152,16 @@ For data I followed his recommendations in r-pkgs/data.rmd
 
 
 ### Tests
-Example of testing [for the devtools package](https://github.com/hadley/devtools/blob/master/tests/testthat/test-data.r)
+Use Ctrl+Shift+T to run the package tests in RStudio.
+
+The test_check function documentation tells us that tests should be placed in tests/testthat.
+
+* Example of testing [for the devtools package](https://github.com/hadley/devtools/blob/master/tests/testthat/test-data.r)
+
+* [R style guide of FAOSTAT recommends using tests](https://github.com/mkao006/r_style_fao/commit/89ab5236aaf2f66513ecd1bad8221f0b24ed4aa8)
+
+* [Example tests of the stringr package](https://github.com/hadley/stringr/tree/master/tests/testthat)
+
 
 ### Data frame manipulation with dplyr
 dplyr uses non standard evaluation. See vignette("nse") 
@@ -299,25 +308,38 @@ visualise missing data
 * load from EUROSTAT comext at 10 digit level
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
-### Notes to EFI developpers
-Change this to a vignette installation and configuration
+## Notes to EFI developpers
+See the vignette/installation.Rmd on installation and configuration steps.
+
 Which directories I want to read at
 https://bitbucket.org/paul4forest/tradeflows/?
 You want to look at files in the R folders.
 
 * database.R is doing the database interaction
 * clean.R is cleaning the data
+* inst contains folders which will be installed in the package folder
 
 The configuration table columnnames located in config/column_names.csv
 now contains 2 column specifying which columns names
 are used in the trade flows database:
 "raw_flow" and "validated_flow"
+
+### Database configuration
 Database configuration file and column names are located under:
 a location available from shell command prompt, run:
 ```
 Rscript  -e 'library(tradeflows)' -e 'system.file("config", package="tradeflows")'
 ```
 
+### Loading data
+This is managed by a PHP program.
+The data to load is contained in this instruction
+```
+itto <- classificationitto %>% filter(productcodecomtrade > 10000 & nomenclature =="HS12") %>% select(product, productcodeitto, productcodecomtrade)
+write.csv(itto, file="data-raw/ittoproducts.csv", row.names = FALSE)
+```
+
+### Cleaning data
 The function cleandb() will feed data into the database table(s) validated_flow
 updates will be done on a product basis, at the 6 digit level. The cleaning script will:
 
@@ -330,3 +352,14 @@ can also run from a system shell directly
 ```
 Rscript -e 'library(tradeflows)' -e 'cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
 ```
+
+### Creating reports
+
+
+createreportfromdb(productcode = , template = "", )
+
+# It is  not possible to generate the discrepancy plot which I illustrated in a PDF report
+There are 6373 distinct bilateral trade flows in the 440799 yearly dataset.
+Some flows occur only inone year, others are repeated every year. 
+Six thousand plots cannotbe easily represented in one report. 
+This requires an interface.

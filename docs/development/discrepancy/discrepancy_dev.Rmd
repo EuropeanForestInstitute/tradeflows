@@ -22,35 +22,39 @@ library(reshape2)
 
 
 ```{r standalone, echo=FALSE, message=FALSE, warning=FALSE}
-# dtf enddata in this chunk 
+# dtf dtf in this chunk 
 # will have to be provided to the report generating function
-load("data-raw/comtrade/440799.RData")
-dtfall <- dtf
-load("data-raw/comtrade/4407.RData")
-dtfall <- rbind(dtfall, dtf)
+# load("data-raw/comtrade/440799.RData")
+# load("data-raw/comtrade/4407.RData")
+# dtfall <- rbind(dtfall, dtf)
 
-enddata <- dtfall %>%
-    renamecolumns("comtrade", "efi") %>%
-    filter(partnercode != 0) %>% #remove world
+dtf <- readdbproduct(440799, "validated_flow_yearly") %>% 
+    filterworldeu28 %>%
+    rename(quantitypartner0 = quantitypartner,
+           quantityreporter0 = quantityreporter) %>%
     addpartnerflow %>%
+    mutate(quantitypartnerdiff = quantitypartner0 - quantitypartner,
+           quandityreporterdiff = quantityreporter0 - quantityreporter) %>%
     calculatediscrepancies
+# summary(dtf$quantitypartner0 - dtf$quantitypartner)
+# summary(dtf$quantityreporter0 - dtf$quantityreporter)
 ```
 
 
 ## Thailand
-### Major export partners in weight in `r max(enddata$year)` 
+### Major export partners in weight in `r max(dtf$year)` 
 ```{r thailand}
 reporterinreport <- 764
 flowselected <- "Export"
-enddata2 <- enddata %>%
+dtf2 <- dtf %>%
     filter(reportercode == reporterinreport)
 
-for (p in unique(enddata$productcode)){
-    exp <- enddata2 %>% 
+for (p in unique(dtf$productcode)){
+    exp <- dtf2 %>% 
         filter(flow == flowselected & year == max(year) & productcode==p) %>%
-        select(partner, weight, discrw) %>%
+        select(partner, weight, discrv) %>%
         arrange(-weight) %>%
-        rename(discrepancy = discrw) %>%
+        rename(discrepancy = discrv) %>%
         head(10)
     partnerssorted <- unique(exp$partner)
     kable(exp)
@@ -76,65 +80,65 @@ Data can be exported to csv, Excel or other formats.
 
 
 ### Thailand Export of 440799 to China in recent years
-```{r}
+```{r eval=FALSE}
 reporterinreport <- 764
 # Report could choosedisplay those time series for main partners  only
 partnerinreport <- 156 
 flowselected <- "Export"
 productcodeinreport <- 440799
-enddata2 <- enddata %>%
+dtf2 <- dtf %>%
     filter(reportercode == reporterinreport & 
                partnercode==partnerinreport &
                productcode == productcodeinreport&
                flow == flowselected)
-kable(select(enddata2, classification, quantity, weight, tradevalue, 
-             discrq, discrw, discrv))
-enddata2 <- enddata2 %>%
-    select(year, weight, discrw, quantity, discrq, tradevalue, discrv) %>%
+kable(select(dtf2, classification, quantity, weight, tradevalue, 
+             discrq, discrq, discrv))
+dtf2 <- dtf2 %>%
+    select(year, weight, discrq, quantity, discrq, tradevalue, discrv) %>%
     melt(id=c("year"))
-weight <- enddata2 %>% filter(variable %in% c("weight", "discrw"))
-enddata2$v <- enddata2$variable
-enddata2$v[enddata2$variable == "discrw"] <- "weight"
-enddata2$v[enddata2$variable == "discrq"] <- "quantity"
-enddata2$v[enddata2$variable == "discrv"] <- "tradevalue"
-# for (v1 in unique(enddata2$v))
-ggplot(data=enddata2)+#filter(enddata2,v=="weight"))+
+weight <- dtf2 %>% filter(variable %in% c("weight", "discrv"))
+dtf2$v <- dtf2$variable
+dtf2$v[dtf2$variable == "discrv"] <- "weight"
+dtf2$v[dtf2$variable == "discrq"] <- "quantity"
+dtf2$v[dtf2$variable == "discrv"] <- "tradevalue"
+# for (v1 in unique(dtf2$v))
+ggplot(data=dtf2)+#filter(dtf2,v=="weight"))+
     aes(year, value, fill=variable) +
     geom_bar(position="dodge", stat="identity") +
-    scale_fill_manual(values = rep(c("chocolate3","black"),3))+
+    scale_fill_manual(values = rep(c("chocolate3","black"),2))+
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     ggtitle(paste(flowselected, p)) +
     facet_grid(v~., scales="free_y")
 
 
 # csv file for Sergey
-# write.csv(enddata2, file="data-raw/export440799_Thailand_to_China.csv", row.names=FALSE) 
+# write.csv(dtf2, file="data-raw/export440799_Thailand_to_China.csv", row.names=FALSE) 
 ```
 
 ## Spain
 ### Major import partners in weight in 2012
-```{r spain, results='asis'}
+```{r spain, results='asis', eval=FALSE}
 reporterinreport <- 724
 flowselected <- "Import"
-# yearselected <-   max(enddata$year)
+# yearselected <-   max(dtf$year)
 yearselected <- 2012
-enddata2 <- enddata %>%
+dtf2 <- dtf %>%
     filter(reportercode == reporterinreport)
 
-for (p in unique(enddata$productcode)){
-    exp <- enddata2 %>% 
+for (p in unique(dtf$productcode)){
+    exp <- dtf2 %>% 
         filter(flow == flowselected & year == yearselected & productcode==p) %>%
-        select(partner, weight, discrw, tradevalue, discrv, quantity, discrq) %>%
+        select(partner, weight, discrv, tradevalue, discrv, quantity, discrq) %>%
         arrange(-weight) %>%
         head(10)
     partnerssorted <- unique(exp$partner)
     cat("\n\n")
-    print(kable(rename(exp, discrepancy_weight = discrw)))
+    print(kable(rename(exp, discrepancy_weight = discrv)))
     cat("\n\n")
 
     
     exp <- exp %>%
-        select(partner, weight, discrw) %>%
+        select(partner, weight, discrv) %>%
         # Order the contries by trade volume
         mutate(partner = ordered(partner, levels= partnerssorted)) %>%
         melt(id=c("partner"))
@@ -155,35 +159,35 @@ for (p in unique(enddata$productcode)){
 
 ## Cameroon
 ### Cameroon Export of 440799 to Spain in recent years
-```{r}
+```{r eval=FALSE}
 reporterinreport <- 120 # Cameroon
 # Report could choosedisplay those time series for main partners  only
 partnerinreport <- 724 # Spain 
 flowselected <- "Export"
 productcodeinreport <- 440799
-enddata2 <- enddata %>%
+dtf2 <- dtf %>%
     filter(reportercode == reporterinreport & 
                partnercode==partnerinreport &
                productcode == productcodeinreport&
                flow == flowselected)
-kable(select(enddata2, classification, quantity, weight, tradevalue, 
-             discrq, discrw, discrv))
-enddata2 <- enddata2 %>%
-    select(year, weight, discrw, quantity, discrq, tradevalue, discrv) %>%
+kable(select(dtf2, classification, quantity, weight, tradevalue, 
+             discrq, discrv, discrv))
+dtf2 <- dtf2 %>%
+    select(year, weight, discrv, quantity, discrq, tradevalue, discrv) %>%
     melt(id=c("year"))
-weight <- enddata2 %>% filter(variable %in% c("weight", "discrw"))
-enddata2$v <- enddata2$variable
-enddata2$v[enddata2$variable == "discrw"] <- "weight"
-enddata2$v[enddata2$variable == "discrq"] <- "quantity"
-enddata2$v[enddata2$variable == "discrv"] <- "tradevalue"
-# for (v1 in unique(enddata2$v))
-ggplot(data=enddata2)+#filter(enddata2,v=="weight"))+
+weight <- dtf2 %>% filter(variable %in% c("weight", "discrv"))
+dtf2$v <- dtf2$variable
+dtf2$v[dtf2$variable == "discrv"] <- "weight"
+dtf2$v[dtf2$variable == "discrq"] <- "quantity"
+dtf2$v[dtf2$variable == "discrv"] <- "tradevalue"
+# for (v1 in unique(dtf2$v))
+ggplot(data=dtf2)+#filter(dtf2,v=="weight"))+
     aes(year, value, fill=variable) +
     geom_bar(position="dodge", stat="identity") +
     scale_fill_manual(values = rep(c("chocolate3","black"),3))+
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     ggtitle(paste(flowselected, p)) +
     facet_grid(v~., scales="free_y")
-# write.csv(enddata2, file="data-raw/export440799_Cameroon_to_Spain.csv", 
+# write.csv(dtf2, file="data-raw/export440799_Cameroon_to_Spain.csv", 
 #           row.names=FALSE)
 ```
