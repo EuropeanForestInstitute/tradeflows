@@ -1,0 +1,94 @@
+---
+title: "Interaction with the Tradeflows Database and PHP code"
+author: "Paul Rougieux"
+date: "26/02/2015"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=TRUE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+```{r loadandprepare}
+rawflow0 <- readdbproduct(440799, "raw_flow_yearly")
+rawflow1 <- readdbproduct(440799, "raw_flow_year")
+nrow(rawflow0)
+nrow(rawflow1)
+```
+
+
+
+## 2015 February 26 email discussion
+
+Paul:
+
+> It seems we do not have the same content in raw_flow_yearly, your
+> output says 20996 rows in the dataset while mine says 25208 rows
+
+Simo:
+
+> Maybe the Comtrade server is not behaving consistently.. I tried to "refresh" the data earlier, no change in the row count. Now I deleted product 440799 from the db and loaded it again, now we have 20944 rows and the validator does not fail anymore.
+> Would be interesting to know how your data differs from the dump I sent earlier.
+
+
+### Differences in "raw_flow_yearly" data
+The years are different! 
+
+```{r}
+# Arrange both dataframes by year, reporter, partner, flow
+rawflow0 <- rawflow0 %>% arrange(year, reporter, partner, flow)
+rawflow1 <- rawflow1 %>% arrange(year, reporter, partner, flow)
+# Check what years are present in both data frames
+unique(rawflow0$year)
+unique(rawflow1$year)
+
+# Select only common years
+rawflow0common <- rawflow0 %>% filter(year %in% 2010:2013) %>% 
+    select(year, reporter, partner, flow, quantity, tradevalue)
+rawflow1common <- rawflow1 %>% filter(year %in% 2010:2013) %>%
+    select(year, reporter, partner, flow, quantity, tradevalue)
+# What are the differences now?
+common <- rawflow0common %>%
+    merge(rawflow1common, 
+          by = c("year", "reporter", "partner", "flow"), all = TRUE)
+# Variable names in the merged dataset
+names(common)
+# variables present in one dataset but not in the other
+# Not present in rawflow0
+sum(is.na(common$tradevalue.x))
+# Not present in rawflow1
+sum(is.na(common$tradevalue.y))
+common <- common %>%
+    mutate(partner = iconv(partner, from =  "latin1", to = "UTF-8"),
+           notinrawflow0 = is.na(tradevalue.x),
+           notinrawflow1 = is.na(tradevalue.y)) %>%
+    filter(notinrawflow0 | notinrawflow1)
+# 
+grepl("ivoire", common$partner)
+
+common %>% kable
+```
+
+
+### Duplicated flows
+```{r}
+rawflow0 %>% findduplicatedflows %>% nrow
+rawflow1 %>% findduplicatedflows %>% 
+    select(year, reporter, partner, flow) %>% kable
+rawflow1 %>% filter(year == 2013 & reporter == "United Kingdom" &
+                partner == "World" & flow == "Re-Import") %>%
+    select(year, reporter, partner, flow, quantity, weight, tradevalue, flag) %>%
+    kable    
+```

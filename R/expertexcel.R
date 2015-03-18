@@ -24,6 +24,8 @@ clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
               value.var = "n")
 
 
+
+
     results$dtf <- results$dtf %>%
         # remove product description to get a smaller csv file
         select(-productdescription) %>%
@@ -51,14 +53,33 @@ clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
     # when writing to Excel with row.names = FALSE
     results <- lapply(results, data.frame)
 
+
+    # Add data frame with description
+    addDataFrame2 <- function(wb, dtf, sheetname){
+        sheet  <- createSheet(wb, sheetName = sheetname)
+        addDataFrame(dtf, sheet, row.names=FALSE)
+
+        # Add description if available
+        sheetdescription <- column_description %>%
+            filter(sheet == sheetname) %>%
+            select(-sheet)
+        if (nrow(sheetdescription)>0){
+            addDataFrame(sheetdescription, sheet, row.names=FALSE,
+                         startColumn = ncol(results$price) + 2)
+        }
+    }
+
     wb <- createWorkbook()
     #     sheet1  <- createSheet(wb, sheetName="Trade flows")
     #     addDataFrame(results$dtf, sheet1, row.names=TRUE)
     sheet2  <- createSheet(wb, sheetName="Conversion factors")
     # Issue with row.names = FALSE : columns are not written correctly
     addDataFrame(results$conversionfactor, sheet2, row.names=FALSE)
-    sheet3  <- createSheet(wb, sheetName="Unit prices")
-    addDataFrame(results$price, sheet3, row.names=FALSE)
+    addDataFrame2(wb, results$price, "Unit prices")
+#     sheet3  <- createSheet(wb, sheetName="Unit prices")
+#     addDataFrame(results$price, sheet3, row.names=FALSE)
+#     addDataFrame(sheetdescription("Unit prices"), sheet3, row.names=FALSE,
+#                  startColumn = ncol(results$price) + 1)
     sheet4  <- createSheet(wb, sheetName="Choice description")
     addDataFrame(results$choice, sheet4, row.names=FALSE)
     sheet5  <- createSheet(wb, sheetName="Product classification")

@@ -28,6 +28,7 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
     return(dtf)
 }
 
+
 #' Add regionreporter and regionpartner
 #'
 #' @param dtf data frame of trade flows
@@ -278,7 +279,7 @@ replacebypartnerquantity <- function(dtf, choice){
     # cut the dataframe between the lines which favor partner and the others
     dtffavor <- dtf %>% filter(favorpartner) %>%
         mutate(quantity = quantitypartner,
-               flag = flag + 300)
+               flag = flag + 4000)
     dtfrest <- dtf %>% filter(!favorpartner | is.na(favorpartner))
     stopifnot(nrow(dtf) == nrow(dtffavor) + nrow(dtfrest))
     message(nrow(dtffavor), " rows where quantity reporter was replaced by quantity partner")
@@ -314,7 +315,7 @@ shaveprice <- function(dtf){
     dtfoutbound <- dtf %>%
         filter(price<lowerprice | upperprice<price) %>%
         mutate(quantity = quantity_up,
-               flag = flag + 4000)
+               flag = flag + 300)
     stopifnot(nrow(dtf) == nrow(dtfinbound) + nrow(dtfoutbound))
     message(nrow(dtfoutbound), " rows had a price too high or too low")
     dtf <- rbind(dtfinbound, dtfoutbound)
@@ -454,7 +455,8 @@ clean <- function(dtf,
                   geoaggregation = "region",
                   replacebypartnerquantity = TRUE,
                   shaveprice = TRUE,
-                  outputalltables = FALSE){
+                  outputalltables = FALSE,
+                  includeqestimates = TRUE){
     nrowbeforechange <- nrow(dtf)
 
     ### Prepare conversion factors and prices
@@ -462,7 +464,7 @@ clean <- function(dtf,
         removeduplicatedflows %>%
         addconversionfactorandprice %>%
         addregion
-    price <- extractprices(dtf)
+    price <- extractprices(dtf, includeqestimates)
     conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregation)
 
     ### Estimate quantity
