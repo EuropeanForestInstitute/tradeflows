@@ -47,8 +47,8 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
                             "FROM `INFORMATION_SCHEMA`.`COLUMNS` ",
                             "WHERE `TABLE_SCHEMA`='tradeflows' ",
                             "AND `TABLE_NAME`='",tableread,"';"), collapse = "")
-        res <- dbSendQuery(DBread, sqlquery)
-        columnname <- dbFetch(res)
+        res <- RMySQL::dbSendQuery(DBread, sqlquery)
+        columnname <- RMySQL::dbFetch(res)
         columnname <- columnname$COLUMN_NAME
         # For that table, find the efi column names which are supposed to
         # be in there, but which are not in the data frame
@@ -79,9 +79,7 @@ readdbproduct <- function(productcode_, tableread ){
                         password=db["password"], dbname=db["dbname"])
     rawdata <- tbl(DBread, tableread)
     dtf <- rawdata %>% filter(productcode == productcode_) %>%
-        # Remove id as it is database specific and should not be carried through cleaning
-        # Change this to remove all fields that are not part of column_names$efi
-        select(-id, -lastchanged) %>%
+        # keep id in order to compare raw and cleaned trade flows
         collect  %>% # forces computation and brings data back into a data.frame
         mutate(year = as.integer(year)) # Change year to an integer
     # Comment out this check which might not be needed
@@ -100,14 +98,13 @@ writedbproduct <- function(dtf, tablewrite){
     # Write only to a validated_flow table
     stopifnot(tablewrite %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(message=FALSE)
-    require(RMySQL)
     db <- getOption("tradeflowsDB")
-    DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+    DBwrite <- RMySQL::dbConnect(MySQL(), user=db["user"], host=db["host"],
                          password=db["password"], dbname=db["dbname"])
     dtf <- data.frame(dtf)
     result <- dbWriteTable(DBwrite, name = tablewrite,
                            value=dtf, append=TRUE, row.names = FALSE)
-    dbDisconnect(DBwrite)
+    RMySQL::dbDisconnect(DBwrite)
     return(result)
 }
 
@@ -117,19 +114,17 @@ writedbproduct <- function(dtf, tablewrite){
 #'@export
 deletedbproduct <- function(productcode, tabledelete){
     # Delete only in a validated_flow table
-    require(RMySQL)
     stopifnot(tabledelete %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")
-    DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
+    DBwrite <- RMySQL::dbConnect(MySQL(), user=db["user"], host=db["host"],
                          password=db["password"], dbname=db["dbname"])
     sqlproduct <- paste("DELETE FROM ",tabledelete,
                          "WHERE productcode = ", productcode)
-    res <- dbSendQuery(DBwrite, sqlproduct)
-    # See ?dbSendQuery
-    nbrowsdeleted <- dbGetRowsAffected(res)
+    res <- RMySQL::dbSendQuery(DBwrite, sqlproduct)
+    nbrowsdeleted <- RMySQL::dbGetRowsAffected(res)
     message(nbrowsdeleted," rows were deleted.")
-    dbClearResult(res)
+    RMySQL::dbClearResult(res)
     return(nbrowsdeleted)
 }
 
