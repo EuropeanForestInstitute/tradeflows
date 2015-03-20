@@ -29,6 +29,12 @@ nrow(rawflow1)
 ```
 
 
+## 2015 March 20 comments
+
+```{r}
+# String causing problem
+unique(tfdata$reporter[tfdata$reportercode == 384])
+```
 
 ## 2015 February 26 email discussion
 

@@ -3,16 +3,21 @@
 #' This function will generate reports for any template that is
 #' product specific.  Giving information about all world trade
 #' flows for one product.
-#' @param tfdata a dataframe containing tradeflows data
+#' @param tfdata a dataframe containing trade flows data
 #' @param inputpath path of the template, defaults to package internal path
 #' @param template name of the template file, including .Rmd extension
 #' @param outputdir name of the output directory relative to getwd()
+#' @param encoding, encoding of the template file. See also iconv
+#' The names of encodings and which ones are available are
+#' platform-dependent. All R platforms support ""
+#' (for the encoding of the current locale), "latin1" and "UTF-8".
 #' @export
 createproductreport <- function(tfdata,
                                 inputpath = system.file("templates",
                                                         package="tradeflows"),
                                 template,
                                 outputdir = "reports",
+                                encoding = "UTF-8",
                                 keep_tex = FALSE){
     # load optional packages
     require(ggplot2)
@@ -40,7 +45,8 @@ createproductreport <- function(tfdata,
                                                                        toc_depth = 3,
                                                                        keep_tex = keep_tex),
                                output_dir = outputdir,
-                               output_file = paste0(productcodeinreport,".pdf")),
+                               output_file = paste0(productcodeinreport,".pdf"),
+                               encoding = encoding),
              finally = print("Finally"))
 
 }
@@ -83,6 +89,12 @@ if (FALSE){
     # Completeness reports #
     ###################### #
     directory <- "docs/development/completeness/"
+    # Template that will be exported with the package
+    createreportfromdb("raw_flow_yearly", 440799, template = "completeness.Rmd",  outputdir = "docs/development/completeness/")
+
+    # Template used as a development version
+    createreportfromdb("raw_flow_yearly", 440799, inputpath = "docs/development/completeness/", template = "completeness_dev.Rmd", encoding = "latin1", outputdir = "docs/development/completeness/")
+
     createreportfromdb("raw_flow_yearly", 440799,
                        template = "completeness.Rmd", outputdir = directory,
                        keep_tex = TRUE)

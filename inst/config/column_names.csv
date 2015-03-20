@@ -1,4 +1,5 @@
 comtrade,comext,faostat,efi,raw_flow_yearly,validated_flow_yearly,raw_flow_monthly,validated_flow_monthly,raw_flow_comext,validated_flow_comext,efioutput,sql_type
+NA,NA,NA,id,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,NA,INT(10)
 pfCode,NA,NA,classification,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,Trade classification system,VARCHAR(3)
 yr,NA,year,year,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,Year,YEAR(4)
 period,PERIOD,NA,period,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,NA,INT

@@ -78,11 +78,20 @@ readdbproduct <- function(productcode_, tableread ){
     DBread <- src_mysql(user=db["user"], host=db["host"],
                         password=db["password"], dbname=db["dbname"])
     rawdata <- tbl(DBread, tableread)
-    dtf <- rawdata %>% filter(productcode == productcode_) %>%
+    dtf <- rawdata %>%
+        filter(productcode == productcode_) %>%
         # keep id in order to compare raw and cleaned trade flows
-        collect  %>% # forces computation and brings data back into a data.frame
-        mutate(year = as.integer(year)) # Change year to an integer
-    # Comment out this check which might not be needed
+        # forces computation and brings data back into a data.frame
+        collect  %>%
+        # Change year to an integer
+        mutate(year = as.integer(year))  %>%
+        # Convert country names to utf-8
+        mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+               partner = iconv(partner, "latin1", "utf-8"))
+    message("Changed reporter and partner encoding from latin1 to utf8.",
+            "(see the country name of reportercode 384)")
+    # Comment out this check which might break for unnecessary reasons
+    # if EFI developers decide to add extra columns in the database
     # stopifnot(names(dtf) %in% column_names$efi)
     return(dtf)
 }
@@ -99,10 +108,11 @@ writedbproduct <- function(dtf, tablewrite){
     stopifnot(tablewrite %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")
-    DBwrite <- RMySQL::dbConnect(MySQL(), user=db["user"], host=db["host"],
-                         password=db["password"], dbname=db["dbname"])
+    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+                                 user=db["user"], host=db["host"],
+                                 password=db["password"], dbname=db["dbname"])
     dtf <- data.frame(dtf)
-    result <- dbWriteTable(DBwrite, name = tablewrite,
+    result <- RMySQL::dbWriteTable(DBwrite, name = tablewrite,
                            value=dtf, append=TRUE, row.names = FALSE)
     RMySQL::dbDisconnect(DBwrite)
     return(result)
@@ -117,8 +127,9 @@ deletedbproduct <- function(productcode, tabledelete){
     stopifnot(tabledelete %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(message=FALSE)
     db <- getOption("tradeflowsDB")
-    DBwrite <- RMySQL::dbConnect(MySQL(), user=db["user"], host=db["host"],
-                         password=db["password"], dbname=db["dbname"])
+    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+                                 user=db["user"], host=db["host"],
+                                 password=db["password"], dbname=db["dbname"])
     sqlproduct <- paste("DELETE FROM ",tabledelete,
                          "WHERE productcode = ", productcode)
     res <- RMySQL::dbSendQuery(DBwrite, sqlproduct)
@@ -132,12 +143,30 @@ deletedbproduct <- function(productcode, tabledelete){
 #' Number of rows in a database table
 #'
 #' @param table name of a table
-nrowinDB <- function(table){
-    DBread <- src_mysql(user="tradeflows", host="localhost",
-                        password="tradeflows", dbname="tradeflows")
-    rawdata <- tbl(DBread, sql(paste("SELECT * FROM",table)))
-    rawdata %>% summarise(nrow = n()) %>% collect
+#' @export
+nrowinDB <- function(tableread){
+    db <- getOption("tradeflowsDB")
+    DBread <- src_mysql(user=db["user"], host=db["host"],
+                        password=db["password"], dbname=db["dbname"])
+    tabledata <- tbl(DBread, tableread)
+    tabledata %>% summarise(nrow = n()) %>% collect
 }
+
+
+#' Select rows by id
+#'
+#' @param table name of a table
+#' @param id a vector of id
+#' @export
+selectbyid <- function(tableread, id){
+    db <- getOption("tradeflowsDB")
+    DBread <- src_mysql(user=db["user"], host=db["host"],
+                        password=db["password"], dbname=db["dbname"])
+    tabledata <- tbl(DBread, tableread)
+    tabledata %>% summarise(nrow = n()) %>% collect
+}
+
+
 
 
 if (FALSE){

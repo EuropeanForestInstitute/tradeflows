@@ -604,6 +604,7 @@ cleandbproduct <- function(productcode, tableread, tablewrite, ...){
     # for the validated flow
     columnswrite <- columnswrite[!columnswrite == "lastchanged"]
     dtf <- dtf %>% select_(.dots = columnswrite)
+    message("deleteting", productcode, "from", tablewrite)
     deletedbproduct(productcode, tablewrite)
     message(paste("writing", nrow(dtf), "flows to the database"))
     # Message concerning the database write
@@ -618,6 +619,11 @@ cleandbproduct <- function(productcode, tableread, tablewrite, ...){
 
 if(FALSE){
     library(dplyr)
+    library()
+    ### Clean from the database, to the database
+    cleandbproduct(440799, "raw_flow_yearly", "validated_flow_yearly")
+
+    ### clean from a file
     load("data-raw/comtrade/sawnwood_all.RData")
     # Step by step
     sawnwood <- swdall %>%
@@ -627,7 +633,8 @@ if(FALSE){
         calculatediscrepancies
     # All in one step, except for renamecolumns because
     # it's specific to the development system
-    # In the production system, columns will already have been renamed
+    # In the production system,
+    # database columns will already have been renamed
     sawnwood <- swdall %>%
         renamecolumns() %>%
         clean()
