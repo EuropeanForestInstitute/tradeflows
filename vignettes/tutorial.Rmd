@@ -1,0 +1,69 @@
+---
+title: "Trade Flows DB tutorial"
+author: "Paul Rougieux"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+Package documentation can be accessed by entering a question mark
+followed by a function name at the R prompt. 
+
+
+## Loading Comtrade data
+The Comtrade API is documented at http://comtrade.un.org/data/doc/api/
+The following function loads a JSON file from the comtrade API 
+in a temporary directory and returns a dataframe.
+
+```{r}
+library(tradeflows)
+# Load "other sawnwood" in France (country code 251) for the last 5 years available in comtrade
+other_sawnwood_fr <- loadcomtradebycode(440799, 251, "recent")
+# Rename columns so that they are more readable
+other_sawnwood_fr <- renamecolumns(other_sawnwood_fr)
+```
+
+The comtrade database API has limitation of 5 countries per call.
+There are approximately 250 countries in the database.
+This function loads all world trade flows for product 440799
+```{r eval=FALSE}
+loadcomtradewithpause(440799, year = "recent", path = "data-raw/")
+```
+For each group of 3 countries loadcomtradewithpause() 
+calls the function loadcomtradebycode().
+The Comtrade API has a limitation of 100 calls per hour.
+Given a list of products, loadcomtradewithpause() 
+will wait one hour before downloading the next product.
+
+RData was stored in the directory given above.
+A csv file was also saved so that the raw data can be visualised 
+in a spreadsheet.
+```{r}
+
+```
+
+## Refining trade flows data
+The methodology report explains the data 
+refining procedure in details .
+The source code of the fonction clean() can also inform about the
+exact data refining workflow.
+```{r}
+refined_data <- clean(raw_data)
+```
+
+
+## Generating reports
+
+
+### Completeness report
+
+
+### Excel file with prices and convertion factors
+
+
+## Setting up a MySQL database for storage
+Optionally, you can use a 

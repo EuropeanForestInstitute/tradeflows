@@ -1,0 +1,162 @@
+---
+title: "Montly Unit Prices"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  html_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(lubridate)
+``` 
+
+```{r loadandprepare}
+prepare <- function(dtf){
+    dtf %>% 
+        # Keep only import and export
+        filter(flowcode %in% c(1,2)) %>%
+        # Remove EU28 reporter
+        filter(!reporter %in%c("EU-27")) %>%
+        # Remove World partner
+        filter(!partner %in%c("EU-27", "World")) %>%
+        merge(select(reportercomtrade, reportercode,
+                     regionreporter=region)) %>%
+        merge(select(reportercomtrade, 
+                     partnercode = reportercode,
+                     regionpartner=region)) %>%
+        mutate(period = parse_date_time(period, "%y%m"),
+               price = tradevalue / quantity,
+               pricew = tradevalue / weight,
+               # on sum of all values
+               tradevalue = as.numeric(tradevalue),
+               # To avoid Error in swd99$c(NA_integer_,  : 
+               # invalid subscript type 'integer'
+               quantity = as.numeric(quantity),
+               # tradeflow within a region 
+               withinregion =  regionreporter == regionpartner)
+    }
+
+swd99 <- readdbproduct(440799, "raw_flow_monthly")  %>% 
+    prepare
+```
+
+```{r eval=TRUE}
+# Load data for another product
+swd <- classificationcomtrade$HS %>% filter(parentcode == "4407")
+
+# Load oak data from comtrade, to a file
+# comment out to run this (only once, lasts 10 minutes)
+# loadcomtradewithpause(440791, path = "data-raw/", freq = "M")
+# load file
+load("data-raw/440791.RData")
+oak <- dtf %>% renamecolumns %>% prepare
+
+# Here we have the quantity
+summary(oak[c("tradevalue", "quantity", "weight",
+              "price", "pricew")])
+unique(oak$productdescription)
+```
+
+### Monthly prices in European countries
+```{r}
+swd99eu <- swd99 %>% 
+    filter(regionreporter == "Europe") %>%
+    group_by(flow, reporter, period) %>% 
+    summarise(medianprice = median(price, na.rm=TRUE),
+              weight = sum(weight, na.rm=TRUE),
+              tradevalue = sum(tradevalue)) %>%
+    mutate(price = weight/tradevalue, 
+           tradevaluecut = round(log10(tradevalue)))
+
+swd99 <- swd99 %>% 
+    mutate(tradevaluecut = round(log10(tradevalue)))
+summary(swd99$price)
+summary(log10(swd99$tradevalue))
+
+# Point cloud, all prices
+p <- ggplot(filter(swd99, regionreporter == "Europe"),
+       aes(x = period, y = price, color = reporter)) +
+    ylim(0,6) + geom_point(alpha = 1/10) +
+    ggtitle("Monthly prices for all 
+            available trade flows in Europe")
+p + facet_grid(~flow)
+p + facet_grid(tradevaluecut~flow)    
+
+# Point cloud, average prices for one country
+p <- ggplot(swd99eu,
+            aes(x = period, y = price, color = reporter)) +
+    ylim(0,6) + geom_point(alpha = 1/10) +
+ 
+    ggtitle("Average prices per reporting country")
+p + facet_grid(~flow) 
+p + facet_grid(tradevaluecut~flow)
+
+# Distribution of import prices along the trade volume
+p <- ggplot(filter(swd99, reporter %in% largeimp),
+       aes(x = period, y = price, color = reporter)) +
+    ylim(0,6) + geom_point(alpha = 1/10) +
+    ggtitle("Monthly prices for all 
+            available trade flows in Europe")
+
+```
+
+
+### Import prices for large importers
+```{r}
+largeimp <- c("Italy", "Belgium", "Germany", "United Kingdom",
+              "Austria", "Netherlands", "France", "Denmark",
+              "Portugal", "Poland")
+p <- ggplot(filter(swd99, reporter %in% largeimp),
+       aes(x = period, y = price, color = reporter)) +
+    ylim(0,6) + geom_point(alpha = 1/10) +
+    ggtitle("Monthly prices for all 
+            available trade flows in Europe")
+p + facet_grid(reporter~flow) +
+    geom_line(data = filter(swd99eu, reporter %in% largeimp))
+```
+
+### Oak import prices for large importers
+```{r}
+p <- ggplot(filter(oak, reporter %in% largeimp),
+       aes(x = period, y = price, color = reporter)) +
+    ylim(0,2000) + geom_point(alpha = 1/10) +
+    ggtitle("Monthly prices for all 
+            available trade flows in Europe")
+p + facet_grid(reporter~flow) 
+```
+
+## Exploration of the dataset
+There are no quantities, therefore we cannot calculate cubic meter prices. But weight and trade values are available, prices will be in US $ per kilogram. 
+```{r}
+summary(swd99[c("quantity", "weight", "tradevalue")])
+```
+
+
+### Largest exporters and importers
+Largest exporters and importers over the period
+```{r}
+large <- swd99 %>% filter(regionreporter == "Europe") %>%
+    group_by(flow, reporter) %>%
+    summarise(tradevalue = sum(tradevalue),
+              weight = sum(weight)) %>% 
+    data.frame %>%
+    arrange(desc(tradevalue))
+largeexp <- large %>% filter(flow == "Exports") %>% head(10) 
+largeexp %>% kable
+largeimp <- large %>% filter(flow == "Imports") %>% head(10)
+largeimp %>% kable
+``` 
+
+

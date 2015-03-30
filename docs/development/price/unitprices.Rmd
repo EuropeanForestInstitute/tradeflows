@@ -53,6 +53,8 @@ swd99 <- dtf %>%
            withinregion =  regionreporter == regionpartner)
 ```
 
+
+
 ## Number of flows and total trade value of missing quantity and weight data
 ### Flows for which there is no quantity
 Not all quantities are available. which percentage of the trade value cannot be taken into account for the unit price calculation? 

@@ -6,6 +6,7 @@
 #'@param productcode  code of the product
 #'@param reportercode  geographical area or country code
 #'@param year a vector of years (maximum 5), or the chain of character "recent"
+#'@param freq the frequency: "A" Annual, "M" Monthly
 #'@param px Trade data classification scheme
 #'@param max maximum records returned
 #'@return a dataframe
@@ -46,8 +47,9 @@ loadcomtradebycode <- function(productcode, reportercode,
 #'
 #' @param productcode a vector of product codes
 #' @param year a vector of years (maximum 5), or the chain of character "recent"
+#' @param ... further parameters passed to \code{\link{loadcomtradebycode}},
 #' @export
-loadcomtradeallreporters <- function(productcode, year="recent",...){
+loadcomtradeallreporters <- function(productcode, year="recent", path="", ...){
     dtf <- data.frame()
     # Create groups of 3 reporter, to overcome API limitation
     # of 100 downloads per hour
@@ -62,27 +64,25 @@ loadcomtradeallreporters <- function(productcode, year="recent",...){
         print(g)
         try(dtf <- rbind(dtf,
                          loadcomtradebycode(productcode, g, year,
-                                             logfile=TRUE)))
+                                             logfile=TRUE, ...)))
     }
-    save(dtf, file=paste0(productcode,".RData"))
-    try(write.csv(dtf,file=paste0(productcode,".csv")))
+    save(dtf, file = file.path(path, paste0(productcode,".RData")))
+    try(write.csv(dtf,file = file.path(path, paste0(productcode,".csv"))))
 }
 
 
 #' Load flows for all countries, with a 1 hour pause between products
 #'
-#' Load flows in all directions available in comtrade
-#' for a given vector of product codes.
-#'
+#' Load all world trade flows for the vector of products.
 #' @param productcode a vector of product codes
 #' @param year a vector of years (maximum 5), or the chain of character "recent"
 #' @param pause length of the pause in seconds
 #' @export
-loadcomtradewithpause <- function(products, year="recent", pause=3601){
+loadcomtradewithpause <- function(products, year="recent", path="", pause=3601, ...){
     # loop on the vector productcode,
     # pause 1 hour between each product to stay within the comtrade API limit
     for (productcode in products){
-        loadcomtradeallreporters(productcode, year)
+        loadcomtradeallreporters(productcode, year, path, ...)
         Sys.sleep(pause)
     }
 }

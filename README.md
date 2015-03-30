@@ -182,6 +182,8 @@ sawnwood %>% select(yr, rtCode ) %>% head
 ### Documentation in long form
 [How to create package vignettes](http://r-pkgs.had.co.nz/vignettes.html).
 
+To create a vignette, use the command use_vignette(name)
+
 > You can build all vignettes from 
 > the console with devtools::build_vignettes()
 
