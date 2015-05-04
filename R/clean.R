@@ -273,7 +273,7 @@ choosereporterorpartner <- function(dtf,
 #'
 #' @param dtf data frame
 #' @param choice a data frame of choice between reporter and partner
-replacebypartnerquantity <- function(dtf, choice){
+    acebypartnerquantity <- function(dtf, choice){
     choice <- choice %>% select(reportercode, partnercode, favorpartner)
     dtf <- merge(dtf, choice, all.x=TRUE)
     # cut the dataframe between the lines which favor partner and the others

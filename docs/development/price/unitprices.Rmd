@@ -129,6 +129,7 @@ cat("\n\n")
 p + scale_y_log10() + ggtitle( "440799 Log scale") 
 
 
+# Do we need a separate calculation because of NA quantity
 # compare to Unit price of aggregated trade flows
 swd99regionunitprice <- swd99 %>%
     filter(!is.na(quantity)) %>%

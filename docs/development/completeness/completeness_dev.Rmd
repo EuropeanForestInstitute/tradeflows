@@ -1,5 +1,5 @@
 ---
-title: "Data completeness by country for product `r as.character(productcodeinreport)` "
+title: "Data completeness by country for product ` as.character(productcodeinreport)` "
 output:
   pdf_document:
     toc: true
@@ -9,6 +9,11 @@ pdf_document: >
   \usepackage[utf8]{inputenc}
 ---
 
+
+This is the development version of the completeness report.
+The version distributed with the package is under
+inst/templates
+
 ## Warning
 This report is generated automatically based on data from the 
 [UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
@@ -16,14 +21,22 @@ Tables and graphs are in development.
 They are intended for internal use within the TradeFLowsDB project.
 Country numbers in tables below might be slightly
 overestimated, use them as a rough indication only.
+```{r loaddata}
+library(dplyr)
+library(tradeflows)
+library(reshape2)
+library(ggplot2)
+library(knitr)
+```
 
 
 ```{r prepare_completeness_table, eval=TRUE}
-# tfdata2 <- readdbproduct(440799, "raw_flow_yearly")
-# productcodeinreport <- 440799
+tfdata <- readdbproduct(440799, "raw_flow_yearly")
+productcodeinreport <- 440799
 
 # This report is intended for one product only
 tfdata2 <- tfdata %>% 
+    addregion %>%
     filter(productcode == productcodeinreport) %>%
     filterworldeu28
 
@@ -36,6 +49,28 @@ completeness <- tfdata2 %>%
 productcodeinreport <- as.character(productcodeinreport)
 ```
 
+
+```{r prepareflagtable}
+flagcountry <- tfdata2 %>%
+    group_by(reporter, year, flow, flag) %>%
+    filter(flow %in% c("Import", "Export")) %>%
+    summarise(tradevalue = sum(tradevalue),
+              quantity = sum(quantity, na.rm = TRUE),
+              weight = sum(weight, na.rm = TRUE)) %>%
+    data.frame %>% # Needed otherwise it will return factors with only one level Factor w/ 1 level "0":
+    mutate(flag = as.factor(flag))
+
+flagregion <- tfdata2 %>%
+    group_by(regionreporter, year, flow, flag) %>%
+    filter(flow %in% c("Import", "Export")) %>% # Remove re-import and re-export
+    summarise(tradevalue = sum(tradevalue),
+              quantity = sum(quantity, na.rm = TRUE),
+              weight = sum(weight, na.rm = TRUE)) %>% 
+    data.frame %>% # Needed otherwise it will return factors with only one level Factor w/ 1 level "0":
+    mutate(flag = as.factor(flag))
+
+str(flagregion$flag)
+```
 
 
 ## Product definitions
@@ -51,7 +86,6 @@ for(code in productname$classification){
     cat(productname$product[productname$classification == code])
 }
 ```
-
 
 
 ## Summary
@@ -127,3 +161,65 @@ for (r in unique(completeness$reporter)){
     }
 ``` 
 
+
+
+```{r dev_completenessforFrance}
+
+
+r = "France"
+# plot completeness
+p <- ggplot(data=filter(completeness, reporter == r), 
+            aes(x = year, y = variable, 
+                xend = year + 1, yend = variable, 
+                linetype = value)) +
+    scale_colour_manual(values = c("TRUE" = "blue", "FALSE" = "red")) +
+    scale_linetype_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
+    geom_segment(aes(color = value), size=3) + 
+    geom_text(aes(y = "classification", label=classification)) +
+#     coord_cartesian(ylim = c(-0.3, 3.5)) +
+    ggtitle(paste("Data completeness of", productcodeinreport,
+                  "in", r))
+plot(p)
+
+
+# plot flag ##########
+pflagfr <- ggplot(data = filter(flagcountry, reporter == r),
+                aes(x= year, y = tradevalue, fill = flag)) + 
+    geom_bar(stat = "identity") + facet_grid(flow ~ ., scales = "free_y") 
+plot(pflagfr)
+pflagfr + aes(y = weight)
+pflagfr + aes(y = quantity)
+
+message("Change flag labels to a short description for the plot")
+
+pflag <- ggplot(data = flagregion,
+                aes(x = year, y = tradevalue, fill = flag)) + 
+    geom_bar(stat = "identity") +
+    facet_grid(flow ~ regionreporter, scales = "free_y")
+plot(pflag)
+pflag + aes(y = weight)
+pflag + aes(y = quantity)
+
+
+# what are those extreme quantities?
+bigquantity <-filter(tfdata2, quantity>1e6) %>%
+    mutate(flag = paste("Flag", flag))
+ggplot(data = bigquantity,
+       aes(x = reporter,y = quantity, label = partner, 
+           color = as.factor(year))) +
+    geom_text() + scale_y_log10() + 
+    facet_grid(flag ~ flow) + theme_bw()
+
+ggplot(data = bigquantity,
+       aes(x = year, y = quantity, fill = as.factor(flag))) + 
+    geom_bar(stat = "identity") +
+    facet_grid(flow ~ regionreporter, scales = "free_y") +
+    ggtitle("It seems all large quantities are flag 0 or 4")
+
+ggplot(data = filter(tfdata2, quantity<1e7),
+       aes(x = year, y = quantity, fill = as.factor(flag))) + 
+    geom_bar(stat = "identity") +
+    facet_grid(flow ~ regionreporter, scales = "free_y") +
+    ggtitle("quantity < 1e7")
+
+```
