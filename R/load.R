@@ -10,10 +10,10 @@
 #'@param px Trade data classification scheme
 #'@param max maximum records returned
 #'@return a dataframe
-#'@export
 #'@examples library(tradeflows)
 #'# Load "other sawnwood" in France for the last 5 years available in comtrade
 #'loadcomtradebycode(440799, 251, "recent")
+#'@export
 loadcomtradebycode <- function(productcode, reportercode,
                                year, freq = "A",
                                 px = "HS", max = 50000,
@@ -45,11 +45,15 @@ loadcomtradebycode <- function(productcode, reportercode,
 #' Load flows for all countries, in all directions available in comtrade
 #' for a given product.
 #'
+#' Data is saved in a RDATA file and optionally in a csv file.
 #' @param productcode a vector of product codes
 #' @param year a vector of years (maximum 5), or the chain of character "recent"
+#' @param path directory to write RDATA and csv files
+#' @param writecsv logical whether to store data in a csv file
 #' @param ... further parameters passed to \code{\link{loadcomtradebycode}},
 #' @export
-loadcomtradeallreporters <- function(productcode, year="recent", path="", ...){
+loadcomtradeallreporters <- function(productcode, year = "recent",
+                                     path = "", writecsv = FALSE, ...){
     dtf <- data.frame()
     # Create groups of 3 reporter, to overcome API limitation
     # of 100 downloads per hour
@@ -67,22 +71,29 @@ loadcomtradeallreporters <- function(productcode, year="recent", path="", ...){
                                              logfile=TRUE, ...)))
     }
     save(dtf, file = file.path(path, paste0(productcode,".RData")))
-    try(write.csv(dtf,file = file.path(path, paste0(productcode,".csv"))))
+    if(writecsv){
+        try(write.csv(dtf,file = file.path(path, paste0(productcode,".csv"))))
+    }
 }
 
 
 #' Load flows for all countries, with a 1 hour pause between products
 #'
 #' Load all world trade flows for the vector of products.
-#' @param productcode a vector of product codes
+#' @param products a vector of product codes
 #' @param year a vector of years (maximum 5), or the chain of character "recent"
+#' @param path directory to write RDATA and csv files
+#' @param writecsv logical whether to store data in a csv file
 #' @param pause length of the pause in seconds
+#' @param ... further parameters passed to \code{\link{loadcomtradeallreporters}},
+#' then to \code{\link{loadcomtradebycode}}
 #' @export
-loadcomtradewithpause <- function(products, year="recent", path="", pause=3601, ...){
+loadcomtradewithpause <- function(products, year="recent", path="",
+                                  writecsv=FALSE, pause=3601, ...){
     # loop on the vector productcode,
     # pause 1 hour between each product to stay within the comtrade API limit
     for (productcode in products){
-        loadcomtradeallreporters(productcode, year, path, ...)
+        loadcomtradeallreporters(productcode, year, path, writecsv, ...)
         Sys.sleep(pause)
     }
 }

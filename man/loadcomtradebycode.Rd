@@ -14,6 +14,8 @@ loadcomtradebycode(productcode, reportercode, year, freq = "A", px = "HS",
 
 \item{year}{a vector of years (maximum 5), or the chain of character "recent"}
 
+\item{freq}{the frequency: "A" Annual, "M" Monthly}
+
 \item{px}{Trade data classification scheme}
 
 \item{max}{maximum records returned}

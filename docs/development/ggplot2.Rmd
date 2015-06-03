@@ -84,3 +84,9 @@ completeness <- rawdata %>%
 
 ```
 
+## Shapes
+```{r shapes}
+
+ggplot(data.frame(x = seq(1,6)), aes(x = x,y =x,shape=as.factor(x),color=as.factor(x))) + geom_point(size=10)
+
+```

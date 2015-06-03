@@ -1,0 +1,220 @@
+---
+title: "Worldtradeflows"
+author: "Paul Rougieux"
+date: "12/05/2015"
+output: 
+  html_document:
+    toc: true
+---
+
+
+
+```{r library, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tradeflows)
+library(knitr)
+library(ggplot2)
+```
+
+
+## Global trade in value for major forest products
+```{r}
+classificationitto2 <- classificationitto %>%
+    select(product, productcode = productcodecomtrade) %>% unique
+
+global1 <- readdbtbl("raw_flow_yearly") %>%
+    # Filter only trade flows with the world
+    filter(partnercode ==0) %>%
+    group_by(productcode) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    merge(classificationitto2) %>%
+    arrange(desc(tradevalue)) 
+
+# Keep this table for future use, to get the 10 largest products
+global2 <- global1 %>%
+    group_by(product) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    arrange(desc(tradevalue))
+
+global2 %>% kable
+```
+
+## Time series of the 10 major products
+```{r}
+global3 <- readdbtbl("raw_flow_yearly") %>%
+    # Filter only trade flows with the world
+    filter(partnercode == 0) %>%
+    # First grouping before the merge
+    group_by(productcode, year, flow) %>% 
+    summarise(tradevalue = sum(tradevalue)) %>%
+    # Merge here and not before, otherwise, the merge takes too long
+    # There may be a way to do a join in the database instead?
+    merge(classificationitto2) %>%
+    # Second grouping after the merge
+    group_by(product, year, flow) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    arrange(desc(tradevalue))
+    
+
+biggest <- head(global2,10)$product
+ggplot(filter(global3, product %in% biggest),
+       aes(x = year, y = tradevalue / 1e9)) + 
+    geom_point() + 
+    facet_grid(flow ~ product, scales="free") +
+    ylab("Trade value in billion usd")
+
+```
+
+
+## Sawnwood 
+```{r}
+swdcodes <- filter(classificationitto2, product== "SAWNWOOD")$productcode
+classificationitto %>% select(product, productcodecomtrade, description)%>%
+    filter(product == "SAWNWOOD") %>% unique
+
+swd <- readdbtbl("raw_flow_yearly") %>%
+    filter(partnercode == 0 & productcode %in% swdcodes) %>%
+    group_by(productcode, year, flow) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    collect
+
+# Coniferous
+ggplot(filter(swd, productcode==440710),
+       aes(x = year, y = tradevalue)) +
+    geom_point() + facet_grid(flow~productcode)
+# Non coniferous
+ggplot(filter(swd, productcode!=440710),
+       aes(x = year, y = tradevalue)) +
+    geom_point() + facet_grid(flow~productcode)
+```
+
+
+### Largest sawnwood trade flows
+```{r}
+swdlarge <-  readdbtbl("raw_flow_yearly") %>%
+    filter(partnercode != 0 & productcode %in% swdcodes) %>%
+    arrange(desc(tradevalue)) %>% 
+    select(year, reporter, partner, flow, productcode, tradevalue) %>%
+    head(100) %>%
+    collect
+ggplot(swdlarge, aes(x = year, y = tradevalue, color=flow)) +
+    geom_point() + facet_grid(reporter ~ partner)
+
+```
+
+### Largest sawnwood trade flows reported by China
+With Africa
+```{r}
+africacodes <- filter(reportercomtrade, 
+                      region == "Africa")$reportercode
+swdChina <- readdbtbl("raw_flow_yearly") %>%
+    filter(reporter == "China" & 
+               partnercode %in% africacodes &
+               productcode %in% swdcodes) %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>%
+    head(100) %>%
+    collect
+ggplot(swdChina, aes(x = year, y = tradevalue/1e6,
+                     color = as.factor(productcode),
+                     shape = as.factor(flow))) +
+    geom_point() +
+    ylab("Trade value in million US dollars") +
+    ggtitle("100 Largest trade flows reported by China in Africa") +
+    facet_wrap(flow ~ partner, scales="free")
+
+ggplot(swdChina, aes(x = year, y = quantity/1e6,
+                     color = as.factor(productcode),
+                     shape = as.factor(flow))) +
+    geom_point() +
+    ylab("Quantity in million cubic meter ") +
+    ggtitle("100 Largest trade flows reported by China in Africa") +
+    facet_wrap(flow ~ partner, scales="free")
+
+
+```
+
+
+
+## Roundwood
+
+### Largest roundwood trade flows
+```{r}
+rwdcodes <- filter(classificationitto2, product== "LOGS")$productcode
+
+rwdlarge <-  readdbtbl("raw_flow_yearly") %>%
+    filter(partnercode != 0 & productcode %in% rwdcodes) %>%
+    arrange(desc(tradevalue)) %>% 
+    select(year, reporter, partner, flow, productcode, tradevalue) %>%
+    head(100) %>%
+    collect
+ggplot(rwdlarge, aes(x = year, y = tradevalue, color=flow)) +
+    geom_point() + facet_grid(reporter ~ partner)
+```
+
+
+## Largest trade flows overall
+```{r largesttradeflows}
+large <-  readdbtbl("raw_flow_yearly") %>%
+    filter(partnercode != 0) %>%
+    arrange(desc(tradevalue)) %>% 
+    select(year, reporter, partner, flow, flowcode, 
+           productcode, tradevalue) %>%
+    head(100) %>%
+    collect
+large <- large %>% merge(classificationitto2)
+ggplot(large, aes(x = year, y = tradevalue, 
+                     color=product, shape=as.factor(flow))) +
+    geom_point() +
+    facet_grid(reporter ~ partner)
+```
+
+### Largest trade flows in volume
+
+
+### Largest trade flows in weight
+```{r largesttradeflows}
+large <-  readdbtbl("raw_flow_yearly") %>%
+    filter(partnercode != 0) %>%
+    arrange(desc(weight)) %>% 
+    select(year, reporter, partner, flow, flowcode, 
+           productcode, weight) %>%
+    head(100) %>%
+    collect
+large <- large %>% merge(classificationitto2)
+ggplot(large, aes(x = year, y = weight, 
+                     color=product, shape=as.factor(flow))) +
+    geom_point() +
+    facet_grid(reporter ~ partner)
+```
+
+### Global export value by product
+
+
+## European Union
+### Largest trade partners reported by the EU-28
+```{r}
+largeeu <-  readdbtbl("raw_flow_yearly") %>%
+    filter(reporter == "EU-28" & partnercode!=0) %>%
+    arrange(desc(tradevalue)) %>% 
+    select(year, reporter, partner, flow, flowcode, 
+           productcode, tradevalue) %>%
+    head(100) %>%
+    collect
+largeeu <- largeeu %>% merge(classificationitto2)
+ggplot(largeeu, aes(x = year, y = tradevalue, 
+                     color=product, shape=as.factor(flow))) +
+    geom_point() +
+    facet_wrap( partner ~ flow)
+
+
+ggplot(largeeu, aes(x = year, y = tradevalue/1e6, 
+                     color = flow)) +
+    geom_point() + ylab("Trade value in million USD") +
+    facet_grid(product ~ partner, scales="free_y")
+
+```
+
+Most important products traded by the EU-28
+

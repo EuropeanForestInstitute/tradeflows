@@ -81,6 +81,9 @@ createcountryreport <- function(countryinreport){
 
 }
 
+createcompletenessreport <- function()
+
+
 if (FALSE){
     # You need to rebuild the package for template updates to take effect
     library(tradeflows)

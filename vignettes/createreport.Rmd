@@ -1,0 +1,34 @@
+---
+title: "Create reports"
+author: "Paul Rougieux"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Create reports}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+output:
+  knitr:::html_vignette:
+    toc: yes
+---
+```{r eval=FALSE, echo=FALSE}
+# To build this vignette run 
+devtools::build_vignettes()
+# Then rebuild the package CTRL+SHIFT+B so that the vignette is 
+# integrated to the package documentation
+```
+
+Function documentation can be accessed at the R 
+command line by entering a question mark "?"
+followed by a function name. 
+For example enter `?createproductreport` at the command prompt to see
+the documentation for that function.
+
+
+## Generating reports
+
+
+### Completeness report
+
+
+### Excel file with prices and convertion factors
+

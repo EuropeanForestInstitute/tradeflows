@@ -1,0 +1,235 @@
+---
+title: "Worldtradeflows"
+author: "Paul Rougieux"
+date: "12/05/2015"
+output: 
+  pdf_document:
+    toc: true
+---
+
+
+```{r library, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tradeflows)
+library(knitr)
+library(ggplot2)
+options(digits = 4) #  Number of digits in knitr tables
+opts_chunk$set(echo=TRUE, message=FALSE)
+```
+
+
+```{r}
+classificationitto2 <- classificationitto %>%
+    select(product, productcode = productcodecomtrade) %>% unique
+```
+
+
+## Sawnwood 
+```{r}
+swdcodes <- filter(classificationitto2, 
+                   product== "SAWNWOOD")$productcode
+classificationitto %>% select(product, productcodecomtrade, description)%>%
+    filter(product == "SAWNWOOD") %>% unique
+
+swd <- readdbtbl("raw_flow_yearly") %>%
+    filter(reporter == "China" & partnercode == 0 &
+               productcode %in% swdcodes) %>%
+    group_by(productcode, year, flow) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    collect
+
+# Coniferous
+ggplot(filter(swd, productcode==440710),
+       aes(x = year, y = tradevalue/1e6)) +
+    ylab("Trade value in million US dollars") +
+    geom_point() + facet_grid(flow~productcode, scales="free")
+# Non coniferous
+ggplot(filter(swd, productcode!=440710),
+       aes(x = year, y = tradevalue/1e6)) +
+    ylab("Trade value in million US dollars") +
+    geom_point() + facet_grid(flow~productcode, scales="free")
+```
+
+
+
+### Largest sawnwood trade flows reported by China
+With Africa
+```{r}
+africacodes <- filter(reportercomtrade, 
+                      region == "Africa")$reportercode
+swdChina <- readdbtbl("raw_flow_yearly") %>%
+    filter(reporter == "China" & 
+               partnercode %in% africacodes &
+               productcode %in% swdcodes) %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>%
+    head(100) %>%
+    collect %>%         # Convert country names to utf-8
+    mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+           partner = iconv(partner, "latin1", "utf-8"))
+
+ggplot(swdChina, aes(x = year, y = tradevalue/1e6,
+                     color = as.factor(productcode),
+                     shape = as.factor(flow))) +
+    geom_point() +
+    ylab("Trade value in million US dollars") +
+    ggtitle("100 Largest Sawnwood trade flows reported by China in Africa") +
+    facet_wrap(flow ~ partner, scales="free")
+
+ggplot(swdChina, aes(x = year, y = quantity/1e6,
+                     color = as.factor(productcode),
+                     shape = as.factor(flow))) +
+    geom_point() +
+    ylab("Quantity in million cubic meter ") +
+    ggtitle("100 Largest trade flows reported by China in Africa") +
+    facet_wrap(flow ~ partner, scales="free")
+```
+
+
+### Compare with the EU
+```{r}
+africacodes <- filter(reportercomtrade, 
+                      region == "Africa")$reportercode
+swdeuchina <- readdbtbl("raw_flow_yearly") %>%
+    filter((reporter == "China" | reporter =="EU-28") & 
+               partnercode %in% africacodes & flow =="Import" &
+               productcode %in% swdcodes) %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>%
+    head(100) %>%
+    collect %>%         # Convert country names to utf-8
+    mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+           partner = iconv(partner, "latin1", "utf-8"))
+
+ggplot(swdeuchina, aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(productcode))) +
+    geom_bar(stat="identity") +
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    scale_x_continuous(breaks = c(2010,2013)) +
+    ggtitle("100 Largest Sawnwood import flows reported by China and the EU in Africa") +
+    facet_grid(flow + reporter ~ partner) 
+
+# Make the same plot with exports reported from those countries
+```
+
+
+
+### Roundwood
+Largest  roundwood trade flows reported by China with Africa
+```{r}
+filter(classificationitto, product== "LOGS" & nomenclature== "HS07") %>% kable
+rwdcodes <- filter(classificationitto2, 
+                   product== "LOGS")$productcode
+
+rwdeuchina <- readdbtbl("raw_flow_yearly") %>%
+    filter((reporter == "China" | reporter =="EU-28") & 
+               partnercode %in% africacodes & flow =="Import" &
+               productcode %in% rwdcodes) %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>%
+    head(100) %>%
+    mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+           partner = iconv(partner, "latin1", "utf-8")) 
+
+
+ggplot(rwdeuchina, aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(productcode))) +
+    geom_bar(stat="identity") +
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    scale_x_continuous(breaks = c(2010,2012)) +
+    ggtitle("100 Largest roundwood import flows reported by China and the EU in Africa") +
+    facet_grid(flow + reporter ~ partner) + 
+    guides(fill=guide_legend(nrow=2,byrow=TRUE))
+
+# Make the same plot with exports reported from those countries
+```
+
+
+## All products
+```{r}
+africacodes <- filter(reportercomtrade, 
+                      region == "Africa")$reportercode
+alleuchina <- readdbtbl("raw_flow_yearly") %>%
+    filter((reporter == "China" | reporter =="EU-28") & 
+               partnercode %in% africacodes & flow =="Import") %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>%
+    head(100) %>%
+    merge(classificationitto2) %>%
+    mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+           partner = iconv(partner, "latin1", "utf-8")) %>%    
+    group_by(year, reporter, partner, flow, product) %>%
+    summarise(tradevalue = sum(tradevalue)) 
+
+
+ggplot(alleuchina, aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(product))) +
+    geom_bar(stat="identity") +
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    scale_x_continuous(breaks = c(2010,2012)) +
+    ggtitle("100 Largest wood products import flows reported by China and the EU in Africa") +
+    facet_grid(flow + reporter ~ partner) + 
+    guides(fill=guide_legend(nrow=2,byrow=TRUE))
+
+# Make the same plot with exports reported from those countries
+```
+
+
+### China EU trade
+```{r}
+alleuchina <- readdbtbl("raw_flow_yearly") %>%
+    filter(partner == "China" & reporter =="EU-28") %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>% 
+    merge(classificationitto2) %>%
+    mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+           partner = iconv(partner, "latin1", "utf-8")) %>%    
+    group_by(year, reporter, partner, flow, product) %>%
+    summarise(tradevalue = sum(tradevalue)) 
+
+
+ggplot(alleuchina, aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(product))) +
+    geom_bar(stat="identity") +
+    scale_x_continuous(breaks = c(2010,2012)) +
+    ggtitle("100 Largest wood products import flows reported by the EU with China") +
+    facet_grid(flow + reporter ~ partner) + 
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    guides(fill=guide_legend(nrow=4,byrow=TRUE))
+```
+
+
+
+### China France trade
+```{r}
+allfrancechina <- readdbtbl("raw_flow_yearly") %>%
+    filter(partner == "China" & reporter =="France") %>%
+    arrange(desc(tradevalue))  %>%
+    select(year, reporter, partner, flow, productcode, 
+           tradevalue, quantity) %>% 
+    merge(classificationitto2) %>%
+    mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+           partner = iconv(partner, "latin1", "utf-8")) %>%    
+    group_by(year, reporter, partner, flow, product) %>%
+    summarise(tradevalue = sum(tradevalue)) 
+
+
+ggplot(allfrancechina, aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(product))) +
+    geom_bar(stat="identity") +
+    scale_x_continuous(breaks = c(2010,2012)) +
+    ggtitle("100 Largest wood products import flows reported by the EU with China") +
+    facet_grid(flow + reporter ~ partner) + 
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    guides(fill=guide_legend(nrow=4,byrow=TRUE))
+```

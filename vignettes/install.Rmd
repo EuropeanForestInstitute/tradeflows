@@ -2,36 +2,44 @@
 title: "Installation and configuration"
 author: "Paul Rougieux"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Installation and configuration}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+output:
+  knitr:::html_vignette:
+    toc: yes
 ---
+```{r eval=FALSE, echo=FALSE}
+# To build this vignette run 
+devtools::build_vignettes()
+# Then rebuild the package CTRL+SHIFT+B so that the vignette is 
+# integrated to the package documentation
+```
  
  
 ## Installation
 This package can be installed with the devtools package.
-```
+```{r eval=FALSE}
 library(devtools)
 install_bitbucket("paul4forest/tradeflows")
 ```
 
 ### Devtools package installation
 If the devtools package is not installed on your system.
-```
+```{r eval=FALSE}
 install.packages("devtools")
 ```
-You may need to upgrade the libcurl library on your system shell
+You may need to upgrade the libcurl library on your system's command line
 ```
 sudo apt-get install libcurl4-gnutls-dev 
 ```
 
 
 ## Configuration
-Database configuration file and column names are located under the locale package installation directory. 
+Database configuration file and column names are located under the local package installation directory. 
 This directory is shown by the R command:
-```
+```{r eval=FALSE}
 system.file("config", package="tradeflows")
 ```
 Database connection parameters can be entered
@@ -39,7 +47,7 @@ in the databaseconfig.R file.
 
 Load the package and use the database configuration
 with the commands:
-```
+```{r eval=FALSE}
 library(tradeflows)
 setdatabaseconfig(reload=TRUE)
 ```
@@ -68,6 +76,7 @@ updates will be done on a product basis, at the 6 digit level. The cleaning scri
 2. Enter All validated flows for that product.
 
 The clean() function can also run from a bash shell
+(your system's command line)
 ```
 Rscript -e 'library(tradeflows)' -e 'cleandbproduct(440799, tableread =  "raw_flow_yearly", tablewrite = "validated_flow_yearly")
 ```

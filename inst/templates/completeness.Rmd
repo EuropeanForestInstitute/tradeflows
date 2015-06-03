@@ -93,15 +93,15 @@ tfdata3 <- tfdata2 %>%
 for (r in unique(completeness$reporter)){
     cat("\n\n###", r, "\n")
     
-    # plot completeness
+    # plot completenes
     p <- ggplot(data=filter(completeness, reporter == r), 
                 aes(x = year, y = variable, 
                     xend = year + 1, yend = variable, 
-                    color = value, linetype = value)) +
+                    linetype = value)) +
         scale_colour_manual(values = c("TRUE" = "blue", "FALSE" = "red")) +
         scale_linetype_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
-        geom_segment(size=3) + 
-        facet_grid(classification~.) +
+        geom_segment(aes(color = value), size=3) + 
+        geom_text(aes(y = "classification", label=classification)) +
         ggtitle(paste("Data completeness of", productcodeinreport,
                       "in", r))
     plot(p)

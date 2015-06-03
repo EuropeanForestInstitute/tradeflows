@@ -1,0 +1,56 @@
+---
+title: "Country name encoding in utf-8 only"
+author: "Paul Rougieux"
+date: "26/02/2015"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=TRUE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+
+## Simo's message from May 29 2015  
+Simo:
+
+> Earlier we had Latin1 encoding in the db and IIRC you decided to do conversion to UTF8 in your R code. Can we control this somehow? The only reference to UTF8 in /usr/local/lib/R/site-library/tradeflows directory is templates/completeness.Rmd file which does not look like it is run during validation.
+ 
+> Anyway, the problem is that the all columns are in UTF8 now. [...]
+ 
+> But when the validation is run data seems to be corrupted:
+> Considering that the server runs in UTF8
+> my first guess was that maybe the code converts data unnecessarily? If we could control this it would be the easiest for us. But if conversion is off, maybe the MySQL connection is not in UTF8 properly? I think at least with PHP it is a good idea to set the connection parameters even if the server runs in UTF8.
+
+Thanks Simo, connection parameters. 
+
+### No conversion by default
+In the function readdbproduct(). 
+I rendered the conversion from latin1 to utf8 optional. There is no conversion by default.
+As I have the old database, this is how country names look without conversion on my system.
+
+```{r noconversion}
+rawflow0 <- readdbproduct(440799, "raw_flow_yearly")
+unique(rawflow0$reporter[rawflow0$reportercode == 384])
+``` 
+
+This is how contrynames look with conversion. 
+```{r conversion}
+rawflow1 <- readdbproduct(440799, "raw_flow_yearly", convcountrynames = TRUE)
+unique(rawflow1$reporter[rawflow1$reportercode == 384])
+```
+
+
+I could set connection encoding to UTF8, as explained in this 
+[stackoverflow question](http://stackoverflow.com/questions/12869778/fetching-utf-8-text-from-mysql-in-r-returns) using the instruction `SET NAMES utf8`.
+But I didn't do it now as I haven't studied this SET NAMES instruction in detail.

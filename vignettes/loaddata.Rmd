@@ -1,0 +1,145 @@
+---
+title: "Loading and refining trade flows data from the Comtrade API"
+author: "Paul Rougieux"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Loading and refining trade flows}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+output:
+  knitr:::html_vignette:
+    toc: yes
+---
+```{r buildvignette, eval=FALSE, echo=FALSE}
+# To build this vignette run 
+devtools::build_vignettes()
+# Then rebuild the package CTRL+SHIFT+B so that the vignette is 
+# integrated to the package documentation
+```
+
+Function documentation can be accessed at the R 
+command line by entering a question mark "?"
+followed by a function name. 
+For example enter `?loadcomtradebycode` at the command prompt to see
+the documentation for that function.
+
+
+## Loading Comtrade data in 2 stages
+### Stage 1 load from one reporting country 
+Comtrade API documentation is available at http://comtrade.un.org/data/doc/api/
+
+The function `loadcomtradebycode()` loads a JSON file 
+from the comtrade API in a temporary directory and returns a dataframe.
+It loads trade flows between one reporting country (column `reporter`) and all its partner countries (column `partner`).
+```{r loadcomtradebycode, echo=TRUE, eval=TRUE}
+library(tradeflows)
+library(knitr) # Package to display nice tables
+
+# Load "other sawnwood" flows reported by France (country code 251) 
+# for the last 5 years available in comtrade "recent"
+other_sawnwood_fr <- loadcomtradebycode(440799, 251, "recent")
+# Rename columns so that they are more readable
+other_sawnwood_fr <- renamecolumns(other_sawnwood_fr)
+other_sawnwood_fr %>% 
+    # Select only some of the column so that the table fits on the page
+    select(year, reporter, partner, flow, productcode,
+           unit, quantity, weight, tradevalue, flag) %>%
+    head %>%
+    # Show a nice table
+    kable    
+```
+
+### Stage 2 load from all reporting countries
+The comtrade database API has limitation of 5 countries per call.
+There are approximately 250 countries in the database.
+The function `loadcomtradewithpause` loads all world trade flows
+for one product. It sends several function calls to the API, in batches of 3 countries, then combines the downloaded data in one data frame.
+
+The Comtrade API has a limitation of 100 calls per hour.
+Given a list of products, loadcomtradewithpause() 
+will wait one hour before downloading the next product.
+
+```{r loadcomtradewithpause1, eval=FALSE}
+loadcomtradewithpause(440799, year = "recent", path = "data-raw/")
+```
+
+RData is stored in the  `path` directory given above.
+A csv file can also be saved in order to visualise raw data in a spreadsheet. 
+```{r loadcomtradewithpausecsv, eval=FALSE}
+loadcomtradewithpause(440799, year = "recent", path = "data-raw/",
+                      writecsv = TRUE)
+```
+
+The instruction below loads all sawnwood products. It will last 14 hours because it's waiting one hour between each product. 
+```{r loadcomtradewithpausemany, eval=FALSE}
+# Find sawnwood product codes from the itto classification
+sawnwoodcodes <- filter(classificationitto, 
+                        nomenclature == "HS12",
+                        product == "SAWNWOOD")$productcodecomtrade
+loadcomtradewithpause(sawnwoodcodes, year = "recent", 
+                      path = "data-raw/")
+```
+
+In case you are launching this lengthy instruction 
+on a remote linux server,
+it might be usefull to launch it from within a 
+[GNU-Screen](http://www.gnu.org/software/screen/manual/screen.html) 
+session. To be able to disconnect a reconnect to it at a later stage.
+
+
+## Using a MySQL database
+Optionally, data can be read from a MySQL database. 
+The function `readdbproduct` loads raw data from a 
+MySQL database table:
+```{r readdbproduct, eval=FALSE}
+sawnwood99 <- readdbproduct(440799, "raw_flow_yearly")
+```
+
+The function  readdbtbl returns a `dplyr` `tbl` objects
+which can be used with dplyr verbs to perform data manipulations.
+```{r readdbtbl, eval=FALSE}
+# Five largest log trade flows in value in 2012
+# Find logs product codes from the itto classification
+roundwoodcodes <- filter(classificationitto, 
+                        nomenclature == "HS12",
+                        product == "LOGS")$productcodecomtrade
+
+readdbtbl("raw_flow_yearly") %>%
+    filter(productcode %in% roundwoodcodes &
+               year == 2012 &
+               partnercode != 0) %>% # Remove world aggregates
+    arrange(desc(tradevalue)) %>% # Sort by trade value
+    select(year, reporter, partner, flow, productcode, tradevalue) %>%
+    head() %>%
+    kable
+```
+
+```{r displaycacheversionoftable, echo=FALSE}
+# Display this table also on systems where the vignette cannot be 
+# created
+logs2012 <- structure(list(year = c("2012", "2012", "2012", "2012", "2012", "2012"), reporter = c("China", "China", "Russian Federation", 
+"New Zealand", "China", "USA"), partner = c("Russian Federation", 
+"New Zealand", "China", "China", "USA", "China"), flow = c("Import", 
+"Import", "Export", "Export", "Import", "Export"), productcode = c(440320, 440320, 440320, 440320, 440320, 440320), tradevalue = c(1394408301, 1103088193, 1000281108, 847521843, 601848451, 569742376)), .Names = c("year", "reporter", "partner", "flow", "productcode", "tradevalue"), row.names = c(NA, -6L), class = "data.frame")
+logs2012 %>% kable
+```
+
+
+The project in which this package was created 
+used external scripts - in the PHP programming language -
+to load data from comtrade and write it into the database. 
+Although this is feasible, the package currently
+doesn't implement writing raw trade flows data 
+into the database.
+
+However, there are functions to clean (estimate missing quantities) trade flow data and write this cleaned data into the database.
+ 
+
+## Refining trade flows data
+The methodology report explains the data 
+refining process in details.
+The source code of the `clean()` fonction gives details on the implementation of the data refining workflow.
+```{r eval=FALSE}
+?clean # View help for this function
+refined_data <- clean(raw_data)
+```

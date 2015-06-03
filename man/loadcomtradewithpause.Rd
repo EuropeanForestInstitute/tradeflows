@@ -4,17 +4,24 @@
 \alias{loadcomtradewithpause}
 \title{Load flows for all countries, with a 1 hour pause between products}
 \usage{
-loadcomtradewithpause(products, year = "recent", pause = 3601)
+loadcomtradewithpause(products, year = "recent", path = "",
+  writecsv = FALSE, pause = 3601, ...)
 }
 \arguments{
+\item{products}{a vector of product codes}
+
 \item{year}{a vector of years (maximum 5), or the chain of character "recent"}
+
+\item{path}{directory to write RDATA and csv files}
+
+\item{writecsv}{logical whether to store data in a csv file}
 
 \item{pause}{length of the pause in seconds}
 
-\item{productcode}{a vector of product codes}
+\item{...}{further parameters passed to \code{\link{loadcomtradeallreporters}},
+then to \code{\link{loadcomtradebycode}}}
 }
 \description{
-Load flows in all directions available in comtrade
-for a given vector of product codes.
+Load all world trade flows for the vector of products.
 }
 

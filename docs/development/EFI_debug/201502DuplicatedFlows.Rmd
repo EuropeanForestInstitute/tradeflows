@@ -1,5 +1,5 @@
 ---
-title: "Interaction with the Tradeflows Database and PHP code"
+title: "Duplicated Flows"
 author: "Paul Rougieux"
 date: "26/02/2015"
 output:

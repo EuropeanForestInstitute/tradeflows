@@ -5,7 +5,7 @@
 \title{Combine cleaning functions}
 \usage{
 clean(dtf, geoaggregation = "region", replacebypartnerquantity = TRUE,
-  shaveprice = TRUE, outputalltables = FALSE)
+  shaveprice = TRUE, outputalltables = FALSE, includeqestimates = TRUE)
 }
 \arguments{
 \item{dtf}{data frame}

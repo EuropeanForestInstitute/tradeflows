@@ -181,7 +181,7 @@ p <- ggplot(data=filter(completeness, reporter == r),
                   "in", r))
 plot(p)
 
-
+createreportfromdb
 # plot flag ##########
 pflagfr <- ggplot(data = filter(flagcountry, reporter == r),
                 aes(x= year, y = tradevalue, fill = flag)) + 

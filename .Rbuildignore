@@ -2,3 +2,4 @@ docs/*
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
+^.*\.readme_dont_edit_these_files

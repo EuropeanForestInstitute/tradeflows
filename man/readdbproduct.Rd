@@ -4,16 +4,24 @@
 \alias{readdbproduct}
 \title{Load trade flows for one product from a database table of choice}
 \usage{
-readdbproduct(productcode_, tableread)
+readdbproduct(productcode_, tableread, convcountrynames = FALSE)
 }
 \arguments{
 \item{productcode_}{the code of a product}
 
 \item{tableread}{the database table to read from}
+
+\item{convcontrynames}{logical weather to convert contry names}
 }
 \description{
 Connect to the raw database and load all tradeflows
 for the given product code,
 for all years, in all directions, for all reporter and all partners.
+}
+\examples{
+\dontrun{
+othersawnwod <- readdbproduct(440799, "raw_flow_yearly")
+head(othersawnwod[c("year","reporter","partner","flow","tradevalue","quantity","weight")])
+}
 }
 

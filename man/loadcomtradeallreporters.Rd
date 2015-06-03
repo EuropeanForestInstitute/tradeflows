@@ -5,15 +5,21 @@
 \title{Load flows for all countries, in all directions available in comtrade
 for a given product.}
 \usage{
-loadcomtradeallreporters(productcode, year = "recent", ...)
+loadcomtradeallreporters(productcode, year = "recent", path = "",
+  writecsv = FALSE, ...)
 }
 \arguments{
 \item{productcode}{a vector of product codes}
 
 \item{year}{a vector of years (maximum 5), or the chain of character "recent"}
+
+\item{path}{directory to write RDATA and csv files}
+
+\item{writecsv}{logical whether to store data in a csv file}
+
+\item{...}{further parameters passed to \code{\link{loadcomtradebycode}},}
 }
 \description{
-Load flows for all countries, in all directions available in comtrade
-for a given product.
+Data is saved in a RDATA file and optionally in a csv file.
 }
 

@@ -5,18 +5,19 @@
 #' Run this command to find the location of the configuration file on your machine:
 #' system.file("config/databaseconf.R", package="tradeflows").
 #' Use reload=TRUE to force reloading the file after modification.
-#' @param reload logical
+#' @param reload logical, force reloading the configuration file
+#' @param silent logical, do not print "already loaded" message when TRUE
 #' @export
-setdatabaseconfig <- function(reload=FALSE, message=TRUE){
-    # Path to the databasesonfig.R file
-    databaseconfig <- system.file("config/databaseconfig.R",
-                                  package="tradeflows")
+setdatabaseconfig <- function(reload = FALSE, silent = FALSE){
     if(is.null(getOption("tradeflowsDB"))|reload){
+        # Path to the databasesonfig.R file
+        databaseconfig <- system.file("config/databaseconfig.R",
+                                      package="tradeflows")
         message(paste("Loading database configuration from ",
                       databaseconfig))
         source(databaseconfig)
     } else {
-        if (message){
+        if (!silent){
             message("Database configuration file already loaded.")
             message("Use the option reload=TRUE if you want to reload it.")
         }
@@ -34,7 +35,7 @@ setdatabaseconfig <- function(reload=FALSE, message=TRUE){
 #' @export
 checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly")){
     require(dplyr)
-    setdatabaseconfig(message=FALSE)
+    setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
     DBread <- RMySQL::dbConnect(RMySQL::MySQL(), user=db["user"], host=db["host"],
                          password=db["password"], dbname=db["dbname"])
@@ -70,10 +71,16 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
 #' for all years, in all directions, for all reporter and all partners.
 #' @param productcode_ the code of a product
 #' @param tableread the database table to read from
+#' @param convcontrynames logical weather to convert contry names
+#' @examples
+#'\dontrun{
+#' othersawnwod <- readdbproduct(440799, "raw_flow_yearly")
+#' head(othersawnwod[c("year","reporter","partner","flow","tradevalue","quantity","weight")])
+#' }
 #' @export
-readdbproduct <- function(productcode_, tableread ){
+readdbproduct <- function(productcode_, tableread, convcountrynames = FALSE){
     require(dplyr)
-    setdatabaseconfig(message=FALSE)
+    setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
     DBread <- src_mysql(user=db["user"], host=db["host"],
                         password=db["password"], dbname=db["dbname"])
@@ -84,12 +91,14 @@ readdbproduct <- function(productcode_, tableread ){
         # forces computation and brings data back into a data.frame
         collect  %>%
         # Change year to an integer
-        mutate(year = as.integer(year))  %>%
-        # Convert country names to utf-8
-        mutate(reporter = iconv(reporter, "latin1", "utf-8"),
-               partner = iconv(partner, "latin1", "utf-8"))
-    message("Changed reporter and partner encoding from latin1 to utf8.",
-            "(see the country name of reportercode 384)")
+        mutate(year = as.integer(year))
+    if (convcountrynames){
+        dtf <- dtf %>% # Convert country names to utf-8
+                mutate(reporter = iconv(reporter, "latin1", "utf-8"),
+                   partner = iconv(partner, "latin1", "utf-8"))
+        message("Changed reporter and partner encoding from latin1 to utf8.",
+                "(check the reporter code 384 côte d'ivoire)")
+    }
     # Comment out this check which might break for unnecessary reasons
     # if EFI developers decide to add extra columns in the database
     # stopifnot(names(dtf) %in% column_names$efi)
@@ -106,7 +115,7 @@ readdbproduct <- function(productcode_, tableread ){
 writedbproduct <- function(dtf, tablewrite){
     # Write only to a validated_flow table
     stopifnot(tablewrite %in% c("validated_flow_yearly", "validated_flow_monthly"))
-    setdatabaseconfig(message=FALSE)
+    setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
     DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
                                  user=db["user"], host=db["host"],
@@ -125,7 +134,7 @@ writedbproduct <- function(dtf, tablewrite){
 deletedbproduct <- function(productcode, tabledelete){
     # Delete only in a validated_flow table
     stopifnot(tabledelete %in% c("validated_flow_yearly", "validated_flow_monthly"))
-    setdatabaseconfig(message=FALSE)
+    setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
     DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
                                  user=db["user"], host=db["host"],
@@ -153,6 +162,31 @@ nrowinDB <- function(tableread){
 }
 
 
+#' Create a dplyr connector to MySQL
+#'
+#' Return a dplyr tbl object for the given MySQL database table
+#' tbl objects allow lazy operations. See src_mysql.
+#'
+#' @param tableread name of the database table to read
+#' @return a dplyr tbl object
+#' @examples
+#'\dontrun{
+#' readdbtbl("raw_flow_yearly") %>%
+#'     group_by(productcode) %>%
+#'     summarise(nrow = n()) %>%
+#'     arrange(nrow) %>%
+#'     kable
+#' }
+#' @export
+readdbtbl <- function(tableread){
+    setdatabaseconfig(silent=TRUE)
+    db <- getOption("tradeflowsDB")
+    DBread <- src_mysql(user=db["user"], host=db["host"],
+                        password=db["password"], dbname=db["dbname"])
+    return(tbl(DBread, tableread))
+}
+
+
 #' Select rows by id
 #'
 #' @param table name of a table
@@ -165,8 +199,6 @@ selectbyid <- function(tableread, id){
     tabledata <- tbl(DBread, tableread)
     tabledata %>% summarise(nrow = n()) %>% collect
 }
-
-
 
 
 if (FALSE){

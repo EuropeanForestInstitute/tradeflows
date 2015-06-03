@@ -4,10 +4,12 @@
 \alias{setdatabaseconfig}
 \title{Sets database connection parameters as a global R option tradeflowsDB}
 \usage{
-setdatabaseconfig(reload = FALSE, message = TRUE)
+setdatabaseconfig(reload = FALSE, silent = FALSE)
 }
 \arguments{
-\item{reload}{logical}
+\item{reload}{logical, force reloading the configuration file}
+
+\item{silent}{logical, do not print "already loaded" message when TRUE}
 }
 \description{
 Database connection parameters

@@ -5,16 +5,22 @@
 \title{Create data completeness report for comtrade data}
 \usage{
 createproductreport(tfdata, inputpath = system.file("templates", package =
-  "tradeflows"), template, outputdir = "reports", keep_tex = FALSE)
+  "tradeflows"), template, outputdir = "reports", encoding = "UTF-8",
+  keep_tex = FALSE)
 }
 \arguments{
-\item{tfdata}{a dataframe containing tradeflows data}
+\item{tfdata}{a dataframe containing trade flows data}
 
 \item{inputpath}{path of the template, defaults to package internal path}
 
 \item{template}{name of the template file, including .Rmd extension}
 
 \item{outputdir}{name of the output directory relative to getwd()}
+
+\item{encoding,}{encoding of the template file. See also iconv
+The names of encodings and which ones are available are
+platform-dependent. All R platforms support ""
+(for the encoding of the current locale), "latin1" and "UTF-8".}
 }
 \description{
 This function will generate reports for any template that is
