@@ -1,22 +1,112 @@
----
-title: "Discrepancies for product `r productcodeinreport` "
-output:
-  html_document:
-    toc: true
-  pdf_document:
-    toc: true
----
 
-## Warning
-This report is generated automatically based on data from the 
-[UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
-Tables and graphs are in development.
-They are intended for internal use within the TradeFLowsDB project.
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
 
-
-```{r prepare_completeness_table}
-# This report is intended for one product only
-rawdata2 <- rawdata %>% 
-    filter(productcode == productcodeinreport)
-
+```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# Remove this chunk (or eval=FALSE) when this file is used as a template
+# The data frame tfdata will be passed by the report generating function to the template
+# Product and reporter information can be extracted back from tfdata 
+# in the template this would have to be the country appearing most in the data frame
+productcode_ <- c(440799)
+reporter_ <- "Cameroon" 
+tfdata <- readdbtbl("raw_flow_yearly") %>%
+    filter(productcode == productcode_ & (reporter == reporter_ | partner == reporter_)) %>%
+    collect
 ```
+
+
+```{r prepareproductandreporter}
+# Only the tfdata variable is passed by the function that creates the report
+# Extract product code and reporter from the tfdata.
+productcodeinreport <- unique(tfdata$productcode)
+reporterinreport <- tfdata %>% group_by(reporter) %>% 
+    summarise(nrow = n()) %>% filter(nrow == max(nrow))
+reporterinreport <- reporterinreport$reporter
+# Calculate discrepancies
+tfdata  <- tfdata %>% addpartnerflow %>% calculatediscrepancies 
+```
+
+---
+title: "440799 discrepancies in `r reporterinreport`"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output:
+  pdf_document:
+    toc: yes
+---
+
+## 10 largest trade flows 
+### Reported by `r reporterinreport` 2 years before the last
+10 largest import or export flows in  `r unique(tfdata$unit)` where `r reporterinreport` is a reporter.
+```{r}
+# Select the largest import or export flows reported by the reporter
+largestreporter <- tfdata %>% 
+    filter(year == (max(as.integer(year)) -2) & 
+               reporter == reporterinreport) %>% 
+    arrange(desc(quantity)) %>%
+    head(10)
+
+# Display these trade flows as a table
+largestreporter %>% 
+    select(year, reporter, partner, flow, flag, tradevalue, quantity) %>%
+    kable
+# Remove world
+largestreporter <- largestreporter %>% filter(partnercode != 0)
+# reshape table for use in the plot
+largestreporter <- largestreporter %>%
+        select(partner, weight, discrv) %>%
+        arrange(-weight) %>%
+        rename(discrepancy = discrv) %>%
+        head(10)
+```
+
+
+### Reported by its trade partners 2 years before the last
+10 largest import or export flows in  `r unique(tfdata$unit)` where `r reporterinreport` is a partner.
+```{r}
+# Select the largest import or export flows reported by the reporter
+largestpartner <- tfdata %>% 
+    filter(year == (max(as.integer(year)) -2) & 
+               partner == reporterinreport) %>% 
+    arrange(desc(quantity)) %>%
+    head(10)
+
+# Display these trade flows as a table
+largestpartner %>% 
+    select(year, reporter, partner, flow, flag, tradevalue, quantity) %>%
+    kable
+# reshape table for use in the plot
+```
+
+
+
+### Discrepancies in the raw data
+```{r eval=FALSE}
+# reshape the table for the plot
+ dtf2 %>% 
+        filter(flow == flowselected & year == max(year) & productcode==p) %>%
+        select(partner, weight, discrv) %>%
+        arrange(-weight) %>%
+        rename(discrepancy = discrv) %>%
+        head(10)
+
+ggplot(data=largest) +
+    aes(x = partner, fill = quantity) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = c("chocolate3","black"))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle(paste(flowselected, p))
+```
+
+
+### Discrepancies in the refined data
+
+
+

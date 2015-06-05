@@ -4,16 +4,16 @@
 \alias{createproductreport}
 \title{Create data completeness report for comtrade data}
 \usage{
-createproductreport(tfdata, inputpath = system.file("templates", package =
-  "tradeflows"), template, outputdir = "reports", encoding = "UTF-8",
+createproductreport(tfdata, template, inputpath = system.file("templates",
+  package = "tradeflows"), outputdir = "reports", encoding = "UTF-8",
   keep_tex = FALSE)
 }
 \arguments{
 \item{tfdata}{a dataframe containing trade flows data}
 
-\item{inputpath}{path of the template, defaults to package internal path}
-
 \item{template}{name of the template file, including .Rmd extension}
+
+\item{inputpath}{path of the template, defaults to package internal path}
 
 \item{outputdir}{name of the output directory relative to getwd()}
 

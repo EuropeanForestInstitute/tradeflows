@@ -20,8 +20,6 @@ getwd()
 ``` 
 
 
-
-
 ```{r load}
 # load raw data and rename it
 load("data/sawnwoodexample.rda") # if the format has change,

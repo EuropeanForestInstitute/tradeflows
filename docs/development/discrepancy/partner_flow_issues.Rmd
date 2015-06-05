@@ -1,0 +1,267 @@
+---
+title: "4407 and 440799 discrepancies"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+There seemed to be a difference in partner flow information.
+Because reporterquantity was the estimated quantity by the cleaning process, 
+while partnerquantity was the raw quantity from comtrade. 
+This could been changed in the cleaning code. 
+So that the function addpartnerflow is run a second time 
+at the end of the cleaning process.
+reporterquantity and partnerquantity  would then be consistent.
+The partner information wouldn't be lossed as it could be recomputed from the raw_data.
+
+```{r partnerflowissues, echo=TRUE, message=FALSE, warning=FALSE}
+# Remove this chunk when this file is used as a template
+# dtf in this chunk 
+# will have to be provided to the report generating function
+# load("data-raw/comtrade/440799.RData")
+# load("data-raw/comtrade/4407.RData")
+# dtfall <- rbind(dtfall, dtf)
+
+### Investigate issues with partner flow information ###
+dtf0 <- readdbproduct(440799, "validated_flow_yearly") %>% 
+    filterworldeu28 %>%
+    # Keep this partner information
+    rename(quantitypartner0 = quantitypartner,
+           quantityreporter0 = quantityreporter) %>%
+    arrange(year, reporter, partner, flow)
+
+dtf <- dtf0 %>%
+    # Add the partner quantity again to check why there is a difference
+    addpartnerflow %>%
+    mutate(quantitypartnerdiff = quantitypartner0 - quantitypartner,
+           quantityreporterdiff = quantityreporter0 - quantityreporter) %>%
+    calculatediscrepancies %>%
+    arrange(year, reporter, partner, flow)
+# What is happening with some of the quantities?
+summary(dtf0$quantitypartner0 - dtf0$quantitypartner)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       0       0       0       0       0       0 
+summary(dtf0$quantityreporter0 - dtf0$quantityreporter)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       0       0       0       0       0       0 
+summary(dtf$quantitypartner0 - dtf$quantitypartner)
+#      Min.   1st Qu.    Median      Mean   3rd Qu.      Max.      NA's 
+#    -68940         0         0     81390        66 693600000      8351 
+summary(dtf$quantityreporter0 - dtf$quantityreporter)
+#      Min.   1st Qu.    Median      Mean   3rd Qu.      Max.      NA's 
+#    -68940         0         0     50920        15 693600000       637 
+# This is the main reason why we have differences
+summary(dtf0$quantity - dtf0$quantityreporter0)
+#       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.       NA's 
+# -693600000        -15          0     -50920          0      68940        637 
+summary(dtf$quantity - dtf$quantityreporter)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#       0       0       0       0       0       0     637 
+
+# Now let's look at the differences along the flags
+dtf %>% group_by(flag) %>%
+    summarise(quantityreporterdiff = sum(abs(quantityreporterdiff), na.rm=TRUE), 
+              quantitypartnerdiff = sum(abs(quantitypartnerdiff),na.rm=TRUE))
+# It appears that quantity reporter are similar where the quantity has beenleft unmodified by the cleaning process. 
+# 
+# Source: local data frame [25 x 3]
+# 
+#    flag quantityreporterdiff quantitypartnerdiff
+# 1     0                    0            31577614
+# 2     2                    0             9841168
+# 3     4                    0            45691533
+# 4     6                    0             4339060
+# 5    10                    0              571966
+# 6    14                    0               28008
+# 7    20                    0              189759
+# 8   300            142075647            19304452
+# 9   302              1233230             7134147
+# 10  304            730404392            18657010
+# ..  ...                  ...                 ...
+dtfstrange <- dtf %>% filter(quantitypartner0 != quantitypartner)
+# For example Albania Brazil 2009 is different
+
+dtf %>% filter(reporter == "Albania" & partner == "Brazil" & year == 2009) %>%
+    select(year, reporter, partner, flow, flag,  quantityreporter, quantitypartner, 
+           quantityreporter0, quantitypartner, quantity)
+dtf0 %>% filter(reporter == "Albania" & partner == "Brazil" & year == 2009) %>%
+    select(year, reporter, partner, flow, flag, quantityreporter0, quantitypartner0, quantity)
+# Brazil didn'treport any export to Albania, that's consistentwith the above NA value under quantityreporter
+dtf0 %>% filter(reporter == "Brazil" & partner == "Albania" & year == 2009) %>%
+    select(year, reporter, partner, flow, quantityreporter0, quantitypartner0)
+# Why did the quantity change from 2 to 5
+# Flag 300 tels us that the quantity was shaved because the unit price was too high or too low.
+
+# Check ivory coast 
+dtfiv <- readdbproduct(440799, "validated_flow_yearly", convcountrynames = TRUE) %>%
+    filter(reportercode == 384) %>% head
+dtfivraw <- readdbproduct(440799, "raw_flow_yearly", convcountrynames = TRUE) %>%
+    filter(reportercode == 384) %>% head
+```
+
+
+## Thailand
+### Major export partners in weight in `r max(dtf$year)` 
+```{r thailand}
+reporterinreport <- 764
+flowselected <- "Export"
+dtf2 <- dtf %>%
+    filter(reportercode == reporterinreport)
+
+for (p in unique(dtf$productcode)){
+    exp <- dtf2 %>% 
+        filter(flow == flowselected & year == max(year) & productcode==p) %>%
+        select(partner, weight, discrv) %>%
+        arrange(-weight) %>%
+        rename(discrepancy = discrv) %>%
+        head(10)
+    partnerssorted <- unique(exp$partner)
+    kable(exp)
+    
+        # Order the contries by trade volume
+    exp <- exp %>%
+        mutate(partner = ordered(partner, levels= partnerssorted)) %>%
+        melt(id=c("partner"))
+    
+    chart <- ggplot(data=exp)+
+        aes(partner, value, fill=variable) +
+        geom_bar(position="dodge", stat="identity") +
+        scale_fill_manual(values = c("chocolate3","black"))+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        ggtitle(paste(flowselected, p))
+    print(chart)
+    cat("\n\n")
+}
+
+# write.csv(exp, file="data-raw/export440799_Thailand_mainpartners2013.csv", row.names=FALSE)
+```
+Data can be exported to csv, Excel or other formats.
+
+
+### Thailand Export of 440799 to China in recent years
+```{r eval=FALSE}
+reporterinreport <- 764
+# Report could choosedisplay those time series for main partners  only
+partnerinreport <- 156 
+flowselected <- "Export"
+productcodeinreport <- 440799
+dtf2 <- dtf %>%
+    filter(reportercode == reporterinreport & 
+               partnercode==partnerinreport &
+               productcode == productcodeinreport&
+               flow == flowselected)
+kable(select(dtf2, classification, quantity, weight, tradevalue, 
+             discrq, discrq, discrv))
+dtf2 <- dtf2 %>%
+    select(year, weight, discrq, quantity, discrq, tradevalue, discrv) %>%
+    melt(id=c("year"))
+weight <- dtf2 %>% filter(variable %in% c("weight", "discrv"))
+dtf2$v <- dtf2$variable
+dtf2$v[dtf2$variable == "discrv"] <- "weight"
+dtf2$v[dtf2$variable == "discrq"] <- "quantity"
+dtf2$v[dtf2$variable == "discrv"] <- "tradevalue"
+# for (v1 in unique(dtf2$v))
+ggplot(data=dtf2)+#filter(dtf2,v=="weight"))+
+    aes(year, value, fill=variable) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = rep(c("chocolate3","black"),2))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle(paste(flowselected, p)) +
+    facet_grid(v~., scales="free_y")
+
+
+# csv file for Sergey
+# write.csv(dtf2, file="data-raw/export440799_Thailand_to_China.csv", row.names=FALSE) 
+```
+
+## Spain
+### Major import partners in weight in 2012
+```{r spain, results='asis', eval=TRUE}
+reporterinreport <- 724
+flowselected <- "Import"
+# yearselected <-   max(dtf$year)
+yearselected <- 2012
+dtf2 <- dtf %>%
+    filter(reportercode == reporterinreport)
+
+for (p in unique(dtf$productcode)){
+    exp <- dtf2 %>% 
+        filter(flow == flowselected & year == yearselected & productcode==p) %>%
+        select(partner, weight, discrv, tradevalue, discrv, quantity, discrq) %>%
+        arrange(-weight) %>%
+        head(10)
+    partnerssorted <- unique(exp$partner)
+    cat("\n\n")
+    print(kable(rename(exp, discrepancy_weight = discrv)))
+    cat("\n\n")
+
+    
+    exp <- exp %>%
+        select(partner, weight, discrv) %>%
+        # Order the contries by trade volume
+        mutate(partner = ordered(partner, levels= partnerssorted)) %>%
+        melt(id=c("partner"))
+    
+    chart <- ggplot(data=exp)+
+        aes(partner, value, fill=variable) +
+        geom_bar(position="dodge", stat="identity") +
+        scale_fill_manual(values = c("chocolate3","black"))+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        ggtitle(paste(flowselected, p))
+    cat("\n\n")
+    print(chart)
+    cat("\n\n")
+}
+# write.csv(exp, file="data-raw/export440799_Spain_mainpartners2012", 
+#           row.names=FALSE)
+```
+
+## Cameroon
+### Cameroon Export of 440799 to Spain in recent years
+```{r eval=TRUE}
+reporterinreport <- 120 # Cameroon
+# Report could choosedisplay those time series for main partners  only
+partnerinreport <- 724 # Spain 
+flowselected <- "Export"
+productcodeinreport <- 440799
+dtf2 <- dtf %>%
+    filter(reportercode == reporterinreport & 
+               partnercode==partnerinreport &
+               productcode == productcodeinreport&
+               flow == flowselected)
+kable(select(dtf2, classification, quantity, weight, tradevalue, 
+             discrq, discrv, discrv))
+dtf2 <- dtf2 %>%
+    select(year, weight, discrv, quantity, discrq, tradevalue, discrv) %>%
+    melt(id=c("year"))
+weight <- dtf2 %>% filter(variable %in% c("weight", "discrv"))
+dtf2$v <- dtf2$variable
+dtf2$v[dtf2$variable == "discrv"] <- "weight"
+dtf2$v[dtf2$variable == "discrq"] <- "quantity"
+dtf2$v[dtf2$variable == "discrv"] <- "tradevalue"
+# for (v1 in unique(dtf2$v))
+ggplot(data=dtf2)+#filter(dtf2,v=="weight"))+
+    aes(year, value, fill=variable) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = rep(c("chocolate3","black"),3))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle(paste(flowselected, p)) +
+    facet_grid(v~., scales="free_y")
+# write.csv(dtf2, file="data-raw/export440799_Cameroon_to_Spain.csv", 
+#           row.names=FALSE)
+```

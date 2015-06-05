@@ -3,12 +3,14 @@
 \name{createcountryreport}
 \alias{createcountryreport}
 \title{Create reports for countries
-Illustrating major trade flows.}
+or major discrepancies for one product
+or major tradeflows for product group}
 \usage{
 createcountryreport(countryinreport)
 }
 \description{
 Create reports for countries
-Illustrating major trade flows.
+or major discrepancies for one product
+or major tradeflows for product group
 }
 

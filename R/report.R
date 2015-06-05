@@ -13,9 +13,9 @@
 #' (for the encoding of the current locale), "latin1" and "UTF-8".
 #' @export
 createproductreport <- function(tfdata,
+                                template,
                                 inputpath = system.file("templates",
                                                         package="tradeflows"),
-                                template,
                                 outputdir = "reports",
                                 encoding = "UTF-8",
                                 keep_tex = FALSE){
@@ -39,6 +39,8 @@ createproductreport <- function(tfdata,
         message("There should be only one product in the trade flows data frame")
         return(FALSE)
     }
+    # Legacy variable to pass the product code to the report generating function
+    # Now used only for the file title
     productcodeinreport <- unique(tfdata$productcode)
     tryCatch(rmarkdown::render(input = file.path(inputpath, template),
                                output_format = rmarkdown::pdf_document(toc=TRUE,
@@ -76,13 +78,31 @@ createreportfromdb <- function(tableread,
 }
 
 #' Create reports for countries
-#' Illustrating major trade flows.
+#' or major discrepancies for one product
+#' or major tradeflows for product group
 createcountryreport <- function(countryinreport){
-
+    # Convert country names could be a DB option in setdatabaseconfig
 }
 
-createcompletenessreport <- function()
-
+#' Create a discrepancy report
+#'
+#' @param productcode vector of product codes
+#' @param reporter one single country name
+#' @param ... arguments passed to \code{\link{createproductreport}()}
+#' @examples
+#'\dontrun{
+#' creatediscrepancyreport(440799, "Cameroon")
+#' }
+#' @export
+creatediscrepancyreport <- function(productcode, reporter, ...){
+#     productcode_ <- c(440799)
+#     reporter_ <- "Cameroon"
+    dtf <- readdbtbl("raw_flow_yearly") %>%
+        filter(productcode == productcode_ &
+                   (reporter == reporter_ | partner == reporter_)) %>%
+        collect
+    createproductreport(tfdata = dtf, template = "discrepancies.Rmd", ...)
+}
 
 if (FALSE){
     # You need to rebuild the package for template updates to take effect
@@ -125,6 +145,9 @@ if (FALSE){
     load("data-raw/comtrade/440799.RData")
     swd99 <- renamecolumns(dtf, "comtrade", "efi")
     createreport(swd99, outputdir = directory, template = "discrepancies.Rmd")
+
+
+
 
     ############################### #
     # Network visualisation reports #

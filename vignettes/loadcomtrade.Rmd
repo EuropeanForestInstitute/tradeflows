@@ -1,9 +1,9 @@
 ---
-title: "Loading and refining trade flows data from the Comtrade API"
+title: "Loading trade flows data from the Comtrade API"
 author: "Paul Rougieux"
 date: "`r Sys.Date()`"
 vignette: >
-  %\VignetteIndexEntry{Loading and refining trade flows}
+  %\VignetteIndexEntry{Loading trade flows from comtrade}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 output:
@@ -133,13 +133,3 @@ doesn't implement writing raw trade flows data
 into the database.
 
 However, there are functions to clean (estimate missing quantities) trade flow data and write this cleaned data into the database.
- 
-
-## Refining trade flows data
-The methodology report explains the data 
-refining process in details.
-The source code of the `clean()` fonction gives details on the implementation of the data refining workflow.
-```{r eval=FALSE}
-?clean # View help for this function
-refined_data <- clean(raw_data)
-```

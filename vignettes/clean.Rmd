@@ -1,0 +1,51 @@
+---
+title: "Refining trade flows data"
+author: "Paul Rougieux"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Refining trade flows data from a file or from a database}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+output:
+  knitr:::html_vignette:
+    toc: yes
+---
+```{r buildvignette, eval=FALSE, echo=FALSE}
+# To build this vignette run 
+devtools::build_vignettes()
+# Then rebuild the package CTRL+SHIFT+B so that the vignette is 
+# integrated to the package documentation
+```
+
+Function documentation can be accessed at the R 
+command line by entering a question mark "?"
+followed by a function name. 
+For example enter `?clean` at the command prompt to see
+the documentation for that function.
+
+
+## Refining trade flows data from a file
+```{r eval=FALSE}
+
+```
+
+
+
+## Refining trade flows data from a database
+There are functions to clean (estimate missing quantities) trade flow data and write this cleaned data into the database.
+
+The methodology report explains the data 
+refining process in details.
+The source code of the `clean()` fonction gives details on the implementation of the data refining workflow.
+```{r eval=FALSE}
+?clean # View help for this function
+sawnwood99_raw <- readdbproduct(440799, "raw_flow_yearly")
+sawnwood99_validated <- clean(sawnwood99_raw)
+
+# Those 2 functions together in one go
+cleandbproduct(440799, "raw_flow_yearly", "validated_flow_yearly")
+```
+
+
+## Notes on partner flow
+The parter flow in the database is the one before the modification.

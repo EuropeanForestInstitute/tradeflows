@@ -29,6 +29,18 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
 }
 
 
+#' Check various features of the trade flows data frame
+#'
+#' "Import" and "Export" and used to add partner flow information.
+#' Should these characters be different the user should be warned.
+#' @param dtf data frame of trade flows data
+#' @export
+sanitycheck <- function(dtf){
+    # Check that flows are  written with a firt uppercase later
+    stopifnot(sum(grepl("Import",flow) + grepl("Export",flow)) == 4)
+}
+
+
 #' Add regionreporter and regionpartner
 #'
 #' @param dtf data frame of trade flows
@@ -273,7 +285,7 @@ choosereporterorpartner <- function(dtf,
 #'
 #' @param dtf data frame
 #' @param choice a data frame of choice between reporter and partner
-    acebypartnerquantity <- function(dtf, choice){
+replacebypartnerquantity <- function(dtf, choice){
     choice <- choice %>% select(reportercode, partnercode, favorpartner)
     dtf <- merge(dtf, choice, all.x=TRUE)
     # cut the dataframe between the lines which favor partner and the others
@@ -461,6 +473,7 @@ clean <- function(dtf,
 
     ### Prepare conversion factors and prices
     dtf <- dtf %>%
+        sanitycheck %>%
         removeduplicatedflows %>%
         addconversionfactorandprice %>%
         addregion
@@ -478,6 +491,10 @@ clean <- function(dtf,
     if (shaveprice){
         dtf <- dtf %>% shaveprice # based on upper and lower prices added above
     }
+    ### Overwrite partner quantity with the new estimated quantity
+    # so that reporterquantity and partnerquantity are consistent
+    dtf <- dtf %>% select(-quantitypartner, -tradevaluepartner, -quantityreporter) %>%
+        addpartnerflow
 
     # Check if the number of rows has changed (it shouldn't)
     # It might change if there are duplicated flows
@@ -604,7 +621,7 @@ cleandbproduct <- function(productcode, tableread, tablewrite, ...){
     # for the validated flow
     columnswrite <- columnswrite[!columnswrite == "lastchanged"]
     dtf <- dtf %>% select_(.dots = columnswrite)
-    message("deleteting", productcode, "from", tablewrite)
+    message("deleteting product code ", productcode, " from the table", tablewrite)
     deletedbproduct(productcode, tablewrite)
     message(paste("writing", nrow(dtf), "flows to the database"))
     # Message concerning the database write

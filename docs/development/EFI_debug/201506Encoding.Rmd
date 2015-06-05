@@ -50,6 +50,10 @@ rawflow1 <- readdbproduct(440799, "raw_flow_yearly", convcountrynames = TRUE)
 unique(rawflow1$reporter[rawflow1$reportercode == 384])
 ```
 
+Here is the source of the `readdbproduct` function:
+```{r sourceloaddbproduct}
+readdbproduct
+```
 
 I could set connection encoding to UTF8, as explained in this 
 [stackoverflow question](http://stackoverflow.com/questions/12869778/fetching-utf-8-text-from-mysql-in-r-returns) using the instruction `SET NAMES utf8`.
