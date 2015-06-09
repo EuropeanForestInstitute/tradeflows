@@ -44,9 +44,9 @@ output:
 
 ## Thailand
 Most recent years has poor data, look at the year before last.
-### Major export partners in weight in `r max(dtf$year)` 
-```{r thailand}
-dtf <- readdbproduct("raw_fow_yearly", 440799)
+### Major export partners in weight in ` max(dtf$year)` 
+```{r thailand, eval=FALSE}
+dtf <- readdbproduct(440799, "raw_flow_yearly")
 reporterinreport <- 764
 flowselected <- "Export"
 dtf2 <- dtf %>%
@@ -120,7 +120,7 @@ ggplot(data=dtf2)+#filter(dtf2,v=="weight"))+
 
 ## Spain
 ### Major import partners in weight in 2012
-```{r spain, results='asis', eval=TRUE}
+```{r spain, results='asis', eval=FALSE}
 reporterinreport <- 724
 flowselected <- "Import"
 # yearselected <-   max(dtf$year)
@@ -162,7 +162,7 @@ for (p in unique(dtf$productcode)){
 
 ## Cameroon
 ### Cameroon Export of 440799 to Spain in recent years
-```{r eval=TRUE}
+```{r eval=FALSE}
 reporterinreport <- 120 # Cameroon
 # Report could choosedisplay those time series for main partners  only
 partnerinreport <- 724 # Spain 

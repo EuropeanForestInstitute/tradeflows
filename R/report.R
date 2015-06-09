@@ -1,3 +1,14 @@
+#' Extract report metadata from trade flow table
+#' This can be used to check that the given trade flow data has only
+#' one reporter and product or the empty string as expected by some reports.
+#' @param tfdata a table of trade flows data
+#' @return a list of metadata
+extractmetadata <- function(tfdata){
+
+}
+
+
+
 #' Create data completeness report for comtrade data
 #'
 #' This function will generate reports for any template that is
@@ -6,6 +17,9 @@
 #' @param tfdata a dataframe containing trade flows data
 #' @param inputpath path of the template, defaults to package internal path
 #' @param template name of the template file, including .Rmd extension
+#' @param fileprefix character string at the begining of the generated pdf file name
+#' @param productcode numeric or character string leave this variable empty if there are many products
+#' @param reporter character string leave this variable empty if there are many reporters
 #' @param outputdir name of the output directory relative to getwd()
 #' @param encoding, encoding of the template file. See also iconv
 #' The names of encodings and which ones are available are
@@ -14,6 +28,9 @@
 #' @export
 createproductreport <- function(tfdata,
                                 template,
+                                fileprefix = "",
+                                productcode = "",
+                                reporter = "",
                                 inputpath = system.file("templates",
                                                         package="tradeflows"),
                                 outputdir = "reports",
@@ -35,22 +52,21 @@ createproductreport <- function(tfdata,
     if(substr(outputdir, 1,1) != "/"){
         outputdir <- file.path(getwd(), outputdir)
     }
-    if (length(unique(tfdata$productcode)) != 1){
-        message("There should be only one product in the trade flows data frame")
-        return(FALSE)
-    }
-    # Legacy variable to pass the product code to the report generating function
-    # Now used only for the file title
-    productcodeinreport <- unique(tfdata$productcode)
+    # legacy check for a unitque product, report should be also generated for many products
+    # if (length(unique(tfdata$productcode)) != 1){
+    #         message("There should be only one product in the trade flows data frame")
+    #         return(FALSE)
+    #     }
+    # Create the report file name
+    filename <- paste0(fileprefix, productcode, reporter, ".pdf")
     tryCatch(rmarkdown::render(input = file.path(inputpath, template),
                                output_format = rmarkdown::pdf_document(toc=TRUE,
                                                                        toc_depth = 3,
                                                                        keep_tex = keep_tex),
                                output_dir = outputdir,
-                               output_file = paste0(productcodeinreport,".pdf"),
+                               output_file = filename,
                                encoding = encoding),
              finally = print("Finally"))
-
 }
 
 
@@ -68,7 +84,6 @@ createreportfromdb <- function(tableread,
     if (products=="all"){
         products <- productsindb(table = tableread)
     }
-
     # Loop on products
     for (productcodeinreport in products){
         message("creating report for product: ", productcodeinreport)
@@ -91,17 +106,17 @@ createcountryreport <- function(countryinreport){
 #' @param ... arguments passed to \code{\link{createproductreport}()}
 #' @examples
 #'\dontrun{
-#' creatediscrepancyreport(440799, "Cameroon")
+#' creatediscrepancyreport(440799, "Cameroon",
+#'     outputdir = "reports/discrepancies")
 #' }
 #' @export
-creatediscrepancyreport <- function(productcode, reporter, ...){
-#     productcode_ <- c(440799)
-#     reporter_ <- "Cameroon"
+creatediscrepancyreport <- function(productcode_, reporter_, ...){
     dtf <- readdbtbl("raw_flow_yearly") %>%
         filter(productcode == productcode_ &
                    (reporter == reporter_ | partner == reporter_)) %>%
         collect
-    createproductreport(tfdata = dtf, template = "discrepancies.Rmd", ...)
+    createproductreport(tfdata = dtf, template = "discrepancies.Rmd",
+                        productcode = productcode_, reporter = reporter_, ...)
 }
 
 if (FALSE){

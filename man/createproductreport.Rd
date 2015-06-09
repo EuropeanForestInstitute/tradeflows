@@ -4,14 +4,21 @@
 \alias{createproductreport}
 \title{Create data completeness report for comtrade data}
 \usage{
-createproductreport(tfdata, template, inputpath = system.file("templates",
-  package = "tradeflows"), outputdir = "reports", encoding = "UTF-8",
+createproductreport(tfdata, template, fileprefix = "", productcode = "",
+  reporter = "", inputpath = system.file("templates", package =
+  "tradeflows"), outputdir = "reports", encoding = "UTF-8",
   keep_tex = FALSE)
 }
 \arguments{
 \item{tfdata}{a dataframe containing trade flows data}
 
 \item{template}{name of the template file, including .Rmd extension}
+
+\item{fileprefix}{character string at the begining of the generated pdf file name}
+
+\item{productcode}{numeric or character string leave this variable empty if there are many products}
+
+\item{reporter}{character string leave this variable empty if there are many reporters}
 
 \item{inputpath}{path of the template, defaults to package internal path}
 

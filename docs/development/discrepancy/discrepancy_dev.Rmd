@@ -1,4 +1,17 @@
+---
+title: "440799 discrepancies in ` reporterinreport`"
+author: "Paul Rougieux"
+date: "03/12/2014"
+output:
+  pdf_document:
+    fig_width: 10
+    toc: yes
+---
+
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+# I tried placing the yaml block after the chunks but for some reason it doesn't always generate the pdf and generates a html file instead.
+# pdf is generated when the yaml block is at the top, 
+
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 opts_chunk$set(echo=FALSE)
@@ -7,6 +20,7 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 ``` 
+
 
 ```{r development, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
 # Remove this chunk (or eval=FALSE) when this file is used as a template
@@ -23,47 +37,56 @@ tfdata <- readdbtbl("raw_flow_yearly") %>%
 
 ```{r prepareproductandreporter}
 # Only the tfdata variable is passed by the function that creates the report
-# Extract product code and reporter from the tfdata.
-productcodeinreport <- unique(tfdata$productcode)
-reporterinreport <- tfdata %>% group_by(reporter) %>% 
-    summarise(nrow = n()) %>% filter(nrow == max(nrow))
-reporterinreport <- reporterinreport$reporter
+# Extract product code and reporter from the tfdata. 
+# Variables used for the file title
+productcodeintitle <- unique(tfdata$productcode)
+# In cases where there are many products replace this variable by ""
+if(length(productcodeintitle)>1) productcodeintitle <- ""
+nbyears <- length(unique(tfdata$year))
+reporterintitle <- tfdata %>% group_by(reporter) %>%
+    summarise(nrowperyear = n()/nbyears ) %>% filter(nrowperyear > 1)
+reporterintitle <- reporterintitle$reporter
+# In cases where there are many countries replace this variable by ""
+if(length(productcodeintitle)>1) reporterintitle <- ""
 # Calculate discrepancies
 tfdata  <- tfdata %>% addpartnerflow %>% calculatediscrepancies 
 ```
 
----
-title: "440799 discrepancies in `r reporterinreport`"
-author: "Paul Rougieux"
-date: "03/12/2014"
-output:
-  pdf_document:
-    toc: yes
----
 
-## 10 largest trade flows 
-### Reported by `r reporterinreport` 2 years before the last
-10 largest import or export flows in  `r unique(tfdata$unit)` where `r reporterinreport` is a reporter.
+
+## 9 largest trade flows 
+### Reported by `r reporterinreport` 2 years before the last year available in the database
+9 largest import or export flows in  `r unique(tfdata$unit)` where `r reporterinreport` is a reporter.
+
 ```{r}
 # Select the largest import or export flows reported by the reporter
 largestreporter <- tfdata %>% 
+    filterworldeu28 %>%
     filter(year == (max(as.integer(year)) -2) & 
                reporter == reporterinreport) %>% 
     arrange(desc(quantity)) %>%
-    head(10)
+    head(9)
 
 # Display these trade flows as a table
 largestreporter %>% 
     select(year, reporter, partner, flow, flag, tradevalue, quantity) %>%
     kable
-# Remove world
-largestreporter <- largestreporter %>% filter(partnercode != 0)
-# reshape table for use in the plot
-largestreporter <- largestreporter %>%
-        select(partner, weight, discrv) %>%
-        arrange(-weight) %>%
-        rename(discrepancy = discrv) %>%
-        head(10)
+
+# Display these trade flows as a plot
+largestreporter <- tfdata %>% 
+    filterworldeu28 %>% 
+    filter(partner %in% largestreporter$partner) %>%
+    # reshape table for use in the plot
+    select(year, partner, flow, quantity, discrq) %>%
+    arrange(-quantity) %>%
+    rename(discrepancy = discrq) %>%
+    melt(id = c("year","partner","flow"))
+
+ggplot(largestreporter, aes(x = year, y = value, fill = variable)) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_fill_manual(values = c("chocolate3","black"))+
+    facet_wrap(~partner) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 ```
 
 
@@ -75,15 +98,16 @@ largestpartner <- tfdata %>%
     filter(year == (max(as.integer(year)) -2) & 
                partner == reporterinreport) %>% 
     arrange(desc(quantity)) %>%
-    head(10)
+    head(9)
 
 # Display these trade flows as a table
 largestpartner %>% 
     select(year, reporter, partner, flow, flag, tradevalue, quantity) %>%
     kable
 # reshape table for use in the plot
-```
 
+
+```
 
 
 ### Discrepancies in the raw data
@@ -107,5 +131,12 @@ ggplot(data=largest) +
 
 ### Discrepancies in the refined data
 
+
+## Trade flows as a point cloud
+```{r}
+tfdata <- tfdata %>% filterworldeu28 %>% addregion
+ggplot(tfdata, aes(x = year, y = quantity, color = regionreporter)) +
+    geom_point() + facet_wrap(~flow) 
+```
 
 

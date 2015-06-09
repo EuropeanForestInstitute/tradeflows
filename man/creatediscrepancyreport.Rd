@@ -4,21 +4,22 @@
 \alias{creatediscrepancyreport}
 \title{Create a discrepancy report}
 \usage{
-creatediscrepancyreport(productcode, reporter, ...)
+creatediscrepancyreport(productcode_, reporter_, ...)
 }
 \arguments{
+\item{...}{arguments passed to \code{\link{createproductreport}()}}
+
 \item{productcode}{vector of product codes}
 
 \item{reporter}{one single country name}
-
-\item{...}{arguments passed to \code{\link{createproductreport}()}}
 }
 \description{
 Create a discrepancy report
 }
 \examples{
 \dontrun{
-creatediscrepancyreport(440799, "Cameroon")
+creatediscrepancyreport(440799, "Cameroon",
+    outputdir = "reports/discrepancies")
 }
 }
 
