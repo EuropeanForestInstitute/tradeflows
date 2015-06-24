@@ -1,0 +1,138 @@
+---
+title: "Trade Flows"
+author: "Paul Rougieux"
+date: "12/05/2015"
+output: 
+  pdf_document:
+    toc: true
+---
+
+
+```{r library, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tradeflows)
+library(knitr)
+library(ggplot2)
+options(digits = 4) #  Number of digits in knitr tables
+opts_chunk$set(echo=FALSE, message=FALSE)
+```
+
+
+
+```{r development, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+######### #
+# ! This chunk is used for development only, remove it or change eval=FALSE.
+# ! When this file is used as a template, place two  `r` in the title.
+######### #
+# The data frame tfdata will be passed by the report generating function to the template
+# Reporter information can be extracted back from tfdata 
+# in the template this would have to be the country appearing most in the data frame
+reporterinreport <- "China" 
+# Test countries: Cameroon, Ghana, Indonesia
+
+message("Trade values are the same in raw flow and validated flow")
+message("The table read will have to be changed to validated_flow to access quantities")
+
+# If I use the readdbtbl function to join the 2 tables, the following error will be returned
+# Error: x and y don't share the same src. Set copy = TRUE to copy y into x's source (this may be time consuming).
+# Therefore I create the conenction object here so that it can be shared between the two tbl() objects.
+setdatabaseconfig(silent=TRUE)
+db <- getOption("tradeflowsDB")
+DBread <- src_mysql(user=db["user"], host=db["host"],
+                    password=db["password"], dbname=db["dbname"])
+tfdata <- tbl(DBread, "raw_flow_yearly")
+
+# product names itto -------------------------------------------------------- 
+message("Discuss with Simo and Janne to change column names in the product work table, rename them as such: (product = name_short, productcode = code) ")
+productitto <- tbl(DBread, "product_work") %>%
+    filter(nomenclature == "HS12") %>%
+    select(product = name_short, productcode = code) 
+
+# Join itto product names --------------------------------------------------
+tfdata <- tfdata %>% 
+    filter(reporter == reporterinreport) %>% 
+    select(year, reporter, partner, flow, flag, productcode, tradevalue, quantity) %>%
+    left_join(productitto) %>%  # joining late in the pipe, after filter is faster
+    group_by(year, reporter, partner, flow, product) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    collect()
+```
+
+
+```{r preparedata}
+# 100 largest trade flows
+largetf <- tfdata %>% filterworldeu28 %>% data.frame() %>% # remove grouping
+    arrange(desc(tradevalue)) %>% head(100)
+
+# 10 largest partners
+message("change this to a function of dtf, that returns a character vector of partner names")
+largep <- tfdata %>% filterworldeu28() %>% 
+    group_by(flow, partner) %>% 
+    summarise(tradevalue = sum(tradevalue)) %>%
+    arrange(desc(tradevalue)) %>% 
+    select(partner) %>% unique %>% head(10)
+```
+
+## Logs and Sawnwood
+```{r}
+largepartners(filter(tfdata,product %in% c("LOGS", "SAWNWOOD")))
+message("Add plot for large partners in logs and sawnwood trade")
+
+```
+
+
+```{r}
+## Other products groups that could be added for separate plots
+## See report on Indonesia's industry
+## Furniture
+## Wood panels
+## Pulp and paper
+```
+
+
+## All products
+```{r fig.height=17, fig.width=12}
+# filter(tfdata, partner %in% largetf$partner)
+
+ggplot(filter(tfdata, partner %in% largep$partner),
+       aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(product))) +
+    geom_bar(stat="identity") +
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    scale_x_continuous(breaks = c(2010,2012)) +
+    ggtitle(paste("Largest wood products flows reported by", reporterinreport)) +
+    facet_grid(flow + reporter ~ partner) + 
+    guides(fill=guide_legend(ncol=1,byrow=TRUE))
+
+message("place country names over 2 lines if necessary")
+# http://stackoverflow.com/questions/9052650/ggplot2-splitting-facet-strip-text-into-two-lines
+# Using stringr::str_wrap
+stringr::str_wrap("lkj lkj lkjlkj lkj lkj ", width = 20) 
+# Or with base functions, without the stringr package
+paste(strwrap("lkj lkj lkjlkj lkj lkj ", width = 20), collapse="\n")
+
+# Optionally 
+# Make the same plot with flows reported from those countries
+
+```
+
+
+
+```{r eval=FALSE}
+### Trade between `r reporterinreport` and the EU
+# EU is a reporter in the database, but not a partner.
+ggplot(filter(tfdata, partner == "EU28"),
+       aes(x = as.numeric(year), y = tradevalue/1e6,
+                       fill = as.factor(product))) +
+    geom_bar(stat="identity") +
+    scale_x_continuous(breaks = c(2010,2012)) +
+    ggtitle("100 Largest wood products import flows reported by the EU with China") +
+    facet_grid(flow + reporter ~ partner) + 
+    ylab("Trade value in million US dollars") +
+    theme(legend.position= "bottom") +
+    guides(fill=guide_legend(nrow=4,byrow=TRUE))
+```
+
+
+

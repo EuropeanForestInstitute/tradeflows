@@ -1,5 +1,19 @@
+---
+title: '`r as.character(productcodeinreport)` discrepancies in `r reporterinreport`'
+author: "Paul Rougieux"
+date: "03/12/2014"
+output:
+  pdf_document:
+    fig_height: 7
+    fig_width: 10
+    toc: no
+    toc_depth: 3
+---
 
-```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+# I tried placing the yaml block after the chunks but for some reason it doesn't always generate the pdf and generates a html file instead.
+# pdf is generated when the yaml block is at the top, 
+
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 opts_chunk$set(echo=FALSE)
@@ -9,104 +23,121 @@ library(ggplot2)
 library(reshape2)
 ``` 
 
-```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-# Remove this chunk (or eval=FALSE) when this file is used as a template
+
+```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+# Remove this chunk (or change eval=FALSE) when this file is used as a template
 # The data frame tfdata will be passed by the report generating function to the template
 # Product and reporter information can be extracted back from tfdata 
 # in the template this would have to be the country appearing most in the data frame
-productcode_ <- c(440799)
-reporter_ <- "Cameroon" 
+productcodeinreport <- c(440799)
+reporterinreport <- "Cameroon" 
 tfdata <- readdbtbl("raw_flow_yearly") %>%
-    filter(productcode == productcode_ & (reporter == reporter_ | partner == reporter_)) %>%
+    filter(productcode == productcodeinreport & (reporter == reporterinreport | partner == reporterinreport)) %>%
     collect
 ```
 
 
 ```{r prepareproductandreporter}
-# Only the tfdata variable is passed by the function that creates the report
-# Extract product code and reporter from the tfdata.
-productcodeinreport <- unique(tfdata$productcode)
-reporterinreport <- tfdata %>% group_by(reporter) %>% 
-    summarise(nrow = n()) %>% filter(nrow == max(nrow))
-reporterinreport <- reporterinreport$reporter
+metadata <- extractmetadata(tfdata)
+stopifnot(metadata$productcode == productcodeinreport)
+stopifnot(metadata$reporter == reporterinreport)
+if(metadata$unit == "Volume in cubic meters") metadata$unit <- "cubic meters"
 # Calculate discrepancies
 tfdata  <- tfdata %>% addpartnerflow %>% calculatediscrepancies 
+
+# Find the last year for which the reporter reported data
+lastyearreporter <- tfdata %>% filter(reporter == reporterinreport) %>% filter(year==max(year)) %>%
+    select(year) %>% unique
+lastyearreporter <- lastyearreporter$year
+# The last year in the dataset tends to have weak data, take lastyear - 2 as the report year.
+# But if lastyearreporter is still smaller than that take it anyway
+yearinreport <- min(as.numeric(lastyearreporter), max(as.numeric(tfdata$year))-2)
+
+# Display number of years available only if other countries reported 
+# data for more years
+if (lastyearreporter != max(tfdata$year)){
+    messageyears = paste("Data for other countries is available until",
+                         max(tfdata$year),".")
+} else {
+    messageyears = ""
+}
+    
 ```
 
----
-title: "440799 discrepancies in `r reporterinreport`"
-author: "Paul Rougieux"
-date: "03/12/2014"
-output:
-  pdf_document:
-    toc: yes
----
+`r reporterinreport` reported importing from
+`r length(unique(tfdata$partner[tfdata$reporter==reporterinreport & tfdata$flow=="Import"]))` countries and exporting to
+`r length(unique(tfdata$partner[tfdata$reporter==reporterinreport & tfdata$flow=="Export"]))` countries 
+between `r min(tfdata$year)` and `r lastyearreporter`.
+`r messageyears`
 
-## 10 largest trade flows 
-### Reported by `r reporterinreport` 2 years before the last
-10 largest import or export flows in  `r unique(tfdata$unit)` where `r reporterinreport` is a reporter.
+```{r numberofreportedflows}
+tfdata %>% 
+    mutate(isreporter = ifelse(reporter == reporterinreport,
+                               paste("flows reported by",
+                                     reporterinreport),
+                               "reported by its partners")) %>%
+    group_by(year,flow, isreporter) %>%
+    summarise(nrow = n()) %>%
+    dcast(year + flow ~ isreporter,value.var = "nrow") %>%
+    kable
+```
+
+
+\newpage
+
+## 9 largest trade quantities in `r yearinreport` 
+ 9 largest import or export flows reported by `r reporterinreport`. 
+ Trade value is reported in US dollars and quantity in `r metadata$unit`.
+
 ```{r}
 # Select the largest import or export flows reported by the reporter
 largestreporter <- tfdata %>% 
+    filterworldeu28 %>%
     filter(year == (max(as.integer(year)) -2) & 
                reporter == reporterinreport) %>% 
     arrange(desc(quantity)) %>%
-    head(10)
+    head(9)
 
-# Display these trade flows as a table
+# Display latest trade flows as a table
 largestreporter %>% 
-    select(year, reporter, partner, flow, flag, tradevalue, quantity) %>%
+    select(year, reporter, partner, flow, flag, tradevalue, quantity,
+           dicrepancy_quantity = discrq) %>%
     kable
-# Remove world
-largestreporter <- largestreporter %>% filter(partnercode != 0)
-# reshape table for use in the plot
-largestreporter <- largestreporter %>%
-        select(partner, weight, discrv) %>%
-        arrange(-weight) %>%
-        rename(discrepancy = discrv) %>%
-        head(10)
-```
 
+# Display these trade flows as a plot
+largestreporter <- tfdata %>% 
+    filterworldeu28 %>% 
+    # Keep the same combination of flow country
+    filter(paste0(flow,partner) %in% 
+               paste0(largestreporter$flow,
+                      largestreporter$partner)) %>%
+    # reshape table for use in the plot
+    select(year, partner, flow, quantityreporter, quantitypartner) %>%
+    arrange(-quantityreporter) %>%
+    rowwise() %>%
+    mutate(qmin = min(quantityreporter, quantitypartner),
+           qmax = max(quantityreporter, quantitypartner)) %>%
+#     rename(discrepancy = discrq) %>%
+    melt(id = c("year","partner","flow", "qmin","qmax"))
 
-### Reported by its trade partners 2 years before the last
-10 largest import or export flows in  `r unique(tfdata$unit)` where `r reporterinreport` is a partner.
-```{r}
-# Select the largest import or export flows reported by the reporter
-largestpartner <- tfdata %>% 
-    filter(year == (max(as.integer(year)) -2) & 
-               partner == reporterinreport) %>% 
-    arrange(desc(quantity)) %>%
-    head(10)
-
-# Display these trade flows as a table
-largestpartner %>% 
-    select(year, reporter, partner, flow, flag, tradevalue, quantity) %>%
-    kable
-# reshape table for use in the plot
-```
-
-
-
-### Discrepancies in the raw data
-```{r eval=FALSE}
-# reshape the table for the plot
- dtf2 %>% 
-        filter(flow == flowselected & year == max(year) & productcode==p) %>%
-        select(partner, weight, discrv) %>%
-        arrange(-weight) %>%
-        rename(discrepancy = discrv) %>%
-        head(10)
-
-ggplot(data=largest) +
-    aes(x = partner, fill = quantity) +
+ggplot(largestreporter, aes(x = year, y = value, fill = variable)) +
     geom_bar(position="dodge", stat="identity") +
     scale_fill_manual(values = c("chocolate3","black"))+
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    ggtitle(paste(flowselected, p))
+    geom_errorbar(aes(ymin = qmin, ymax = qmax, 
+                      width=0.2, colour="discrepancy")) +
+    scale_colour_manual(name="error bars",values="red") +
+    ylab(metadata$unit) +
+    facet_wrap(flow~partner) +
+    theme_bw() + theme(legend.position= "bottom",
+                       legend.box="horizontal") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 
-### Discrepancies in the refined data
-
-
+```{r eval=FALSE}
+## Trade flows as a point cloud
+tfdata <- tfdata %>% filterworldeu28 %>% addregion
+ggplot(tfdata, aes(x = year, y = quantity, color = regionreporter)) +
+    geom_point() + facet_wrap(~flow) 
+```
 

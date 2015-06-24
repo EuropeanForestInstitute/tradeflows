@@ -4,10 +4,10 @@
 \alias{createproductreport}
 \title{Create data completeness report for comtrade data}
 \usage{
-createproductreport(tfdata, template, fileprefix = "", productcode = "",
-  reporter = "", inputpath = system.file("templates", package =
-  "tradeflows"), outputdir = "reports", encoding = "UTF-8",
-  keep_tex = FALSE)
+createproductreport(tfdata, template, fileprefix = "",
+  productcodeinreport = "", reporterinreport = "",
+  inputpath = system.file("templates", package = "tradeflows"),
+  outputdir = "reports", encoding = "UTF-8", keep_tex = FALSE)
 }
 \arguments{
 \item{tfdata}{a dataframe containing trade flows data}
@@ -15,10 +15,6 @@ createproductreport(tfdata, template, fileprefix = "", productcode = "",
 \item{template}{name of the template file, including .Rmd extension}
 
 \item{fileprefix}{character string at the begining of the generated pdf file name}
-
-\item{productcode}{numeric or character string leave this variable empty if there are many products}
-
-\item{reporter}{character string leave this variable empty if there are many reporters}
 
 \item{inputpath}{path of the template, defaults to package internal path}
 
@@ -28,6 +24,10 @@ createproductreport(tfdata, template, fileprefix = "", productcode = "",
 The names of encodings and which ones are available are
 platform-dependent. All R platforms support ""
 (for the encoding of the current locale), "latin1" and "UTF-8".}
+
+\item{productcode}{numeric or character string leave this variable empty if there are many products}
+
+\item{reporter}{character string leave this variable empty if there are many reporters}
 }
 \description{
 This function will generate reports for any template that is

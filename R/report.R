@@ -1,12 +1,37 @@
 #' Extract report metadata from trade flow table
+#'
 #' This can be used to check that the given trade flow data has only
 #' one reporter and product or the empty string as expected by some reports.
 #' @param tfdata a table of trade flows data
-#' @return a list of metadata
+#' @return a list of metadata containing the productcode, reporter and unit elements
+#' @export
 extractmetadata <- function(tfdata){
+    # Extract product code
+    productcodeindata <- unique(tfdata$productcode)
+    # In cases where there are many products replace this variable by ""
+    if(length(productcodeindata)>1) productcodeindata <- ""
 
+    #  Extract reporter
+    nbyears <- length(unique(tfdata$year))
+    reporterindata <- tfdata %>% group_by(reporter) %>%
+        summarise(nrowperyear = n()/nbyears ) %>%
+        # The one which has far more than one row per year
+        filter(nrowperyear > 4)
+    reporterindata <- reporterindata$reporter
+    # In cases where there are many countries replace this variable by ""
+    if(length(reporterindata)>1) reporterindata <- ""
+
+    # Extract quantity unit
+    unitinreport <- tfdata %>% group_by(unit) %>%
+        summarise(nrowperyear = n()/nbyears) %>%
+        # Find the unit appearing most in the data
+        filter(nrowperyear > 0.2 * max(nrowperyear))
+    unitinreport <- unitinreport$unit
+
+    return(list(productcode = productcodeindata,
+                reporter = reporterindata,
+                unit = unitinreport))
 }
-
 
 
 #' Create data completeness report for comtrade data
@@ -29,8 +54,8 @@ extractmetadata <- function(tfdata){
 createproductreport <- function(tfdata,
                                 template,
                                 fileprefix = "",
-                                productcode = "",
-                                reporter = "",
+                                productcodeinreport = "",
+                                reporterinreport = "",
                                 inputpath = system.file("templates",
                                                         package="tradeflows"),
                                 outputdir = "reports",
@@ -58,11 +83,9 @@ createproductreport <- function(tfdata,
     #         return(FALSE)
     #     }
     # Create the report file name
-    filename <- paste0(fileprefix, productcode, reporter, ".pdf")
+    filename <- paste0(fileprefix, productcodeinreport, reporterinreport, ".pdf")
     tryCatch(rmarkdown::render(input = file.path(inputpath, template),
-                               output_format = rmarkdown::pdf_document(toc=TRUE,
-                                                                       toc_depth = 3,
-                                                                       keep_tex = keep_tex),
+                               output_format = rmarkdown::pdf_document(keep_tex = keep_tex),
                                output_dir = outputdir,
                                output_file = filename,
                                encoding = encoding),
@@ -106,16 +129,16 @@ createcountryreport <- function(countryinreport){
 #' @param ... arguments passed to \code{\link{createproductreport}()}
 #' @examples
 #'\dontrun{
-#' creatediscrepancyreport(440799, "Cameroon",
-#'     outputdir = "reports/discrepancies")
+#' creatediscrepancyreport(440799, "Cameroon", outputdir = "reports/discrepancies")
 #' }
 #' @export
-creatediscrepancyreport <- function(productcode_, reporter_, ...){
+creatediscrepancyreport <- function(productcode_, reporter_,
+                                    template =  "discrepancies.Rmd", ...){
     dtf <- readdbtbl("raw_flow_yearly") %>%
         filter(productcode == productcode_ &
                    (reporter == reporter_ | partner == reporter_)) %>%
         collect
-    createproductreport(tfdata = dtf, template = "discrepancies.Rmd",
+    createproductreport(tfdata = dtf, template = template,
                         productcode = productcode_, reporter = reporter_, ...)
 }
 

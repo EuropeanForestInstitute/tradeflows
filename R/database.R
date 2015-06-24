@@ -71,7 +71,8 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
 #' for all years, in all directions, for all reporter and all partners.
 #' @param productcode_ the code of a product
 #' @param tableread the database table to read from
-#' @param convcontrynames logical weather to convert contry names
+#' @param convcontrynames logical weather to convert contry names this should not be needed
+#' if the database server is rendering utf-8 data.
 #' @examples
 #'\dontrun{
 #' othersawnwod <- readdbproduct(440799, "raw_flow_yearly")
@@ -92,12 +93,12 @@ readdbproduct <- function(productcode_, tableread, convcountrynames = FALSE){
         collect  %>%
         # Change year to an integer
         mutate(year = as.integer(year))
-    if (convcountrynames){
+    if (convcountrynames){ # This should not be needed if the database is in utf-8
         dtf <- dtf %>% # Convert country names to utf-8
                 mutate(reporter = iconv(reporter, "latin1", "utf-8"),
                    partner = iconv(partner, "latin1", "utf-8"))
         message("Changed reporter and partner encoding from latin1 to utf8.",
-                "(check the reporter code 384 côte d'ivoire)")
+                "(check reportercode or partnercode 384 côte d'ivoire)")
     }
     # Comment out this check which might break for unnecessary reasons
     # if EFI developers decide to add extra columns in the database
@@ -203,7 +204,29 @@ selectbyid <- function(tableread, id){
 
 if (FALSE){
     #fibre <- loadrawdata(550410)
-#     charcoal90 <- readdb(440290)
+    #     charcoal90 <- readdb(440290)
     swd99 <- readdb(440799, tableread = "raw_flow_yearly" )
-# See clean.R script for write example
+    # See clean.R script for write example
+
+    # Character set used in the database
+    # found on https://github.com/rstats-db/RMySQL/issues/2
+    setdatabaseconfig()
+    db <- getOption("tradeflowsDB")
+    library(RMySQL) # Just here, make full RMySQL calls in the functions
+    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+                                 user=db["user"], host=db["host"],
+                                 password=db["password"], dbname=db["dbname"])
+    res <- RMySQL::dbSendQuery(DBwrite,"show variables like 'character_set_%'")
+    dbFetch(res)
+    dbGetQuery(DBwrite,"set names utf8")
+    res <- dbSendQuery(DBwrite,"show variables like 'character_set_%'")
+    dbFetch(res)
+
+    # Can the same be done with a dplyr connection?
+    db <- getOption("tradeflowsDB")
+    DBread <- src_mysql(user=db["user"], host=db["host"],
+                        password=db["password"], dbname=db["dbname"])
+    tbl(DBread, sql("show variables like 'character_set_%'")) %>%
+        collect()
 }
+
