@@ -4,7 +4,9 @@ author: "Paul Rougieux"
 date: "12/05/2015"
 output: 
   pdf_document:
-    toc: true
+    fig_height: 7
+    fig_width: 12
+    toc: yes
 ---
 
 
@@ -51,10 +53,19 @@ productitto <- tbl(DBread, "product_work") %>%
 # Join itto product names --------------------------------------------------
 tfdata <- tfdata %>% 
     filter(reporter == reporterinreport) %>% 
-    select(year, reporter, partner, flow, flag, productcode, tradevalue, quantity) %>%
+    select(year, reporter, partner, partnercode, flow, flag, productcode, tradevalue, quantity) %>%
     left_join(productitto) %>%  # joining late in the pipe, after filter is faster
-    group_by(year, reporter, partner, flow, product) %>%
+    collect()
+
+tfsummarised <- tfdata %>%
+    group_by(year, reporter, partner, partnercode, flow, product) %>%
     summarise(tradevalue = sum(tradevalue)) %>%
+    collect()
+
+# Collect itto product codes
+productitto <- tbl(DBread, "product_work") %>%
+    filter(nomenclature == "HS12") %>%
+    rename(product = name_short, productcode = code) %>%
     collect()
 ```
 
@@ -64,24 +75,92 @@ tfdata <- tfdata %>%
 largetf <- tfdata %>% filterworldeu28 %>% data.frame() %>% # remove grouping
     arrange(desc(tradevalue)) %>% head(100)
 
-# 10 largest partners
-message("change this to a function of dtf, that returns a character vector of partner names")
-largep <- tfdata %>% filterworldeu28() %>% 
-    group_by(flow, partner) %>% 
-    summarise(tradevalue = sum(tradevalue)) %>%
-    arrange(desc(tradevalue)) %>% 
-    select(partner) %>% unique %>% head(10)
+# 10 largest partners for the dataframe currently in use in the report
+#' @param dtf data frame of trade flow data
+#' @param n number of parnters to select
+#' @param product_ character vector of product names, when NULL, query all products
+#' @examples
+#'\dontrun{
+#' largepartners()
+#' largepartners(c("LOGS","SAWNWOOD"))
+#' }
+largepartners <- function(product_=NULL, dtf = tfsummarised, n = 10){
+    if (!is.null(product_)){
+        dtf <- filter(dtf, product %in% product_) 
+    }
+    dtf <- dtf %>%
+        filterworldeu28() %>% 
+        group_by(flow, partner, partnercode) %>% 
+        summarise(tradevalue = sum(tradevalue)) %>%
+        data.frame() %>% # remove grouping
+        arrange(desc(tradevalue)) %>% 
+        select(partner, partnercode) %>% unique %>% head(n) # Could add flow here
+    return(dtf)
+}
 ```
 
-## Logs and Sawnwood
-```{r}
-largepartners(filter(tfdata,product %in% c("LOGS", "SAWNWOOD")))
-message("Add plot for large partners in logs and sawnwood trade")
+```{r productdescription}
+message("Try to skip common substring from the description")
+description <- function(productcodes){
+    descr <- productitto %>% 
+        filter(productcode %in% productcodes) %>% 
+        select(productcode, description) %>%
+        unique
 
+    for(code in descr$productcode){
+        cat("\n\n__",code,":__ ", sep="")
+        cat(descr$description[descr$productcode == code])
+    }
+}
+#' description(c(440799, 440795))
+```
+
+\newpage
+
+## Logs 
+
+
+```{r results='asis'}
+#' @param product_ the itto name of a product
+productplot <- function(product_){
+    # Prepare this object first otherwise query is very slow
+    partnercodes <- largepartners(product_)$partnercode    
+    # Data
+    dtf <- filter(tfdata, product == product_ & 
+                      partnercode %in% partnercodes)
+    p <- ggplot(dtf,
+                aes(x = as.numeric(year),
+                    y = tradevalue,
+                    fill = as.factor(productcode))) +
+        geom_bar(stat="identity") +
+        ylab("Trade value in  US dollars") +
+        theme(legend.position= "bottom") +
+        scale_x_continuous(breaks = c(2010,2012)) +
+        ggtitle(paste("Largest ", product_, " flows reported by", reporterinreport)) +
+        facet_grid(flow + reporter ~ partner, scales="free_y") + 
+        guides(fill=guide_legend(nrow=2,byrow=TRUE))
+    try(print(p))
+    description(unique(dtf$productcode))
+}
+ 
+productplot("LOGS")
+```
+
+\newpage
+
+## Sawnwood
+```{r results='asis'}
+productplot("SAWNWOOD")
 ```
 
 
-```{r}
+\newpage
+
+## Furniture
+
+```{r results='asis'}
+productplot("WOODEN FURNITURE")
+
 ## Other products groups that could be added for separate plots
 ## See report on Indonesia's industry
 ## Furniture
@@ -92,9 +171,9 @@ message("Add plot for large partners in logs and sawnwood trade")
 
 ## All products
 ```{r fig.height=17, fig.width=12}
+partnercodes <- largepartners()$partnercode
 # filter(tfdata, partner %in% largetf$partner)
-
-ggplot(filter(tfdata, partner %in% largep$partner),
+ggplot(filter(tfsummarised, partnercode %in% partnercodes),
        aes(x = as.numeric(year), y = tradevalue/1e6,
                        fill = as.factor(product))) +
     geom_bar(stat="identity") +
