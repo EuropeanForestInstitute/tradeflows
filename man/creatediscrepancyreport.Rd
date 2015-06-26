@@ -4,8 +4,8 @@
 \alias{creatediscrepancyreport}
 \title{Create a discrepancy report}
 \usage{
-creatediscrepancyreport(productcode_, reporter_,
-  template = "discrepancies.Rmd", ...)
+creatediscrepancyreport(productcode_, reporter_, template = "discrepancy.Rmd",
+  outputdir = "reports/discrepancies", ...)
 }
 \arguments{
 \item{...}{arguments passed to \code{\link{createreport}()}}

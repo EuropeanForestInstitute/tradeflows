@@ -141,7 +141,8 @@ createreportfromdb <- function(tableread,
 createcountryreport <- function(country, template = "allproducts.Rmd",
                                 outputdir = "reports/countries", ...){
     # Convert country names could be a DB option in setdatabaseconfig
-    createreport(NULL, template=template, outputdir = outputdir,
+    createreport(NULL, template=template,
+                 outputdir = outputdir,
                  reporterinreport = country, ...)
 }
 
@@ -157,13 +158,18 @@ createcountryreport <- function(country, template = "allproducts.Rmd",
 #' }
 #' @export
 creatediscrepancyreport <- function(productcode_, reporter_,
-                                    template =  "discrepancies.Rmd", ...){
+                                    template =  "discrepancy.Rmd",
+                                    outputdir = "reports/discrepancies", ...){
     dtf <- readdbtbl("raw_flow_yearly") %>%
         filter(productcode == productcode_ &
                    (reporter == reporter_ | partner == reporter_)) %>%
         collect
-    createreport(tfdata = dtf, template = template,
-                        productcode = productcode_, reporter = reporter_, ...)
+    createreport(tfdata = dtf,
+                 template = template,
+                 productcode = productcode_,
+                 reporter = reporter_,
+                 outputdir = outputdir,
+                 ...)
 }
 
 if (FALSE){

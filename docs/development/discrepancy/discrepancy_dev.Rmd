@@ -6,7 +6,7 @@ output:
   pdf_document:
     fig_height: 7
     fig_width: 10
-    toc: no
+    toc: yes
     toc_depth: 3
 ---
 
@@ -165,7 +165,7 @@ ggplot(largestreporter, aes(x = year, y = value, fill = variable)) +
 ## Relative discrepancy
 Relative discrepancy is equal to $$(quantitypartner - quantity)/ (quantity + quantitypartner)$$
 
-```{r eval=TRUE}
+```{r eval=TRUE, warning=FALSE}
 ## Trade flows as a point cloud
 tfdata <- tfdata %>% filterworldeu28 %>% addregion 
 ggplot(tfdata, aes(x = quantity, y = reldiscrq, color = regionpartner)) +
