@@ -39,23 +39,28 @@ extractmetadata <- function(tfdata){
 #' This function will generate reports for any template that is
 #' product specific.  Giving information about all world trade
 #' flows for one product.
-#' @param tfdata a dataframe containing trade flows data
+#' @param tfdata a dataframe containing trade flows data that
+#' will be passed to R code run by the template
 #' @param inputpath path of the template, defaults to package internal path
 #' @param template name of the template file, including .Rmd extension
 #' @param fileprefix character string at the begining of the generated pdf file name
-#' @param productcode numeric or character string leave this variable empty if there are many products
-#' @param reporter character string leave this variable empty if there are many reporters
+#' @param productcodeinreport numeric or character string leave this variable empty if there are many products
+#' @param reporterinreport character string leave this variable empty if there are many reporters
 #' @param outputdir name of the output directory relative to getwd()
 #' @param encoding, encoding of the template file. See also iconv
 #' The names of encodings and which ones are available are
 #' platform-dependent. All R platforms support ""
 #' (for the encoding of the current locale), "latin1" and "UTF-8".
+#' @examples
+#'\dontrun{
+#'createreport(NULL, template="allproducts.Rmd", reporterinreport ="China")
+#' }
 #' @export
-createproductreport <- function(tfdata,
+createreport <- function(tfdata,
                                 template,
-                                fileprefix = "",
-                                productcodeinreport = "",
-                                reporterinreport = "",
+                                fileprefix = NULL,
+                                productcodeinreport = NULL,
+                                reporterinreport = NULL,
                                 inputpath = system.file("templates",
                                                         package="tradeflows"),
                                 outputdir = "reports",
@@ -65,9 +70,10 @@ createproductreport <- function(tfdata,
     require(ggplot2)
     require(reshape2)
     require(knitr)
-    if (!"productcode" %in% names(tfdata)){
-        stop("Rename raw data columns to EFI convention before running this function.")
-    }
+    #     # Legacy check for colmuns, might be placed in the template
+    #     if (!"productcode" %in% names(tfdata)){
+    #         stop("Rename raw data columns to EFI convention before running this function.")
+    #     }
 
     # Don't show R code in output
     knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
@@ -98,7 +104,7 @@ createproductreport <- function(tfdata,
 #' @rdname createrproducteport
 #' @param template name of the template file
 #' @param products a vector of product codes
-#' @param ... arguments passed to \code{\link{createproductreport}()}
+#' @param ... arguments passed to \code{\link{createreport}()}
 #'     from \code{createcompletenessreport}()
 #' @export
 createreportfromdb <- function(tableread,
@@ -111,22 +117,37 @@ createreportfromdb <- function(tableread,
     for (productcodeinreport in products){
         message("creating report for product: ", productcodeinreport)
         dtf <- readdbproduct(productcodeinreport, tableread)
-        createproductreport(tfdata = dtf, ...)
+        createreport(tfdata = dtf, ...)
     }
 }
 
-#' Create reports for countries
-#' or major discrepancies for one product
-#' or major tradeflows for product group
-createcountryreport <- function(countryinreport){
+#' Create reports for all products in the given country
+#'
+#' The location of the report can be changed by changing the outputdir parameter.
+#' See arguments of \code{\link{createreport}()}
+#' to determine in which folder the template is located.
+#' @param country
+#' @param template name of the template file.
+#' @param outputdir path where report will be saved, relative to the working directory
+#' or an absolute path.
+#' @param ... further arguments passed to \code{\link{createreport}()}
+#'\dontrun{
+#' createcountryreport("China")
+#' }
+#' @export
+createcountryreport <- function(country, template = "allproducts.Rmd",
+                                outputdir = "reports/countries", ...){
     # Convert country names could be a DB option in setdatabaseconfig
+    createreport(NULL, template=template,
+                 reporterinreport = country, ...)
 }
+
 
 #' Create a discrepancy report
 #'
 #' @param productcode vector of product codes
 #' @param reporter one single country name
-#' @param ... arguments passed to \code{\link{createproductreport}()}
+#' @param ... arguments passed to \code{\link{createreport}()}
 #' @examples
 #'\dontrun{
 #' creatediscrepancyreport(440799, "Cameroon", outputdir = "reports/discrepancies")
@@ -138,7 +159,7 @@ creatediscrepancyreport <- function(productcode_, reporter_,
         filter(productcode == productcode_ &
                    (reporter == reporter_ | partner == reporter_)) %>%
         collect
-    createproductreport(tfdata = dtf, template = template,
+    createreport(tfdata = dtf, template = template,
                         productcode = productcode_, reporter = reporter_, ...)
 }
 

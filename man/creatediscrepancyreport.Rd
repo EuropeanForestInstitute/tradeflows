@@ -8,7 +8,7 @@ creatediscrepancyreport(productcode_, reporter_,
   template = "discrepancies.Rmd", ...)
 }
 \arguments{
-\item{...}{arguments passed to \code{\link{createproductreport}()}}
+\item{...}{arguments passed to \code{\link{createreport}()}}
 
 \item{productcode}{vector of product codes}
 

@@ -2,15 +2,27 @@
 % Please edit documentation in R/report.R
 \name{createcountryreport}
 \alias{createcountryreport}
-\title{Create reports for countries
-or major discrepancies for one product
-or major tradeflows for product group}
+\title{Create reports for all products in the given country}
 \usage{
-createcountryreport(countryinreport)
+createcountryreport(country, template = "allproducts.Rmd",
+  outputdir = "reports/countries", ...)
+}
+\arguments{
+\item{country}{}
+
+\item{template}{name of the template file.}
+
+\item{outputdir}{path where report will be saved, relative to the working directory
+or an absolute path.}
+
+\item{...}{further arguments passed to \code{\link{createreport}()}
+\dontrun{
+createcountryreport("China")
+}}
 }
 \description{
-Create reports for countries
-or major discrepancies for one product
-or major tradeflows for product group
+The location of the report can be changed by changing the outputdir parameter.
+See arguments of \code{\link{createreport}()}
+to determine in which folder the template is located.
 }
 

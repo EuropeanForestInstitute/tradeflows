@@ -11,7 +11,8 @@ readdbproduct(productcode_, tableread, convcountrynames = FALSE)
 
 \item{tableread}{the database table to read from}
 
-\item{convcontrynames}{logical weather to convert contry names}
+\item{convcontrynames}{logical weather to convert contry names this should not be needed
+if the database server is rendering utf-8 data.}
 }
 \description{
 Connect to the raw database and load all tradeflows

@@ -1,11 +1,9 @@
 ---
-title: "Forest produts trade in ` reporterinreport`"
+title: "Forest produts trade in `r reporterinreport`"
 author: "Paul Rougieux"
 date: "12/05/2015"
 output: 
   pdf_document:
-    fig_height: 7
-    fig_width: 12
     toc: yes
 ---
 
@@ -21,17 +19,20 @@ opts_chunk$set(echo=FALSE, message=FALSE)
 
 
 
-```{r development, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+
+country <- "China"
+createcountryreport(country, inputpath = "inst/templates/")
 ######### #
 # ! This chunk is used for development only, remove it or change eval=FALSE.
 # ! When this file is used as a template, place two  `r` in the title.
 ######### #
-# The data frame tfdata will be passed by the report generating function to the template
-# Reporter information can be extracted back from tfdata 
-# in the template this would have to be the country appearing most in the data frame
-reporterinreport <- "China" 
+# reporterinreport <- "China" 
 # Test countries: Cameroon, Ghana, Indonesia
+```
 
+
+```{r}
 message("Trade values are the same in raw flow and validated flow")
 message("The table read will have to be changed to validated_flow to access quantities")
 
@@ -166,9 +167,7 @@ if(FALSE){
 \newpage
 
 ## Logs 
-
-
-```{r results='asis'}
+```{r results='asis', fig.height=7, fig.width=12}
 #' @param product_ the itto name of a product
 productplot <- function(product_){
     # Prepare this object first otherwise query is very slow
@@ -198,7 +197,7 @@ productplot("LOGS")
 \newpage
 
 ## Sawnwood
-```{r results='asis'}
+```{r results='asis', fig.height=7, fig.width=12}
 productplot("SAWNWOOD")
 ```
 
@@ -207,7 +206,7 @@ productplot("SAWNWOOD")
 
 ## Furniture
 
-```{r results='asis'}
+```{r results='asis', fig.height=7, fig.width=12}
 productplot("WOODEN FURNITURE")
 
 ## Other products groups that could be added for separate plots
