@@ -54,7 +54,7 @@ classificationcomtrade <- list(HS = HS$results,
 classificationcomtrade <- lapply(classificationcomtrade,
                                  select,
                                  productcode = id,
-                                 product = text,
+                                 description = text,
                                  parentcode = parent)
 
 
