@@ -136,7 +136,7 @@ largestreporter %>%
 
 \newpage
 
-## Comparison of trade values reported by `r reporterinreport` and its main partners
+## Comparison between trade flows reported by `r reporterinreport` and its main partners
 
 ```{r fig.height=17, fig.width=12, warning=FALSE, message=FALSE}
 # Display these trade flows as a plot
@@ -184,18 +184,18 @@ When the relative discrepancy is equal to 0 both reporter and partner reported t
 ```{r eval=TRUE, warning=FALSE}
 ## Trade flows as a point cloud
 tfdata <- tfdata %>% filterworldeu28 %>% addregion 
-ggplot(tfdata, 
+ggplot(filter(tfdata, reporter == reporterinreport), 
        aes(x = quantity, y = reldiscrq, color = regionpartner)) +
     geom_point() + 
-    facet_wrap(~flow, scales="free_x") +
+    facet_wrap(~flow, scales="free_x", ncol = 2) +
     ylab("Relative discrepancy of the quantity") + 
     xlab(paste("Quantity in", metadata$unit))
 
 cat("\n\n")
-ggplot(tfdata, 
+ggplot(filter(tfdata, reporter == reporterinreport), 
        aes(x = tradevalue, y = reldiscrv, color = regionpartner)) +
     geom_point() + 
-    facet_wrap(~flow, scales = "free_x")  +
+    facet_wrap(~flow, scales = "free_x", ncol = 2)  +
     ylab("Relative discrepancy of the trade value") +
     xlab("Trade value in US $")
 
