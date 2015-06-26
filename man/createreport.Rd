@@ -4,9 +4,10 @@
 \alias{createreport}
 \title{Create data completeness report for comtrade data}
 \usage{
-createreport(tfdata, template, fileprefix = "", productcodeinreport = "",
-  reporterinreport = "", inputpath = system.file("templates", package =
-  "tradeflows"), outputdir = "reports", encoding = "UTF-8",
+createreport(tfdata, template, fileprefix = NULL,
+  productcodeinreport = NULL, reporterinreport = NULL,
+  inputpath = system.file("templates", package = "tradeflows"),
+  outputdir = "reports", encoding = "UTF-8", toc = TRUE,
   keep_tex = FALSE)
 }
 \arguments{

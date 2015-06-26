@@ -11,6 +11,7 @@ output:
 
 
 ```{r library, echo=FALSE, warning=FALSE, message=FALSE}
+message("you can now develop directly in the inst/tempalte dir, see instruction to compile the pdf in the file there")
 library(dplyr)
 library(tradeflows)
 library(knitr)

@@ -57,15 +57,16 @@ extractmetadata <- function(tfdata){
 #' }
 #' @export
 createreport <- function(tfdata,
-                                template,
-                                fileprefix = NULL,
-                                productcodeinreport = NULL,
-                                reporterinreport = NULL,
-                                inputpath = system.file("templates",
-                                                        package="tradeflows"),
-                                outputdir = "reports",
-                                encoding = "UTF-8",
-                                keep_tex = FALSE){
+                         template,
+                         fileprefix = NULL,
+                         productcodeinreport = NULL,
+                         reporterinreport = NULL,
+                         inputpath = system.file("templates",
+                                                 package="tradeflows"),
+                         outputdir = "reports",
+                         encoding = "UTF-8",
+                         toc = TRUE,
+                         keep_tex = FALSE){
     # load optional packages
     require(ggplot2)
     require(reshape2)
@@ -91,7 +92,8 @@ createreport <- function(tfdata,
     # Create the report file name
     filename <- paste0(fileprefix, productcodeinreport, reporterinreport, ".pdf")
     tryCatch(rmarkdown::render(input = file.path(inputpath, template),
-                               output_format = rmarkdown::pdf_document(keep_tex = keep_tex),
+                               output_format = rmarkdown::pdf_document(keep_tex = keep_tex,
+                                                                       toc = toc),
                                output_dir = outputdir,
                                output_file = filename,
                                encoding = encoding),
@@ -131,14 +133,15 @@ createreportfromdb <- function(tableread,
 #' @param outputdir path where report will be saved, relative to the working directory
 #' or an absolute path.
 #' @param ... further arguments passed to \code{\link{createreport}()}
+#' @examples
 #'\dontrun{
-#' createcountryreport("China")
+#' createcountryreport("China", outputdir = "/tmp")
 #' }
 #' @export
 createcountryreport <- function(country, template = "allproducts.Rmd",
                                 outputdir = "reports/countries", ...){
     # Convert country names could be a DB option in setdatabaseconfig
-    createreport(NULL, template=template,
+    createreport(NULL, template=template, outputdir = outputdir,
                  reporterinreport = country, ...)
 }
 
@@ -172,7 +175,8 @@ if (FALSE){
     ###################### #
     directory <- "docs/development/completeness/"
     # Template that will be exported with the package
-    createreportfromdb("raw_flow_yearly", 440799, template = "completeness.Rmd",  outputdir = "docs/development/completeness/")
+    createreportfromdb("raw_flow_yearly", 440799, template = "completeness.Rmd",
+                       outputdir = "reports/completeness/")
 
     # Template used as a development version
     createreportfromdb("raw_flow_yearly", 440799, inputpath = "docs/development/completeness/", template = "completeness_dev.Rmd", encoding = "latin1", outputdir = "docs/development/completeness/")

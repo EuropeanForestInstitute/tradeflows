@@ -15,14 +15,16 @@ createcountryreport(country, template = "allproducts.Rmd",
 \item{outputdir}{path where report will be saved, relative to the working directory
 or an absolute path.}
 
-\item{...}{further arguments passed to \code{\link{createreport}()}
-\dontrun{
-createcountryreport("China")
-}}
+\item{...}{further arguments passed to \code{\link{createreport}()}}
 }
 \description{
 The location of the report can be changed by changing the outputdir parameter.
 See arguments of \code{\link{createreport}()}
 to determine in which folder the template is located.
+}
+\examples{
+\dontrun{
+createcountryreport("China", outputdir = "/tmp")
+}
 }
 
