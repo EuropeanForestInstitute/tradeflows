@@ -25,13 +25,13 @@ library(reshape2)
 
 
 ```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
-######### #
-# ! This chunk is used for development only, remove it or change eval=FALSE.
-# ! When this file is used as a template, place two  `r` in the title.
-######### #
+# ---------------------------------------------------------------------------------
+# ! This chunk is used for development only, keep eval=FALSE.
+# ---------------------------------------------------------------------------------
 # Test countries: Cameroon, Ghana, Indonesia
 message("Using the development template in ",
         "inputpath = 'inst/templates/'")
+# Instruction to generate the report before building the package
 creatediscrepancyreport(440799, "China", inputpath = "inst/templates")
 
 # The data frame tfdata will be passed by the report generating function to the template
@@ -55,7 +55,9 @@ numberoflargecountries <- 27
 metadata <- extractmetadata(tfdata)
 stopifnot(metadata$productcode == productcodeinreport)
 stopifnot(metadata$reporter == reporterinreport)
-if(metadata$unit == "Volume in cubic meters") metadata$unit <- "cubic meters"
+if(metadata$unit == "Volume in cubic meters"){
+    metadata$unit <- "cubic meters"
+}
 
 # Calculate discrepancies
 tfdata  <- tfdata %>% 
@@ -77,20 +79,43 @@ yearinreport <- lastyearreporter
 # Display number of years available only if other countries reported 
 # data for more years
 if (lastyearreporter != max(tfdata$year)){
-    messageyears = paste("Data for other countries is available until",
-                         max(tfdata$year),".")
+    messageyears = paste("Data is available until",
+                         max(tfdata$year),"for other countries.")
 } else {
     messageyears = ""
 }
 ```
 
-`r reporterinreport` reported importing from
+
+## Abstract
+The following report is an overview of major trade flows reported for product number `r as.character(productcodeinreport)` by `r reporterinreport` and its trade partners. `r reporterinreport` reported importing from
 `r length(unique(tfdata$partner[tfdata$reporter==reporterinreport & tfdata$flow=="Import"]))` countries and exporting to
 `r length(unique(tfdata$partner[tfdata$reporter==reporterinreport & tfdata$flow=="Export"]))` countries 
 between `r min(tfdata$year)` and `r lastyearreporter`.
 `r messageyears`
- Trade value is reported in US dollars and quantity in `r metadata$unit`.
+ Trade values are reported in US dollars and quantities in `r metadata$unit`. Discrepancy is equal to the difference between the quantity reported by the trade partners and the quantity reported by `r reporterinreport`. A positive dicrepancy means that a trade partner reported a higher quantity, a negative discrepancy means that a trade partner reported a lower quantity in the given year.
  
+
+```{r}
+# Select the largest import or export flows reported by the reporter
+largestreporter <- tfdata %>% 
+    filterworldeu28 %>%
+    filter(year == yearinreport & reporter == reporterinreport) %>% 
+    arrange(desc(quantity)) %>%
+    head(numberoflargecountries)
+
+# Display latest trade flows as a table
+largestreporter %>% 
+    select(year, reporter, partner, flow, flag, tradevalue, quantity,
+           dicrepancy_quantity = discrq) %>%
+    kable(caption = paste(numberoflargecountries, "largest import or export flows reported by",
+                          reporterinreport, "in", yearinreport))
+```
+
+\newpage
+
+## Comparison between trade flows reported by `r reporterinreport` and its main partners
+
 ```{r numberofreportedflows}
 tfsum <- tfdata %>% 
     mutate(isreporter = ifelse(reporter == reporterinreport,
@@ -109,36 +134,14 @@ tfsum %>%
               quantity = sum(quantity, na.rm=TRUE)) %>%
     melt(id = c("year","flow","isreporter")) %>%
     dcast(year + flow ~ isreporter + variable) %>%
-    kable
+    kable(caption = paste("Number of trade flows (nrow), total trade value and total quantity reported by ", reporterinreport, " (columns 3,4,5) and its trade partners (columns 6,7,8) for the years available in the database."))
 ```
 
 
 \newpage
 
-##  Largest trade quantities in `r yearinreport` 
- `r as.character(numberoflargecountries)` largest import or export flows reported by `r reporterinreport`. 
- Trade value is reported in US dollars and quantity in `r metadata$unit`.
+```{r discreapancyplot, fig.height=17, fig.width=12, warning=FALSE, message=FALSE}
 
-```{r}
-# Select the largest import or export flows reported by the reporter
-largestreporter <- tfdata %>% 
-    filterworldeu28 %>%
-    filter(year == yearinreport & reporter == reporterinreport) %>% 
-    arrange(desc(quantity)) %>%
-    head(numberoflargecountries)
-
-# Display latest trade flows as a table
-largestreporter %>% 
-    select(year, reporter, partner, flow, flag, tradevalue, quantity,
-           dicrepancy_quantity = discrq) %>%
-    kable
-```
-
-\newpage
-
-## Comparison between trade flows reported by `r reporterinreport` and its main partners
-
-```{r fig.height=17, fig.width=12, warning=FALSE, message=FALSE}
 # Display these trade flows as a plot
 largestreporter <- tfdata %>% 
     filterworldeu28 %>% 
@@ -153,19 +156,34 @@ largestreporter <- tfdata %>%
     mutate(qmin = min(quantityreporter, quantitypartner),
            qmax = max(quantityreporter, quantitypartner)) %>%
 #     rename(discrepancy = discrq) %>%
-    melt(id = c("year","partner","flow", "qmin","qmax"))
+    melt(id = c("year","partner","flow", "qmin","qmax")) %>%
+    mutate(flowpartner = paste(flow, partner))
+    
 
+# Summarise quantity by country and trade direction over the period
+largestreporter_arranged <- largestreporter %>% group_by(flow, partner) %>%
+    summarise(q = sum(value, na.rm=TRUE)) %>%
+    mutate(flowpartner = paste(flow, partner)) %>%
+    arrange(desc(q))
+
+######################
+message("Separation of import export is not working because import and export plots would have different number and facet and it would be a pain to manage plot size create a new column called flowpartner")
+largestreporter <- largestreporter %>%
+    mutate(flowpartner = ordered(flowpartner, levels = largestreporter_arranged$flowpartner))
+    
 ggplot(largestreporter, aes(x = year, y = value, fill = variable)) +
     geom_bar(position="dodge", stat="identity") +
-    scale_fill_manual(values = c("chocolate3","black"))+
+    scale_fill_manual(values = c("chocolate3","black")) +
     geom_errorbar(aes(ymin = qmin, ymax = qmax, 
                       width=0.2, colour="discrepancy")) +
     scale_colour_manual(name="error bars",values="red") +
     ylab(metadata$unit) +
-    facet_wrap(flow~partner, scales = "free_y", ncol = 3) +
+    ggtitle(paste("Major trade flows reported by", reporterinreport, "and its trade partners")) +
+    facet_wrap(~flowpartner, scales = "free_y", ncol = 3) +
     theme_bw() + theme(legend.position= "bottom",
                        legend.box="horizontal") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 ```
 
 
@@ -181,7 +199,7 @@ $$\frac{(quantitypartner - quantity)}{(quantity + quantitypartner)}$$
 When the relative discrepancy is equal to 0 both reporter and partner reported the same value. When the discrepancy is equal to 1 the reporter did not report any trade. When the discrepancy is equal to -1, the partner did not report any trade. Values in between represent the relative size of the discrepancy. Looking for outlier in the plot means looking for points with relative discrepancy close to 1 or -1 on the y axis and with a high trade value or high trade quantity on the x axis.
 
 
-```{r eval=TRUE, warning=FALSE}
+```{r replativediscrepancyplot, eval=TRUE, warning=FALSE}
 ## Trade flows as a point cloud
 tfdata <- tfdata %>% filterworldeu28 %>% addregion 
 ggplot(filter(tfdata, reporter == reporterinreport), 

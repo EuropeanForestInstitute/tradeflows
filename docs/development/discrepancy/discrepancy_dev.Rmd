@@ -11,6 +11,8 @@ output:
 ---
 
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+message("You can now develop reports directly in the inst/templates folder !!!")
+message("There is a way to generate them without building the package by specifying the template inputpath")
 # I tried placing the yaml block after the chunks but for some reason it doesn't always generate the pdf and generates a html file instead.
 # pdf is generated when the yaml block is at the top, 
 

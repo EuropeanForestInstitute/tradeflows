@@ -19,7 +19,7 @@ level, "world" to extract world conversion factors,
 estimates can be included}
 }
 \description{
-Group trade flows by the given geo aggregation level and
+Group trade flows by the given geographical aggregation level and
 extract the median conversion factors.
 }
 

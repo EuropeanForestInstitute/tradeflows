@@ -5,7 +5,7 @@
 \title{Create a discrepancy report}
 \usage{
 creatediscrepancyreport(productcode_, reporter_, template = "discrepancy.Rmd",
-  outputdir = "reports/discrepancies", ...)
+  outputdir = "reports/discrepancies", toc = FALSE, ...)
 }
 \arguments{
 \item{...}{arguments passed to \code{\link{createreport}()}}

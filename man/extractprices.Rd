@@ -11,9 +11,11 @@ extractprices(dtf, lowercoef = 0.5, uppercoef = 2,
 \item{dtf}{a dataframe containing all trade flows for one product
 and their individual prices}
 
-\item{lowercoef}{numeric multiplier of the lower bound on prices}
+\item{lowercoef}{numeric multiplier of the first quartile to
+obtain a lower bound on prices}
 
-\item{uppercoef}{numeric multiplier of the upper bound on prices}
+\item{uppercoef}{numeric multiplier of the third quartile to
+obtain an upper bound on prices}
 
 \item{geoaggregation}{a character vector specifying the regional aggregation
 level, a column name in the reportercomtrade table}
@@ -22,7 +24,7 @@ level, a column name in the reportercomtrade table}
 can be included}
 }
 \description{
-Group trade flows by the given geo aggregation level
+Group trade flows by the given geographical aggregation level
 (region or subregion) and extract the median prices.
 Prices depend on the quantity unit. For some products quantity unit changes
 from litre to m3 along the years.

@@ -88,17 +88,20 @@ filterworldeu28 <- function(dtf){
 
 #' Extract median prices at a given geographical aggregation level
 #'
-#' Extract median prices by region (default) or at another
-#' geographical aggregation level (subregion)
+#' Group trade flows by the given geographical aggregation level
+#' (region or subregion) and extract the median prices.
 #' Prices depend on the quantity unit. For some products quantity unit changes
 #' from litre to m3 along the years.
-#' @param dtf a dataframe containing already available prices
+#' @param dtf a dataframe containing all trade flows for one product
+#' and their individual prices
 #' @param geoaggregation a character vector specifying the regional aggregation
 #'     level, a column name in the reportercomtrade table
 #' @param includeqestimates logical TRUE when comtrade quantity estimates
 #' can be included
-#' @param lowercoef numeric multiplier of the lower bound on prices
-#' @param uppercoef numeric multiplier of the upper bound on prices
+#' @param lowercoef numeric multiplier of the first quartile to
+#' obtain a lower bound on prices
+#' @param uppercoef numeric multiplier of the third quartile to
+#' obtain an upper bound on prices
 #' @export
 extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
                           geoaggregation="regionreporter",
@@ -146,10 +149,12 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
 }
 
 
-#' Extract median converion factor at a given geographical aggregation level
+#' Extract median conversion factor at a given geographical aggregation level
 #'
-#' Extract median converion factors for the whole world (default)
-#' @param dtf a dataframe containing conversion factors
+#' Group trade flows by the given geographical aggregation level and
+#' extract the median conversion factors.
+#' @param dtf a dataframe containing all trade flows for one product
+#' and their individual conversion factors
 #' @param geoaggregation a character string specifying the regional aggregation
 #'     level, "world" to extract world conversion factors,
 #'      "region" to extract regional conversion factors.

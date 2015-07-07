@@ -159,7 +159,8 @@ createcountryreport <- function(country, template = "allproducts.Rmd",
 #' @export
 creatediscrepancyreport <- function(productcode_, reporter_,
                                     template =  "discrepancy.Rmd",
-                                    outputdir = "reports/discrepancies", ...){
+                                    outputdir = "reports/discrepancies",
+                                    toc = FALSE, ...){
     dtf <- readdbtbl("raw_flow_yearly") %>%
         filter(productcode == productcode_ &
                    (reporter == reporter_ | partner == reporter_)) %>%
@@ -169,6 +170,7 @@ creatediscrepancyreport <- function(productcode_, reporter_,
                  productcode = productcode_,
                  reporter = reporter_,
                  outputdir = outputdir,
+                 toc = toc,
                  ...)
 }
 
