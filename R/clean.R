@@ -32,13 +32,14 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
 #' Check various features of the trade flows data frame
 #'
 #' "Import" and "Export" and used to add partner flow information.
-#' Should these characters be different the user should be warned.
+#' Should these characters be different then the user should be warned.
 #' @param dtf data frame of trade flows data
 #' @export
 sanitycheck <- function(dtf){
     # Check that flows are written with a firt uppercase later
     flow <- unique(dtf$flow)
-    stopifnot(sum(grepl("Import",flow) + grepl("Export",flow)) == 4)
+    stopifnot(sum(grepl("Import",flow) + grepl("Export",flow)) ==
+                  length(flow))
 }
 
 
