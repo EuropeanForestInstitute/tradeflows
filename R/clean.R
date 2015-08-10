@@ -36,7 +36,8 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
 #' @param dtf data frame of trade flows data
 #' @export
 sanitycheck <- function(dtf){
-    # Check that flows are  written with a firt uppercase later
+    # Check that flows are written with a firt uppercase later
+    flow <- unique(dtf$flow)
     stopifnot(sum(grepl("Import",flow) + grepl("Export",flow)) == 4)
 }
 
@@ -376,9 +377,10 @@ findduplicatedflows <- function(dtf){
 #' @param dtf a dataframe contiaining trade flows,
 #' @export
 removeduplicatedflows <- function(dtf){
-    if(nrow(findduplicatedflows(dtf))>0){
+    duplicatedflows <- findduplicatedflows(dtf)
+    if(nrow(duplicatedflows)>0){
         message("There were duplicated lines for the following reporters:")
-        message(unique(findduplicatedflows(dtf)$reporter))
+        message(unique(duplicatedflows$reporter))
         # This checks for all columns in dtf
         return(unique(dtf))
     }
@@ -474,14 +476,17 @@ clean <- function(dtf,
                   shaveprice = TRUE,
                   outputalltables = FALSE,
                   includeqestimates = TRUE){
+
+    ### Some checks
     nrowbeforechange <- nrow(dtf)
+    dtf %>% sanitycheck()
 
     ### Prepare conversion factors and prices
     dtf <- dtf %>%
-        sanitycheck %>%
         removeduplicatedflows %>%
         addconversionfactorandprice %>%
         addregion
+
     price <- extractprices(dtf, includeqestimates)
     conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregation)
 

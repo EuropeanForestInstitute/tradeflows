@@ -22,15 +22,15 @@ extractmetadata <- function(tfdata){
     if(length(reporterindata)>1) reporterindata <- ""
 
     # Extract quantity unit
-    unitinreport <- tfdata %>% group_by(unit) %>%
+    unitindata <- tfdata %>% group_by(unit) %>%
         summarise(nrowperyear = n()/nbyears) %>%
         # Find the unit appearing most in the data
         filter(nrowperyear > 0.2 * max(nrowperyear))
-    unitinreport <- unitinreport$unit
+    unitindata <- unitindata$unit
 
     return(list(productcode = productcodeindata,
                 reporter = reporterindata,
-                unit = unitinreport))
+                unit = unitindata))
 }
 
 
@@ -173,6 +173,7 @@ creatediscrepancyreport <- function(productcode_, reporter_,
                  toc = toc,
                  ...)
 }
+
 
 if (FALSE){
     # You need to rebuild the package for template updates to take effect
