@@ -11,6 +11,6 @@ sanitycheck(dtf)
 }
 \description{
 "Import" and "Export" and used to add partner flow information.
-Should these characters be different the user should be warned.
+Should these characters be different then the user should be warned.
 }
 

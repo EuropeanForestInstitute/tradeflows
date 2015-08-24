@@ -90,7 +90,7 @@ readdbproduct <- function(productcode_, tableread, convcountrynames = FALSE){
         filter(productcode == productcode_) %>%
         # keep id in order to compare raw and cleaned trade flows
         # forces computation and brings data back into a data.frame
-        collect  %>%
+        collect()  %>%
         # Change year to an integer
         mutate(year = as.integer(year))
     if (convcountrynames){ # This should not be needed if the database is in utf-8
@@ -103,6 +103,13 @@ readdbproduct <- function(productcode_, tableread, convcountrynames = FALSE){
     # Comment out this check which might break for unnecessary reasons
     # if EFI developers decide to add extra columns in the database
     # stopifnot(names(dtf) %in% column_names$efi)
+    #
+    # When too many connections are opened, the following
+    # error is returned:
+    # Cannot allocate a new connection: 16 connections already opened
+    # Remove connection object, base on Hadley's comment:
+    # https://stackoverflow.com/questions/26331201/disconnecting-src-tbls-connection-in-dplyr/26331440#26331440
+    rm(DBread)
     return(dtf)
 }
 

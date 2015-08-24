@@ -9,6 +9,7 @@ pdf_document: >
   \usepackage[utf8]{inputenc}
 ---
 
+
 ## Warning
 This report is generated automatically based on data from the 
 [UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
@@ -18,10 +19,21 @@ Country numbers in tables below might be slightly
 overestimated, use them as a rough indication only.
 
 
-```{r prepare_completeness_table, eval=TRUE}
-# tfdata2 <- readdbproduct(440799, "raw_flow_yearly")
-# productcodeinreport <- 440799
+```{r generatereportdatafordevelopment, eval=FALSE}
+# Generate report data for development purposes only
+tfdata2 <- readdbproduct(440799, "raw_flow_yearly")
+# optional filter by year
+#tfdata2 <- tfdata2 %>% filter(year %in% c(2010,2011))
 
+productcodeinreport <- 440799
+# Then generate the completeness data frame below
+# These data frames should be enough to run all chunks below
+# Give a value to r to generate only one of the completeness plot 
+# in the loop, in the plot chunk below
+```
+
+
+```{r prepare_completeness_table, eval=TRUE}
 # This report is intended for one product only
 tfdata2 <- tfdata %>% 
     filter(productcode == productcodeinreport) %>%
@@ -35,7 +47,6 @@ completeness <- tfdata2 %>%
     arrange(classification, reporter, year)
 productcodeinreport <- as.character(productcodeinreport)
 ```
-
 
 
 ## Product definitions
@@ -53,7 +64,6 @@ for(code in productname$classification){
 ```
 
 
-
 ## Summary
 Number of reporting countries by year and by classification type.
 ```{r reporting_by_classification}
@@ -64,6 +74,7 @@ completeness %>%
     dcast(year ~ classification, value.var="reporter", length) %>%
     kable()
 ```
+
 
 List of countries using each classification type in `r max(completeness$year)`.
 ```{r reportername_by_classification, results='asis', eval=TRUE}
@@ -79,8 +90,8 @@ for (code in unique(reporterbyclassif$classification)){
     cat(reporterbyclassif$reporter[reporterbyclassif$classification == code], 
         sep=", ")
 }
-
 ```
+
 
 ## Completeness by country and by classification type 
 ```{r plot, results='asis', eval=TRUE}
@@ -90,6 +101,7 @@ tfdata3 <- tfdata2 %>%
     filterworldeu28 %>%
     select(year, classification, flow, reporter, partner) %>%
     arrange(year, classification, flow)
+years <- unique(tfdata3$year) # for the scales
 for (r in unique(completeness$reporter)){
     cat("\n\n###", r, "\n")
     
@@ -100,16 +112,18 @@ for (r in unique(completeness$reporter)){
                     linetype = value)) +
         scale_colour_manual(values = c("TRUE" = "blue", "FALSE" = "red")) +
         scale_linetype_manual(values = c("TRUE" = 2, "FALSE" = 1)) +
+        scale_x_continuous(breaks = years) +
         geom_segment(aes(color = value), size=3) + 
         geom_text(aes(y = "classification", label=classification)) +
         ggtitle(paste("Data completeness of", productcodeinreport,
                       "in", r))
     plot(p)
 
-    
     ###################################################### #
     # Number of trade partners per classification and year #
     ###################################################### #
+    # These try statements have been introduced because there is sometimes missing
+    # data. It would be nice to deal with these errors and print something when they occur
     # Reported by the country
     npartnersbyr <- tfdata3 %>% 
         filter(reporter == r) %>%
@@ -124,5 +138,5 @@ for (r in unique(completeness$reporter)){
     try(print(kable(npartnersbyothers,
                     caption = paste("Number of countries who report trading with",
                                     r))))
-    }
+}
 ``` 

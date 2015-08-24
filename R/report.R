@@ -1,3 +1,19 @@
+# This script defines report creation functions
+# Each report has specific data requirements,
+# Therefore functions fullfillthe data requirements of each report.
+#
+# createreport() and createreportfromdb() are generic function with no predefined template.
+# createcompletenessreport(), creatediscrepancyreport() and createcountryreport()
+# are specific functions with a default template.
+# The table below illustrates the number countries the number of products to be expected
+# in each report type.
+# |Report name  |Number of countries | Number of products | function                 |
+# |------------:|:-------------------|--------------------|--------------------------|
+# |overview     | one                | many               | createcountryreport      |
+# |completeness | many               | one                | createcompletenessreport |
+# |discrepancy  | one                | one                | creatediscrepancyreport  |
+
+
 #' Extract report metadata from trade flow table
 #'
 #' This can be used to check that the given trade flow data has only
@@ -102,6 +118,8 @@ createreport <- function(tfdata,
 
 
 #' Create report from the database
+#'
+#' For a given vector of product codes, create reports using a given template.
 #' @description Create a report from the database
 #' @rdname createrproducteport
 #' @param template name of the template file
@@ -123,6 +141,7 @@ createreportfromdb <- function(tableread,
     }
 }
 
+
 #' Create reports for all products in the given country
 #'
 #' The location of the report can be changed by changing the outputdir parameter.
@@ -138,12 +157,53 @@ createreportfromdb <- function(tableread,
 #' createcountryreport("China", outputdir = "/tmp")
 #' }
 #' @export
-createcountryreport <- function(country, template = "allproducts.Rmd",
-                                outputdir = "reports/countries", ...){
+createoverviewreport <- function(country,
+                                 template = "overview.Rmd",
+                                 outputdir = "reports/overview", ...){
     # Convert country names could be a DB option in setdatabaseconfig
-    createreport(NULL, template=template,
+    createreport(NULL,
+                 template = template,
                  outputdir = outputdir,
                  reporterinreport = country, ...)
+}
+
+
+
+#' Create the completeness report
+#'
+#' @param productcode vector of product codes
+#' @param reporter one single country name
+#' @param ... arguments passed to \code{\link{createreport}()}
+#' @examples
+#'\dontrun{
+#' createcompletenessreport(440799, beginyear = 2010, endyear = 2011)
+#' }
+#' @export
+createcompletenessreport <- function(productcode_,
+                                     beginyear = 0, endyear = 9999,
+                                     template =  "completeness.Rmd",
+                                     outputdir = "reports/completeness",
+                                     toc = TRUE, ...){
+    #### Load data ####
+    rawtbl <- readdbtbl("raw_flow_yearly") %>%
+        # dplyr verbs executed on tbl objects are translated to SQL statements
+        filter(productcode == productcode_ &
+                   year >= beginyear & year <= endyear)
+    dtf <- rawtbl %>% collect %>%
+        # Mysql datatype year is loaded as a character string
+        # convert the year column to an integer
+        mutate(year = as.integer(year))
+    # delete mysqlconnection object, to avoid message of the type:
+    # "Auto-disconnecting mysql connection (0, 3)"
+    rm(rawtbl)
+
+    #### Create the report ####
+    createreport(tfdata = dtf,
+                 template = template,
+                 productcode = productcode_,
+                 outputdir = outputdir,
+                 toc = toc,
+                 ...)
 }
 
 
@@ -176,23 +236,28 @@ creatediscrepancyreport <- function(productcode_, reporter_,
 
 
 if (FALSE){
-    # You need to rebuild the package for template updates to take effect
     library(tradeflows)
+    ###################### #
+    # Overview reports     #
+    ###################### #
+    # Use the default template built within the package
+    createoverviewreport(country = "Italy")
+    # Use the template in development for quick itteration without package building
+
 
     ###################### #
     # Completeness reports #
     ###################### #
-    directory <- "docs/development/completeness/"
-    # Template that will be exported with the package
+    # Use the default template built within the package
+    # You need to rebuild the package for template updates to take effect
+    createcompletenessreport(productcode_ = 440799)
+    createcompletenessreport(productcode_ = 440710)
+    # Use the template in development before package is build and select some years
+    createcompletenessreport(440799, beginyear = 2010, endyear = 2011, inputpath = "inst/templates")
+    # Use the createreportfromdb function with the template that will be exported with the package
     createreportfromdb("raw_flow_yearly", 440799, template = "completeness.Rmd",
                        outputdir = "reports/completeness/")
 
-    # Template used as a development version
-    createreportfromdb("raw_flow_yearly", 440799, inputpath = "docs/development/completeness/", template = "completeness_dev.Rmd", encoding = "latin1", outputdir = "docs/development/completeness/")
-
-    createreportfromdb("raw_flow_yearly", 440799,
-                       template = "completeness.Rmd", outputdir = directory,
-                       keep_tex = TRUE)
 #     pandoc: Cannot decode byte '\xfc': Data.Text.Encoding.Fusion.streamUtf8: Invalid UTF-8 stream
 #     Error: pandoc document conversion failed with error 1
 
@@ -214,11 +279,11 @@ if (FALSE){
     ####################### #
     # Discrepancies reports #
     ####################### #
+    creatediscrepancyreport(productcode_ = 440799, reporter_ = "Germany")
+    # Old way using only the createreport() functio
     load("data-raw/comtrade/440799.RData")
     swd99 <- renamecolumns(dtf, "comtrade", "efi")
     createreport(swd99, outputdir = directory, template = "discrepancies.Rmd")
-
-
 
 
     ############################### #

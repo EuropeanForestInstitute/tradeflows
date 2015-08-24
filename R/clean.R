@@ -605,7 +605,7 @@ We sacrificed a few seconds of execution time for an easier implementation.\n")
 #'  \item{Write validated flows to tablewrite}
 #' }
 #' @return TRUE if write to db succesded, otherwise return FALSE
-#' @param productcode_ code of the product trade flows to be validated
+#' @param productcode code of the product trade flows to be validated
 #' @param tableread name of the table to read from
 #' @param tablewrite name of the table to write to (all rows for productcode
 #' will be deleted in this table before writing)

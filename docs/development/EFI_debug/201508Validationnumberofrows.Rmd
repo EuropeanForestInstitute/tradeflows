@@ -1,0 +1,104 @@
+---
+title: "Country name encoding in utf-8 only"
+author: "Paul Rougieux"
+date: "26/02/2015"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=TRUE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+
+## Simo's message from August 10
+Simo:
+
+> the first validation did not produce same number of rows:
+
+> 37415 rows in the raw table became 33280 rows in the validated table.
+
+> The attachment is that raw table.
+
+## Investigating fuel wood data
+I renamed "raw_flow_yearly" to "raw_flow_fuelwood" and 
+Loaded the raw table into Mysql with the command:
+```
+cat raw_flow_fuelwood.sql | mysql -u paul -p tradeflows
+```
+
+```{r}
+fw <- readdbtbl("raw_flow_fuelwood")
+fwprod <- fw %>% group_by(productcode) %>%
+    summarise(nrow = n()) %>% 
+    arrange(desc(nrow)) %>% data.frame()
+fwprod %>% kable
+# Are there duplicates?
+fwdall <- fw %>% collect()
+findduplicatedflows(fwdall)
+```
+
+## Cleaning fuel wood data
+```{r}
+# Add column to the column definitions to avoid complains
+column_names$raw_flow_fuelwood <- column_names$raw_flow_yearly
+# Clean one of the product in this table
+cleandbproduct(440130, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+cleandbproduct(440110, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+cleandbproduct(440122, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+cleandbproduct( 440121, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+cleandbproduct( 440320, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+cleandbproduct(440290, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+cleandbproduct(440200, tableread =  "raw_flow_fuelwood", tablewrite = "validated_flow_yearly")
+```
+
+## Compare number of rows in the raw and validated datasets
+```{r}
+fwraw <- readdbtbl("raw_flow_fuelwood") %>%
+    group_by(productcode) %>%
+    summarise(raw_lines = n()) %>% 
+    arrange(desc(raw_lines)) %>% data.frame()
+
+fwvalidated <- readdbtbl("validated_flow_yearly") %>%
+    filter(productcode %in% fwraw$productcode) %>%
+    group_by(productcode) %>%
+    summarise(validated_lines = n()) %>% 
+    arrange(desc(validated_lines)) %>% data.frame() %>%
+    merge(fwraw)
+fwvalidated %>% kable
+
+```
+
+| productcode|  nrow|
+|-----------:|-----:|
+|      440130| 13763|
+|      440110|  7317|
+|      440122|  7232|
+|      440121|  4968|
+|      440320|  1507|
+|      440290|  1379|
+|      440200|  1249|
+
+
+no reim port and re export
+```{r}
+readdbtbl("raw_flow_fuelwood") %>%
+    filter(flow %in% c("Import","Export")) %>%
+    group_by(productcode) %>%
+    summarise(raw_lines = n()) %>% 
+    arrange(desc(raw_lines)) %>% data.frame()
+
+
+``` 
+
+

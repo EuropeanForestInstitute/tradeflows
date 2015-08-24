@@ -7,14 +7,14 @@
 cleandbproduct(productcode, tableread, tablewrite, ...)
 }
 \arguments{
+\item{productcode}{code of the product trade flows to be validated}
+
 \item{tableread}{name of the table to read from}
 
 \item{tablewrite}{name of the table to write to (all rows for productcode
 will be deleted in this table before writing)}
 
 \item{...}{further arguments passed to the clean function}
-
-\item{productcode_}{code of the product trade flows to be validated}
 }
 \value{
 TRUE if write to db succesded, otherwise return FALSE

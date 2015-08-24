@@ -31,6 +31,8 @@ library(knitr)
 
 
 ```{r prepare_completeness_table, eval=TRUE}
+message("You can now develop reports directly in the inst/templates folder !!!")
+message("There is a way to generate them without building the package by specifying the template inputpath")
 tfdata <- readdbproduct(440799, "raw_flow_yearly")
 productcodeinreport <- 440799
 
