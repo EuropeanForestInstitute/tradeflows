@@ -157,6 +157,7 @@ createreportfromdb <- function(tableread,
 #' createcountryreport("China", outputdir = "/tmp")
 #' }
 #' @export
+#' message(place tfdata into theis function)
 createoverviewreport <- function(country,
                                  template = "overview.Rmd",
                                  outputdir = "reports/overview", ...){
@@ -215,14 +216,17 @@ createcompletenessreport <- function(productcode_,
 #' @examples
 #'\dontrun{
 #' creatediscrepancyreport(440799, "Cameroon", outputdir = "reports/discrepancies")
+#' creatediscrepancyreport(440710, "Thailand", beginyear = 2010, endyear = 2012)
 #' }
 #' @export
 creatediscrepancyreport <- function(productcode_, reporter_,
+                                    beginyear = 0, endyear = 9999,
                                     template =  "discrepancy.Rmd",
                                     outputdir = "reports/discrepancies",
                                     toc = FALSE, ...){
     dtf <- readdbtbl("raw_flow_yearly") %>%
         filter(productcode == productcode_ &
+                   year >= beginyear & year <= endyear &
                    (reporter == reporter_ | partner == reporter_)) %>%
         collect
     createreport(tfdata = dtf,

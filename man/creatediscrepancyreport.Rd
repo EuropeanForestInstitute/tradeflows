@@ -4,7 +4,8 @@
 \alias{creatediscrepancyreport}
 \title{Create a discrepancy report}
 \usage{
-creatediscrepancyreport(productcode_, reporter_, template = "discrepancy.Rmd",
+creatediscrepancyreport(productcode_, reporter_, beginyear = 0,
+  endyear = 9999, template = "discrepancy.Rmd",
   outputdir = "reports/discrepancies", toc = FALSE, ...)
 }
 \arguments{
@@ -20,6 +21,7 @@ Create a discrepancy report
 \examples{
 \dontrun{
 creatediscrepancyreport(440799, "Cameroon", outputdir = "reports/discrepancies")
+creatediscrepancyreport(440710, "Thailand", beginyear = 2010, endyear = 2012)
 }
 }
 
