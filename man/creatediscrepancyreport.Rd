@@ -9,11 +9,11 @@ creatediscrepancyreport(productcode_, reporter_, beginyear = 0,
   outputdir = "reports/discrepancies", toc = FALSE, ...)
 }
 \arguments{
+\item{reporter_}{one single country name}
+
 \item{...}{arguments passed to \code{\link{createreport}()}}
 
 \item{productcode}{vector of product codes}
-
-\item{reporter}{one single country name}
 }
 \description{
 Create a discrepancy report

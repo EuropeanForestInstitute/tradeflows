@@ -2,13 +2,13 @@
 % Please edit documentation in R/report.R
 \name{createoverviewreport}
 \alias{createoverviewreport}
-\title{Create reports for all products in the given country}
+\title{Create reports for all products in the given reporter country}
 \usage{
-createoverviewreport(country, template = "overview.Rmd",
-  outputdir = "reports/overview", ...)
+createoverviewreport(reporter_, beginyear = 0, endyear = 9999,
+  template = "overview.Rmd", outputdir = "reports/overview", ...)
 }
 \arguments{
-\item{country}{}
+\item{reporter_}{}
 
 \item{template}{name of the template file.}
 
@@ -24,7 +24,7 @@ to determine in which folder the template is located.
 }
 \examples{
 \dontrun{
-createcountryreport("China", outputdir = "/tmp")
+createoverviewreport("China", outputdir = "/tmp")
 }
 }
 

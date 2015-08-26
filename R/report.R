@@ -3,13 +3,13 @@
 # Therefore functions fullfillthe data requirements of each report.
 #
 # createreport() and createreportfromdb() are generic function with no predefined template.
-# createcompletenessreport(), creatediscrepancyreport() and createcountryreport()
+# createcompletenessreport(), creatediscrepancyreport() and createoverviewreport()
 # are specific functions with a default template.
 # The table below illustrates the number countries the number of products to be expected
 # in each report type.
 # |Report name  |Number of countries | Number of products | function                 |
 # |------------:|:-------------------|--------------------|--------------------------|
-# |overview     | one                | many               | createcountryreport      |
+# |overview     | one                | many               | createoverviewreport      |
 # |completeness | many               | one                | createcompletenessreport |
 # |discrepancy  | one                | one                | creatediscrepancyreport  |
 
@@ -142,38 +142,67 @@ createreportfromdb <- function(tableread,
 }
 
 
-#' Create reports for all products in the given country
+#' Create reports for all products in the given reporter country
 #'
 #' The location of the report can be changed by changing the outputdir parameter.
 #' See arguments of \code{\link{createreport}()}
 #' to determine in which folder the template is located.
-#' @param country
+#' @param reporter_
 #' @param template name of the template file.
 #' @param outputdir path where report will be saved, relative to the working directory
 #' or an absolute path.
 #' @param ... further arguments passed to \code{\link{createreport}()}
 #' @examples
 #'\dontrun{
-#' createcountryreport("China", outputdir = "/tmp")
+#' createoverviewreport("China", outputdir = "/tmp")
 #' }
 #' @export
-#' message(place tfdata into theis function)
-createoverviewreport <- function(country,
+createoverviewreport <- function(reporter_,
+                                 beginyear = 0, endyear = 9999,
                                  template = "overview.Rmd",
                                  outputdir = "reports/overview", ...){
-    # Convert country names could be a DB option in setdatabaseconfig
-    createreport(NULL,
+
+    message("Trade values are the same in raw flow and validated flow")
+    message("The table read will have to be changed to validated_flow to access quantities")
+
+    # If I use the readdbtbl function to join the 2 tables, the following error will be returned
+    # Error: x and y don't share the same src. Set copy = TRUE to copy y into x's source (this may be time consuming).
+    # Therefore I create the connection object here so that it can be shared between the two tbl() objects.
+    setdatabaseconfig(silent=TRUE)
+    db <- getOption("tradeflowsDB")
+    DBread <- src_mysql(user=db["user"], host=db["host"],
+                        password=db["password"], dbname=db["dbname"])
+
+    # Load trade flow data --------------------------------------------------------
+    tfdata <- tbl(DBread, "raw_flow_yearly") %>%
+        filter(reporter == reporter_&
+                   year >= beginyear & year <= endyear) %>%
+        select(year, reporter, partner, partnercode,
+               flow, flag, productcode, tradevalue, quantity)
+
+    # Load itto product names --------------------------------------------------------
+    message("Discuss with Simo and Janne to change column names in the product work table, rename them as such: (product = name_short, productcode = code) ")
+    productitto <- tbl(DBread, "product_work") %>%
+        filter(nomenclature == "HS12") %>%
+        select(product = name_short, productcode = code)
+
+    # Join tfdata and itto product names --------------------------------------------------
+    # both are dplyr::tbl objects the statements will be converted to SQL
+    tfdata <- tfdata %>%
+        left_join(productitto) %>%  # joining late in the pipe, after filter is faster
+        collect()
+
+    # Report
+    createreport(tfdata,
                  template = template,
                  outputdir = outputdir,
-                 reporterinreport = country, ...)
+                 reporterinreport = reporter_, ...)
 }
-
 
 
 #' Create the completeness report
 #'
-#' @param productcode vector of product codes
-#' @param reporter one single country name
+#' @param productcode_ vector of product codes
 #' @param ... arguments passed to \code{\link{createreport}()}
 #' @examples
 #'\dontrun{
@@ -188,6 +217,8 @@ createcompletenessreport <- function(productcode_,
     #### Load data ####
     rawtbl <- readdbtbl("raw_flow_yearly") %>%
         # dplyr verbs executed on tbl objects are translated to SQL statements
+        # have to use this underscore trick because of the non standard evaluation
+        # see vignette("nse") for more information on this
         filter(productcode == productcode_ &
                    year >= beginyear & year <= endyear)
     dtf <- rawtbl %>% collect %>%
@@ -211,7 +242,7 @@ createcompletenessreport <- function(productcode_,
 #' Create a discrepancy report
 #'
 #' @param productcode vector of product codes
-#' @param reporter one single country name
+#' @param reporter_ one single country name
 #' @param ... arguments passed to \code{\link{createreport}()}
 #' @examples
 #'\dontrun{
@@ -245,7 +276,7 @@ if (FALSE){
     # Overview reports     #
     ###################### #
     # Use the default template built within the package
-    createoverviewreport(country = "Italy")
+    createoverviewreport(reporter_ = "Italy")
     # Use the template in development for quick itteration without package building
 
 

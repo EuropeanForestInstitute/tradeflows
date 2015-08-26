@@ -9,11 +9,9 @@ createcompletenessreport(productcode_, beginyear = 0, endyear = 9999,
   toc = TRUE, ...)
 }
 \arguments{
+\item{productcode_}{vector of product codes}
+
 \item{...}{arguments passed to \code{\link{createreport}()}}
-
-\item{productcode}{vector of product codes}
-
-\item{reporter}{one single country name}
 }
 \description{
 Create the completeness report

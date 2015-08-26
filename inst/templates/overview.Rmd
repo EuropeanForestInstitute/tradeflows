@@ -21,58 +21,21 @@ opts_chunk$set(echo=FALSE, message=FALSE)
 
 ```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
 ######### #
-# ! This chunk is used for development only,
-# remove it or change eval=FALSE.
+# ! This chunk is used for development purposes only, keep eval=FALSE.
 ######### #
 # Test countries: Cameroon, Ghana, Indonesia
-message("Using the development template in ",
-        "inputpath = 'inst/templates/'")
-country <- "China"
-createcountryreport(country, inputpath = "inst/templates/")
 #----------------------------------------------------------
-message("Using the package template in ",
-        'inputpath = system.file("templates", package="tradeflows")')
-message("Build the package to update this package template")
-createcountryreport(country)
+
 ```
 
 
-```{r}
-message("Trade values are the same in raw flow and validated flow")
-message("The table read will have to be changed to validated_flow to access quantities")
 
-# If I use the readdbtbl function to join the 2 tables, the following error will be returned
-# Error: x and y don't share the same src. Set copy = TRUE to copy y into x's source (this may be time consuming).
-# Therefore I create the conenction object here so that it can be shared between the two tbl() objects.
-setdatabaseconfig(silent=TRUE)
-db <- getOption("tradeflowsDB")
-DBread <- src_mysql(user=db["user"], host=db["host"],
-                    password=db["password"], dbname=db["dbname"])
-tfdata <- tbl(DBread, "raw_flow_yearly")
-
-# product names itto -------------------------------------------------------- 
-message("Discuss with Simo and Janne to change column names in the product work table, rename them as such: (product = name_short, productcode = code) ")
-productitto <- tbl(DBread, "product_work") %>%
-    filter(nomenclature == "HS12") %>%
-    select(product = name_short, productcode = code) 
-
-# Join itto product names --------------------------------------------------
-tfdata <- tfdata %>% 
-    filter(reporter == reporterinreport) %>% 
-    select(year, reporter, partner, partnercode, flow, flag, productcode, tradevalue, quantity) %>%
-    left_join(productitto) %>%  # joining late in the pipe, after filter is faster
-    collect()
-
+```{r summary}
 tfsummarised <- tfdata %>%
     group_by(year, reporter, partner, partnercode, flow, product) %>%
     summarise(tradevalue = sum(tradevalue)) %>%
     collect()
 
-# Collect itto product codes
-productitto <- tbl(DBread, "product_work") %>%
-    filter(nomenclature == "HS12") %>%
-    rename(product = name_short, productcode = code) %>%
-    collect()
 ```
 
 
@@ -126,50 +89,6 @@ description <- function(productcodes){
 }
 ```
 
-```{r eval=FALSE}
-# old product description based on the itto table
-#---------------------------------------------------
-#' Return the index of the last common character in a character vector
-#' example use 
-# blabla <- c("I like this", "I like that")
-# lastcommoncharacter(blabla) 
-# substring(blabla[1], 1, lastcommoncharacter(blabla) )
-# substring(blabla, lastcommoncharacter(blabla) )
-#' @param x character vector
-lastcommoncharacter <- function(x){
-    xsplit <- strsplit(x, NULL)
-    # logsplit[[1]][1] 
-    a <- NULL
-    n <- 1
-    while(sum(a != a[1]) == 0){
-            a <- sapply(xsplit,function(x) paste(x[1:n], collapse=""))
-            n <- n +1
-    }
-    return(n-2)
-}
-
-#' Product description
-#' Use:
-#' description(c(440799, 440795))
-description_from_itto_table <- function(productcodes){
-    message("the issue is that long descriptions were truncated in this table")
-    descr <- productitto %>% 
-        filter(productcode %in% productcodes) %>% 
-        select(productcode, description) %>%
-        mutate(description = stringr::str_trim(description)) %>%
-        unique()
-    message("Try to skip common substring from the description")
-    cat("Common part of the product ")
-    n <- lastcommoncharacter(descr$description)
-    cat(substring(descr$description[1], 1, n))
-    descr$description <- substring(descr$description, n)
-    # Individual codes and description
-    for(code in descr$productcode){
-        cat("\n\n__",code,":__ ", sep="")
-        cat(descr$description[descr$productcode == code])
-    }
-}
-```
 
 \newpage
 
