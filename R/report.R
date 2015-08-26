@@ -154,7 +154,7 @@ createreportfromdb <- function(tableread,
 #' @param ... further arguments passed to \code{\link{createreport}()}
 #' @examples
 #'\dontrun{
-#' createoverviewreport("China", outputdir = "/tmp")
+#' createoverviewreport("China", beginyear = 2010, endyear = 2013, outputdir = "/tmp")
 #' }
 #' @export
 createoverviewreport <- function(reporter_,
