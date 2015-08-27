@@ -148,6 +148,7 @@ createreportfromdb <- function(tableread,
 #' See arguments of \code{\link{createreport}()}
 #' to determine in which folder the template is located.
 #' @param reporter_
+#' @param productcode_ vector of product code, NULL by default to generate the report for all products
 #' @param template name of the template file.
 #' @param outputdir path where report will be saved, relative to the working directory
 #' or an absolute path.
@@ -155,12 +156,15 @@ createreportfromdb <- function(tableread,
 #' @examples
 #'\dontrun{
 #' createoverviewreport("China", beginyear = 2010, endyear = 2013, outputdir = "/tmp")
+#' createoverviewreport("China", beginyear = 2010, endyear = 2013, inputpath = "inst/templates")
 #' }
 #' @export
 createoverviewreport <- function(reporter_,
+                                 productcode_ = NULL,
                                  beginyear = 0, endyear = 9999,
                                  template = "overview.Rmd",
-                                 outputdir = "reports/overview", ...){
+                                 outputdir = "reports/overview",
+                                 dataonly = FALSE, ...){
 
     message("Trade values are the same in raw flow and validated flow")
     message("The table read will have to be changed to validated_flow to access quantities")
@@ -192,7 +196,17 @@ createoverviewreport <- function(reporter_,
         left_join(productitto) %>%  # joining late in the pipe, after filter is faster
         collect()
 
-    # Report
+    # Select only productcode
+    if(!is.null(productcode_)){
+        tfdata <- tfdata %>% filter(productcode %in% productcode_)
+    }
+
+    # Return the data mostly for development purposes
+    if(dataonly){
+        return(tfdata)
+    }
+
+    # Create the report
     createreport(tfdata,
                  template = template,
                  outputdir = outputdir,

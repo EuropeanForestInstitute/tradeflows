@@ -25,21 +25,30 @@ opts_chunk$set(echo=FALSE, message=FALSE)
 ######### #
 # Test countries: Cameroon, Ghana, Indonesia
 #----------------------------------------------------------
+reporterinreport <- "France"
+reporterinreport <- "Germany"
+tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE)
 
+unique(tfdata$product)
+fr %>% group_by(product) %>%
+    summarise(tradevalue = sum(tradevalue),
+              quantity = sum(quantity)) %>% data.frame() %>%
+    arrange(tradevalue) #%>% kable
 ```
 
 
 
-```{r summary}
+```{r preparedata}
+# Cosmetic, shorten a few long itto product name
+tfdata <- tfdata %>%
+    mutate(product = gsub("OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ",
+                          "", product))
+
 tfsummarised <- tfdata %>%
     group_by(year, reporter, partner, partnercode, flow, product) %>%
     summarise(tradevalue = sum(tradevalue)) %>%
     collect()
 
-```
-
-
-```{r preparedata}
 # 100 largest trade flows
 largetf <- tfdata %>% filterworldeu28 %>% data.frame() %>% # remove grouping
     arrange(desc(tradevalue)) %>% head(100)
@@ -89,19 +98,17 @@ description <- function(productcodes){
 }
 ```
 
-
-\newpage
-
-## Logs 
-```{r results='asis', fig.height=7, fig.width=12}
+ 
+```{r productplot}
 #' @param product_ the itto name of a product
 productplot <- function(product_){
     # Prepare this object first otherwise query is very slow
     partnercodes <- largepartners(product_)$partnercode    
     # Data
     dtf <- filter(tfdata, product == product_ & 
-                      partnercode %in% partnercodes) %>%
-        mutate(partner = stringr::str_wrap(partner, width = 14) )
+                      partnercode %in% partnercodes) 
+    # might fail for some products
+    dtf <- mutate(dtf, partner = stringr::str_wrap(partner, width = 14))
     p <- ggplot(dtf,
                 aes(x = as.numeric(year),
                     y = tradevalue,
@@ -116,30 +123,35 @@ productplot <- function(product_){
     try(print(p))
     try(description(unique(dtf$productcode)))
 }
- 
-productplot("LOGS")
+
+
+#' Function to return an error while plotting
+#' tryCatch(stop(e), error = ploterror)
+ploterror <- function(e) {
+        cat("\nThere was an error while drawing the plot :\n")
+        print(e)
+}
+
 ```
 
-\newpage
 
-## Sawnwood
-```{r results='asis', fig.height=7, fig.width=12}
-productplot("SAWNWOOD")
-```
+```{r looponittoproducts, results='asis', fig.height=7, fig.width=12}
+for (product_ in unique(tfdata$product)){
+    cat("\n##",product_,"\n\n")
+    tryCatch(productplot(product_),
+             error = ploterror)
+    cat("\n\\newpage\n\n")
+}
 
-
-\newpage
-
-## Furniture
-
-```{r results='asis', fig.height=7, fig.width=12}
-productplot("WOODEN FURNITURE")
-
-## Other products groups that could be added for separate plots
-## See report on Indonesia's industry
-## Furniture
-## Wood panels
-## Pulp and paper
+# There is an issue for some products 
+# Error: unsupported type for column 'partner' (NILSXP, classes = NULL) 
+# It seems to happen when "Côte d'Ivoire" is a partner, probably due to differences in encoding
+if (FALSE){
+    filterpaper <- "OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: FILTER PAPER AND PAPERBOARD , READY FOR USE"
+    productplot(filterpaper)
+    filterpaperdata <- filter(tfdata, product == filterpaper)
+    unique(filterpaperdata$partner)
+}
 ```
 
 

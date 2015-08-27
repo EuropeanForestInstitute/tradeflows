@@ -4,11 +4,14 @@
 \alias{createoverviewreport}
 \title{Create reports for all products in the given reporter country}
 \usage{
-createoverviewreport(reporter_, beginyear = 0, endyear = 9999,
-  template = "overview.Rmd", outputdir = "reports/overview", ...)
+createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
+  endyear = 9999, template = "overview.Rmd",
+  outputdir = "reports/overview", dataonly = FALSE, ...)
 }
 \arguments{
 \item{reporter_}{}
+
+\item{productcode_}{vector of product code, NULL by default to generate the report for all products}
 
 \item{template}{name of the template file.}
 
@@ -24,7 +27,8 @@ to determine in which folder the template is located.
 }
 \examples{
 \dontrun{
-createoverviewreport("China", outputdir = "/tmp")
+createoverviewreport("China", beginyear = 2010, endyear = 2013, outputdir = "/tmp")
+createoverviewreport("China", beginyear = 2010, endyear = 2013, inputpath = "inst/templates")
 }
 }
 
