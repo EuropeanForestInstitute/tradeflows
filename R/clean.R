@@ -293,7 +293,8 @@ choosereporterorpartner <- function(dtf,
 #' @param dtf data frame
 #' @param choice a data frame of choice between reporter and partner
 replacebypartnerquantity <- function(dtf, choice){
-    choice <- choice %>% select(reportercode, partnercode, favorpartner)
+    choice <- choice %>%
+        select(reportercode, partnercode, favorpartner)
     dtf <- merge(dtf, choice, all.x=TRUE)
     # cut the dataframe between the lines which favor partner and the others
     dtffavor <- dtf %>% filter(favorpartner) %>%
@@ -389,6 +390,12 @@ removeduplicatedflows <- function(dtf){
 }
 
 
+#' Swap reporter and partner
+#' @param dtf data frame containing trade flow data
+swapreporterpartner <- function(dtf){
+
+}
+
 
 #' Add volume and value of the partner flow
 #'
@@ -414,10 +421,12 @@ addpartnerflow <- function(dtf){
     # and in the same order (remove NA values from the check)
     stopifnot(dtf$quantity[!is.na(dtf$quantity)] ==
                   swap$quantity[!is.na(swap$quantity)])
-    # Merge
+    # Add quantity_partner and tradevalue_partner to existing flows
     dtf <- merge(dtf, swap, all.x=TRUE, suffixes = c("", "partner"),
                  by = c("reportercode", "partnercode",
                         "productcode", "flow", "period"))
+    # For flows that are missing add
+
     dtf$quantityreporter <- dtf$quantity
     return(dtf)
 }

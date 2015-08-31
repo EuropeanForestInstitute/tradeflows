@@ -1,0 +1,27 @@
+---
+title: "Country name encoding in utf-8 only"
+author: "Paul Rougieux"
+date: "26/02/2015"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=TRUE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+# Number of missing flows
+```{r}
+
+```
+

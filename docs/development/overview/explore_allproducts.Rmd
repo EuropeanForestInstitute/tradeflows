@@ -1,0 +1,35 @@
+---
+title: "Forest produts trade in ` reporterinreport`"
+author: "Paul Rougieux"
+date: "12/05/2015"
+output: 
+  pdf_document:
+    fig_height: 7
+    fig_width: 12
+    toc: yes
+---
+
+
+```{r library, echo=FALSE, warning=FALSE, message=FALSE}
+message("you can now develop directly in the inst/tempalte dir, see instruction to compile the pdf in the file there")
+library(dplyr)
+library(tradeflows)
+library(knitr)
+library(ggplot2)
+options(digits = 4) #  Number of digits in knitr tables
+opts_chunk$set(echo=FALSE, message=FALSE)
+```
+
+
+### Product codes at 2, 4 and 6 digit level
+```{r}
+sixdigits <- readdbtbl("raw_flow_yearly") %>%
+    select(productcode) %>%
+    collect() %>% unique()
+sixdigits <- sixdigits$productcode
+cat("4 digits")
+unique(round(sixdigits / 100))
+cat("2 digits")
+unique(round(sixdigits / 10000))
+```
+
