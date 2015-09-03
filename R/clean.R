@@ -186,6 +186,126 @@ extractconversionfactors <- function(dtf, geoaggregation="region",
 }
 
 
+
+#' Change some of the column types
+#'
+#'  Change to factors for easy plotting
+#'  Change to large int or to floating point for some computations
+#' @param dtf data frame
+#' @export
+changecolumntype <- function(dtf){
+    dtf$flag <- as.factor(dtf$flag)
+    return(dtf)
+}
+
+
+#' Return a dataframe of duplicated flows
+#'
+#' @param dtf a dataframe contiaining trade flows, the funciton
+#'  tests for duplicated reportercode, partnercode, productcode, flow, period
+#' @export
+findduplicatedflows <- function(dtf){
+    # This checks only the selected columns in dtf
+    dtf$duplicate <- duplicated(select(dtf, reportercode, partnercode,
+                                       productcode, flow, period))
+    filter(dtf, duplicate)
+}
+
+
+#' Remove duplicated flows
+#'
+#' Print the number of duplicated entries and remove them if needed.
+#' The function tests for all duplicated columns
+#' (contrary to findduplicatedflows() which looks only for some columns).
+#' This might be an issue if 2 flows have duplicated
+#' reportercode, partnercode, productcode, flow, period but
+#' their quantity column is different.
+#' @param dtf a dataframe contiaining trade flows,
+#' @export
+removeduplicatedflows <- function(dtf){
+    duplicatedflows <- findduplicatedflows(dtf)
+    if(nrow(duplicatedflows)>0){
+        message("There were duplicated lines for the following reporters:")
+        message(unique(duplicatedflows$reporter))
+        # This checks for all columns in dtf
+        return(unique(dtf))
+    }
+    return(dtf)
+}
+
+
+#' Swap reporter and partner
+#' @param dtf data frame containing trade flow data
+#' @param column column names to select
+swapreporterpartner <- function(dtf, column=NULL){
+    dtf %>%
+        rename(partnercode = reportercode,
+               reportercode = partnercode) %>%
+        select(reportercode, partnercode,
+               productcode, flow, period,
+               quantity, tradevalue) %>% #Add weight, tradevalue here if you want them from the partner
+        mutate(flow = gsub("Import","aaaaaaa",flow),
+               flow = gsub("Export","Import",flow),
+               flow = gsub("aaaaaaa","Export",flow))
+}
+
+
+#' Add volume and value of the partner flow
+#'
+#' For the same country, period, item, add the corresponding partner flow.
+#'@param dtf data frame containing trade flow data.
+#'   With column names following the efi convention.
+#'@export
+addpartnerflow <- function(dtf){
+    # Warning for duplicated entries
+    if(nrow(findduplicatedflows(dtf))>0){
+        stop("Remove duplicated entries before adding partner flows")
+    }
+    swap <- dtf %>% swapreporterpartner
+    # Check that values in the dtf and swap tables are all there
+    # and in the same order (remove NA values from the check)
+    stopifnot(dtf$quantity[!is.na(dtf$quantity)] ==
+                  swap$quantity[!is.na(swap$quantity)])
+    # Add quantity_partner and tradevalue_partner to existing flows
+    dtf <- merge(dtf, swap, all.x=TRUE, suffixes = c("", "partner"),
+                 by = c("reportercode", "partnercode",
+                        "productcode", "flow", "period"))
+    # For flows that are missing add
+
+    dtf$quantityreporter <- dtf$quantity
+    return(dtf)
+}
+
+
+#' Calculate discrepancies
+#'
+#' The plan is to use this as needed before plotting
+#' but not to store it in the enddata
+#' as it is for plotting with ggplot,
+#' it might work best on a reshaped data frame
+#'
+#'@param dtf data frame reshaped in long format.
+#'   containing trade flow data.
+#'   With column names following the efi convention.
+#' @export
+calculatediscrepancies <- function(dtf){
+    require(reshape2)
+    # Reshape data frame in long format before calculation
+    # Reshape in wide format before returning output dtf
+    #     ids <- names(dtf)[!names(dtf) %in%
+    #                           c("weight", "quantity", "tradevalue",
+    #                             "weightpartner", "quantitypartner",
+    #                             "tradevaluepartner")]
+    #     stopifnot(length(ids) + 6 == length(names(dtf)))
+    dtf %>% #melt(dtf, id=ids)
+        mutate(discrq = quantitypartner - quantity,
+               discrv = tradevaluepartner - tradevalue,
+               reldiscrq = signif((quantitypartner - quantity)/
+                                            (quantity + quantitypartner),2),
+               reldiscrv = signif((tradevalue - tradevaluepartner)/
+                                            (tradevalue + tradevaluepartner),2))
+}
+
 #' Estimate quantity
 #'
 #' Estimate missing quantity
@@ -235,19 +355,29 @@ estimatequantity <- function(dtf, price, conversionfactor){
         mutate(quantity_up = tradevalue / medianprice,
                havequantity = !is.na(quantity))
 
-    ### Split flows which have a quantity from those which don't
-    # Replace quantity by quantity_cf or quantity_up
+    # Split flows which have a quantity from those which don't
     dtfq <- dtf %>% filter(!is.na(quantity))
-    dtfnoqw <- dtf %>% filter(is.na(quantity) & !is.na(weight)) %>%
-        mutate(quantity = quantity_cf,
-               flag = flag + 10)
-    dtfnoqnow <- dtf %>% filter(is.na(quantity) & is.na(weight)) %>%
-        mutate(quantity = quantity_up,
-               flag = flag + 20)
+    dtfnoqw <- dtf %>% filter(is.na(quantity) & !is.na(weight))
+    dtfnoqnow <- dtf %>% filter(is.na(quantity) & is.na(weight))
+    # Replace quantity by quantity_cf or by quantity_up
+    dtfnoqw <- dtfnoqw %>% mutate(quantity = quantity_cf,
+                                  flag = flag + 10)
+    dtfnoqnow <- dtfnoqnow %>% mutate(quantity = quantity_up,
+                                      flag = flag + 20)
     stopifnot(nrow(dtf)==nrow(dtfq) + nrow(dtfnoqw) + nrow(dtfnoqnow))
+    # A function to calculate the percentage change on world imports and exports
+    message("Add a function changeflowmessage(dtf, dtfsplit) which will return a character string about both trade flows. This function could be defined in the main scope and reused in other parts of the workflow. Or maybe not because the quantity is not empty then.")
+    changeflow <- function(dtfsplit, flow){
+        signif(sum(dtfsplit$quantity[dtfsplit$flow == flow], na.rm=TRUE) /
+                   sum(dtf$quantity[dtf$flow == flow], na.rm = TRUE)*100,2)
+    }
     # Messages about the number of rows affected
     nrow(dtf) %>% message(" rows in the dataset")
     nrow(dtfnoqw) %>% message(" rows where quantity was not available but weight was available")
+    message("Using a conversion factor to estimate quantity from weight ",
+            "changed world exports by ", changeflow(dtfnoqw, "Export"),"%",
+            " and world imports by ", changeflow(dtfnoqw, "Import"), "%",
+            " (positive values imply an increase)")
     nrow(dtfnoqnow) %>% message(" rows where neither quantity nor weight were available")
     # Put data frames back together
     dtf <- rbind(dtfq, dtfnoqw, dtfnoqnow)
@@ -343,122 +473,11 @@ shaveprice <- function(dtf){
 }
 
 
-#' Change some of the column types
+#' Add the partner flow when quantity is missing
+#' @param dtf a data frame containing world trade flows for one product
 #'
-#'  Change to factors for easy plotting
-#'  Change to large int or to floating point for some computations
-#' @param dtf data frame
-#' @export
-changecolumntype <- function(dtf){
-    dtf$flag <- as.factor(dtf$flag)
-    return(dtf)
-}
+addmissingpartnerquantity <- function(dtf){
 
-
-#' Return a dataframe of duplicated flows
-#'
-#' @param dtf a dataframe contiaining trade flows, the funciton
-#'  tests for duplicated reportercode, partnercode, productcode, flow, period
-#' @export
-findduplicatedflows <- function(dtf){
-    # This checks only the selected columns in dtf
-    dtf$duplicate <- duplicated(select(dtf, reportercode, partnercode,
-                                       productcode, flow, period))
-    filter(dtf, duplicate)
-}
-
-
-#' Remove duplicated flows
-#'
-#' Print the number of duplicated entries and remove them if needed.
-#' The function tests for all duplicated columns
-#' (contrary to findduplicatedflows() which looks only for some columns).
-#' This might be an issue if 2 flows have duplicated
-#' reportercode, partnercode, productcode, flow, period but
-#' their quantity column is different.
-#' @param dtf a dataframe contiaining trade flows,
-#' @export
-removeduplicatedflows <- function(dtf){
-    duplicatedflows <- findduplicatedflows(dtf)
-    if(nrow(duplicatedflows)>0){
-        message("There were duplicated lines for the following reporters:")
-        message(unique(duplicatedflows$reporter))
-        # This checks for all columns in dtf
-        return(unique(dtf))
-    }
-    return(dtf)
-}
-
-
-#' Swap reporter and partner
-#' @param dtf data frame containing trade flow data
-swapreporterpartner <- function(dtf){
-
-}
-
-
-#' Add volume and value of the partner flow
-#'
-#' For the same country, period, item, add the corresponding partner flow.
-#'@param dtf data frame containing trade flow data.
-#'   With column names following the efi convention.
-#'@export
-addpartnerflow <- function(dtf){
-    # Warning for duplicated entries
-    if(nrow(findduplicatedflows(dtf))>0){
-        stop("Remove duplicated entries before adding partner flows")
-    }
-    swap <- dtf %>%
-        rename(partnercode = reportercode,
-               reportercode = partnercode) %>%
-        select(reportercode, partnercode,
-               productcode, flow, period,
-               quantity, tradevalue) %>% #Add weight, tradevalue here if you want them from the partner
-        mutate(flow = gsub("Import","aaaaaaa",flow),
-               flow = gsub("Export","Import",flow),
-               flow = gsub("aaaaaaa","Export",flow))
-    # Check that values in the dtf and swap tables are all there
-    # and in the same order (remove NA values from the check)
-    stopifnot(dtf$quantity[!is.na(dtf$quantity)] ==
-                  swap$quantity[!is.na(swap$quantity)])
-    # Add quantity_partner and tradevalue_partner to existing flows
-    dtf <- merge(dtf, swap, all.x=TRUE, suffixes = c("", "partner"),
-                 by = c("reportercode", "partnercode",
-                        "productcode", "flow", "period"))
-    # For flows that are missing add
-
-    dtf$quantityreporter <- dtf$quantity
-    return(dtf)
-}
-
-
-#' Calculate discrepancies
-#'
-#' The plan is to use this as needed before plotting
-#' but not to store it in the enddata
-#' as it is for plotting with ggplot,
-#' it might work best on a reshaped data frame
-#'
-#'@param dtf data frame reshaped in long format.
-#'   containing trade flow data.
-#'   With column names following the efi convention.
-#' @export
-calculatediscrepancies <- function(dtf){
-    require(reshape2)
-    # Reshape data frame in long format before calculation
-    # Reshape in wide format before returning output dtf
-    #     ids <- names(dtf)[!names(dtf) %in%
-    #                           c("weight", "quantity", "tradevalue",
-    #                             "weightpartner", "quantitypartner",
-    #                             "tradevaluepartner")]
-    #     stopifnot(length(ids) + 6 == length(names(dtf)))
-    dtf %>% #melt(dtf, id=ids)
-        mutate(discrq = quantitypartner - quantity,
-               discrv = tradevaluepartner - tradevalue,
-               reldiscrq = signif((quantitypartner - quantity)/
-                                            (quantity + quantitypartner),2),
-               reldiscrv = signif((tradevalue - tradevaluepartner)/
-                                            (tradevalue + tradevaluepartner),2))
 }
 
 
