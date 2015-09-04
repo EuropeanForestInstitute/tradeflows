@@ -6,7 +6,8 @@
 \usage{
 creatediscrepancyreport(productcode_, reporter_, beginyear = 0,
   endyear = 9999, template = "discrepancy.Rmd",
-  outputdir = "reports/discrepancies", toc = FALSE, ...)
+  outputdir = "reports/discrepancies", tableread = "raw_flow_yearly",
+  toc = FALSE, ...)
 }
 \arguments{
 \item{reporter_}{one single country name}

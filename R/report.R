@@ -75,6 +75,7 @@ extractmetadata <- function(tfdata){
 createreport <- function(tfdata,
                          template,
                          fileprefix = NULL,
+                         filesuffix = NULL,
                          productcodeinreport = NULL,
                          reporterinreport = NULL,
                          inputpath = system.file("templates",
@@ -106,7 +107,8 @@ createreport <- function(tfdata,
     #         return(FALSE)
     #     }
     # Create the report file name
-    filename <- paste0(fileprefix, productcodeinreport, reporterinreport, ".pdf")
+    filename <- paste0(fileprefix, productcodeinreport,
+                       reporterinreport, filesuffix, ".pdf")
     tryCatch(rmarkdown::render(input = file.path(inputpath, template),
                                output_format = rmarkdown::pdf_document(keep_tex = keep_tex,
                                                                        toc = toc),
@@ -164,6 +166,7 @@ createoverviewreport <- function(reporter_,
                                  beginyear = 0, endyear = 9999,
                                  template = "overview.Rmd",
                                  outputdir = "reports/overview",
+                                 tableread = "raw_flow_yearly",
                                  dataonly = FALSE, ...){
 
     message("Trade values are the same in raw flow and validated flow")
@@ -178,7 +181,7 @@ createoverviewreport <- function(reporter_,
                         password=db["password"], dbname=db["dbname"])
 
     # Load trade flow data --------------------------------------------------------
-    tfdata <- tbl(DBread, "raw_flow_yearly") %>%
+    tfdata <- tbl(DBread, tableread) %>%
         filter(reporter == reporter_&
                    year >= beginyear & year <= endyear) %>%
         select(year, reporter, partner, partnercode,
@@ -205,12 +208,18 @@ createoverviewreport <- function(reporter_,
     if(dataonly){
         return(tfdata)
     }
+    # Change beginyear and endyear for use in the file name
+    if(beginyear == 0) beginyear <- ""
+    if(endyear == 9999) endyear <- ""
 
     # Create the report
     createreport(tfdata,
                  template = template,
                  outputdir = outputdir,
-                 reporterinreport = reporter_, ...)
+                 reporterinreport = reporter_,
+                 fileprefix = "overview",
+                 filesuffix = paste0(beginyear, endyear),
+                 ...)
 }
 
 
@@ -227,9 +236,10 @@ createcompletenessreport <- function(productcode_,
                                      beginyear = 0, endyear = 9999,
                                      template =  "completeness.Rmd",
                                      outputdir = "reports/completeness",
+                                     tableread  = "raw_flow_yearly",
                                      toc = TRUE, ...){
     #### Load data ####
-    rawtbl <- readdbtbl("raw_flow_yearly") %>%
+    rawtbl <- readdbtbl(tableread) %>%
         # dplyr verbs executed on tbl objects are translated to SQL statements
         # have to use this underscore trick because of the non standard evaluation
         # see vignette("nse") for more information on this
@@ -243,12 +253,18 @@ createcompletenessreport <- function(productcode_,
     # "Auto-disconnecting mysql connection (0, 3)"
     rm(rawtbl)
 
+    # Change beginyear and endyear for use in the file name
+    if(beginyear == 0) beginyear <- ""
+    if(endyear == 9999) endyear <- ""
+
     #### Create the report ####
     createreport(tfdata = dtf,
                  template = template,
                  productcode = productcode_,
                  outputdir = outputdir,
                  toc = toc,
+                 fileprefix = "completeness",
+                 filesuffix = paste0(beginyear, endyear),
                  ...)
 }
 
@@ -268,18 +284,26 @@ creatediscrepancyreport <- function(productcode_, reporter_,
                                     beginyear = 0, endyear = 9999,
                                     template =  "discrepancy.Rmd",
                                     outputdir = "reports/discrepancies",
+                                    tableread = "raw_flow_yearly",
                                     toc = FALSE, ...){
-    dtf <- readdbtbl("raw_flow_yearly") %>%
+    dtf <- readdbtbl(tableread) %>%
         filter(productcode == productcode_ &
                    year >= beginyear & year <= endyear &
                    (reporter == reporter_ | partner == reporter_)) %>%
         collect
+
+    # Change beginyear and endyear for use in the file name
+    if(beginyear == 0) beginyear <- ""
+    if(endyear == 9999) endyear <- ""
+
     createreport(tfdata = dtf,
                  template = template,
                  productcode = productcode_,
                  reporter = reporter_,
                  outputdir = outputdir,
                  toc = toc,
+                 fileprefix = "discrepancies",
+                 filesuffix = paste0(beginyear, endyear),
                  ...)
 }
 
