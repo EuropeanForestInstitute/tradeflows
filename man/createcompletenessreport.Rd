@@ -6,7 +6,7 @@
 \usage{
 createcompletenessreport(productcode_, beginyear = 0, endyear = 9999,
   template = "completeness.Rmd", outputdir = "reports/completeness",
-  toc = TRUE, ...)
+  tableread = "raw_flow_yearly", toc = TRUE, ...)
 }
 \arguments{
 \item{productcode_}{vector of product codes}

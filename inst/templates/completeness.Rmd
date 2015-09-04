@@ -136,7 +136,6 @@ for (r in unique(completeness$reporter)){
             filter(partner == r) %>%
             dcast(year + classification ~ flow, value.var="reporter", length))
     try(print(kable(npartnersbyothers,
-                    caption = paste("Number of countries who report trading with",
-                                    r))))
+                    caption = paste("Number of countries who report trading with",r))))
 }
 ``` 

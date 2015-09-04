@@ -1,7 +1,5 @@
 ---
 title: "Forest produts trade in `r reporterinreport`"
-author: "Paul Rougieux"
-date: "12/05/2015"
 output: 
   pdf_document:
     toc: yes
@@ -16,7 +14,6 @@ library(ggplot2)
 options(digits = 4) #  Number of digits in knitr tables
 opts_chunk$set(echo=FALSE, message=FALSE)
 ```
-
 
 
 ```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}

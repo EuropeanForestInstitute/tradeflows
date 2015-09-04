@@ -3,6 +3,8 @@ title: "Country name encoding in utf-8 only"
 author: "Paul Rougieux"
 date: "26/02/2015"
 output:
+  html_document:
+    toc: yes
   pdf_document:
     toc: yes
     toc_depth: 3
@@ -22,6 +24,121 @@ library(reshape2)
 
 # Number of missing flows
 ```{r}
+swd99 <- readdbproduct(440799, "raw_flow_yearly") %>% 
+    filterworldeu28() %>%
+    clean() 
+    
+
+# swd99backup <- swd99
+# summary(swd99backup$quantity - swd99$quantity)
+
+swap99 <- swapreporterpartner(swd99)
+
+swd99all.x <-  merge(swd99, swap99, all.x=TRUE, suffixes = c("", "partner"),
+                 by = c("reportercode", "partnercode",
+                        "productcode", "flow", "period"))
+swd99all <-  merge(swd99, swap99, all=TRUE, suffixes = c("", "partner"),
+                 by = c("reportercode", "partnercode",
+                        "productcode", "flow", "period"))
+
+# Change order of x and y 
+swd99antijoin <- anti_join(swap99, swd99, 
+                           by = c("reportercode", "partnercode",
+                                  "productcode", "flow", "period"))
+nrow(swd99all)
+nrow(swd99all.x) + nrow(swd99antijoin)
+
+# The other way round
+swd99antijoinother <- anti_join(swd99, swap99, 
+                           by = c("reportercode", "partnercode",
+                                  "productcode", "flow", "period"))
+sum(swd99antijoinother$quantity, na.rm = TRUE)
+sum(swd99antijoin$quantity, na.rm = TRUE)
+```
+
+
+# Add the anti join table
+```{r}
+# Select only the id columns from the original table
+swd99id <- swd99 %>% 
+    select(reportercode, partnercode,
+           productcode, flow, period)
+# Swap all columns from the original table
+swap99 <- swd99 %>% swapreporterpartner(column=NULL)
+
+# keep those that are not in swd99
+swd99antijoin <- anti_join(swap99,swd99id) %>%
+    # Change flag to 5000
+    mutate(flag = flag + 5000)
+
+# Add these to the original table
+swd99result <- rbind(swd99, swd99antijoin)
+findduplicatedflows(swd99result)
+
+# Check if they are missing lines in the resulting merged table
+check <- anti_join(swap99,swd99result,
+                 by=c("reportercode","partnercode","productcode","flow","period"))
+```
+
+
+# Change in world trade flows
+```{r}
+sum(swd99antijoin$quantity, na.rm = TRUE) /
+    sum(swd99$quantity, na.rm = TRUE) * 100
+
+
+swd10 <- readdbproduct(440710,"raw_flow_yearly") %>%
+    filterworldeu28()
+swd10withmirror <- swd10 %>% addmissingmirrorflow()
+# Change in world trade flows
+(sum(swd10withmirror$quantity, na.rm=TRUE) - sum(swd10$quantity, na.rm = TRUE)) / sum(swd10$quantity, na.rm=TRUE) *100
+
+changeflowmessage(swd99, swd99result)
+
+# Test the function created based on the experiments above
+swd99result2 <- addmissingmirrorflow(swd99)
+nrow(swd99result2)
+
+# Arrange them in the same order to compare quantity vectors
+swd99result <- swd99result %>% 
+    arrange(reportercode,partnercode,productcode,flow,period)
+swd99result2 <- swd99result2 %>% 
+    arrange(reportercode,partnercode,productcode,flow,period)
+summary(swd99result$quantity - swd99result2$quantity)
+#
+write.csv(select(swd99result2,-productdescription,-productdescriptionOLD), file="/tmp/sawnwood440799_with_mirrorflow.csv")
+```
+
+# Explore changes by region
+```{r}
+swd99result2 %>%
+    mutate(mirror =
+               ifelse(flag>=5000,
+                      "mirrored_quantity","quantity")) %>%
+    group_by(regionreporter, flow, mirror) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE)) %>%
+    dcast(regionreporter + flow ~ mirror,
+          value.var = "quantity") %>%
+    mutate(change = round((mirrored_quantity/quantity)*100,2)) %>%
+    kable
+
+# Countries with the largest changes
+mirrorbycountry <- swd99result2 %>%
+    mutate(mirror = 
+               ifelse(flag>=5000,"mirrored_quantity",
+                      "quantity")) %>%
+    group_by(reporter, flow, mirror) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE)) %>%
+    dcast(reporter + flow ~mirror,value.var = "quantity") %>%
+    mutate(changepercent =
+               round((mirrored_quantity/quantity)*100,2)) %>%
+    arrange(desc(mirrored_quantity)) 
+
+mirrorbycountry %>% filter(flow == "Export") %>% 
+    head(10) %>% kable
+mirrorbycountry %>% filter(reporter == "Gabon")
 
 ```
+
+
 
