@@ -1,6 +1,6 @@
 ---
 title: '`r as.character(productcodeinreport)` discrepancies in `r reporterinreport`'
-author: "Paul Rougieux"
+author: "Mr. R-code"
 date: "03/12/2014"
 output:
   pdf_document:
