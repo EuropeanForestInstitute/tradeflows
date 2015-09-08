@@ -722,7 +722,7 @@ cleandbproduct <- function(productcode, tableread, tablewrite, ...){
     # for the validated flow
     columnswrite <- columnswrite[!columnswrite == "lastchanged"]
     dtf <- dtf %>% select_(.dots = columnswrite)
-    message("deleteting product code ", productcode, " from the table", tablewrite)
+    message("deleteting product code ", productcode, " from the table ", tablewrite)
     deletedbproduct(productcode, tablewrite)
     message(paste("writing", nrow(dtf), "flows to the database"))
     # Message concerning the database write

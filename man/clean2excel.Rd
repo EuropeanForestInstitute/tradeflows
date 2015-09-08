@@ -2,15 +2,20 @@
 % Please edit documentation in R/expertexcel.R
 \name{clean2excel}
 \alias{clean2excel}
+\alias{cleandb2excel}
 \alias{cleanrdata2excel}
 \title{Clean and export to Excel for the expert users}
 \usage{
 clean2excel(dtf, filenamestart, returnresults = FALSE, ...)
 
+cleandb2excel(productcode, tableread = "raw_flow_yearly", ...)
+
 cleanrdata2excel(rawfilename, ...)
 }
 \arguments{
 \item{dtf}{data frame}
+
+\item{filenamestart}{begining of the Excel file name}
 
 \item{returnresults}{TRUE if the list of results should be returned
 usefull for the function cleanrdata2excel.}
@@ -18,15 +23,23 @@ usefull for the function cleanrdata2excel.}
 \item{...}{furhter arguments passed to clean()
 without extensions}
 
+\item{productcode}{code of a product}
+
+\item{tableread}{names of the database table to read}
+
 \item{filename}{path and name of the output files}
+
+\item{...}{further arguments passed to clean()}
 
 \item{rawfile}{name of a .RData file containing raw trade flows}
 
-\item{...}{further arguements passed to clean()}
+\item{...}{further arguements passed to clean2Excel()}
 }
 \description{
 Keep price, conversion factor andflow choice in a separate table
 for further analysis
+
+Use the argument filenamestart to specify where the Excel file will be located.
 
 Clean from raw data file to Excel and a csv file
 }

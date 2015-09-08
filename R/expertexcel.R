@@ -13,6 +13,7 @@ clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
     require(xlsx)
     require(reshape2)
     results <- clean(dtf,outputalltables = TRUE, ...)
+
     # Product description with number of reporter countries
     results$productclassification <- results$dtf %>%
         select(productcode, classification, year, productdescription, reporter) %>%
@@ -23,8 +24,7 @@ clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
         dcast(productcode + classification + productdescription ~ year,
               value.var = "n")
 
-
-
+    message("Add a description of each sheet, taken from a csv file.")
 
     results$dtf <- results$dtf %>%
         # remove product description to get a smaller csv file
@@ -130,7 +130,9 @@ extractflags <- function(dtf){
 #' Use the argument filenamestart to specify where the Excel file will be located.
 #' @param productcode code of a product
 #' @param tableread names of the database table to read
+#' @param filenamestart begining of the Excel file name
 #' @param ... further arguments passed to clean()
+#' @rdname clean2excel
 #' @export
 cleandb2excel <-function(productcode, tableread = "raw_flow_yearly" , ...){
     readdbproduct(productcode, tableread) %>%
@@ -140,7 +142,7 @@ cleandb2excel <-function(productcode, tableread = "raw_flow_yearly" , ...){
 
 #' Clean from raw data file to Excel and a csv file
 #' @param rawfile name of a .RData file containing raw trade flows
-#' @param ... further arguements passed to clean()
+#' @param ... further arguements passed to clean2Excel()
 #' @rdname clean2excel
 #' @export
 cleanrdata2excel <- function(rawfilename, ...){
