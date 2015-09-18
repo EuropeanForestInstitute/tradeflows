@@ -1,0 +1,89 @@
+---
+title: "Price distribution"
+author: "Paul Rougieux"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  html_document:
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+Looking at softwood lumber prices in Europe, after reading a publication by Wei-Yew Chang and Chris Gaston, [The competitiveness of Canadian softwood lumber a disaggregated trade-flow analysis](http://www.nrcresearchpress.com/doi/abs/10.1139/cjfr-2014-0058).
+In this publication they chose a limit of 148US$/m-3 between low
+and high quality lumber.
+
+```{r loadandprepare}
+prepare <- function(dtf){
+    dtf %>%
+        filterworldeu28() %>%
+        addregion() %>%
+        addconversionfactorandprice() %>%
+        mutate(withinregion =  regionreporter == regionpartner)    
+}
+swd10 <- readdbproduct(440710, "raw_flow_yearly") %>% prepare
+swd91 <- readdbproduct(440791, "raw_flow_yearly") %>% prepare
+```
+
+# Price distribution by region
+## Price distribution by quantity
+```{r}
+pricepoint <- ggplot(swd10, aes(x = price, y = log(quantity))) + 
+    geom_point() + xlim(0,1000) 
+pricepoint + facet_grid(regionpartner ~ flow) +
+    aes(color=regionreporter)
+pricepoint + facet_grid(regionpartner ~ regionreporter) +
+    aes(color = flow)
+
+swd10region <- swd10 %>%
+    group_by(regionreporter, regionpartner, year, flow) %>%
+    summarise(quantity = sum(quantity, na.rm=TRUE),
+              tradevalue = sum(tradevalue, na.rm = TRUE),
+              price = tradevalue / quantity)
+ggplot(swd10region, aes(x = price, y = log(quantity),
+                        color = flow)) +
+    geom_point() + xlim(0,1000) +
+    facet_grid(regionpartner ~ regionreporter) 
+```
+
+### European import prices
+For a selection of countries
+```{r}
+
+countrylist1 <-c("France","Germany","Sweden", "United Kingdom")
+countrylist2 <- c("Germany", "Austria", "Finland", "Sweden",
+                  "Estonia", "Latvia", "Lithuania")    
+swd10eu <- swd10 %>%
+    filter(reporter %in% countrylist2 &
+               partner %in% countrylist2) %>%
+    select(reporter, partner, flow,
+           year, price, quantity, tradevalue) %>%
+    arrange(price)
+write.csv(swd10eu, file = "/tmp/sawnwood10_frdeswuk.csv")
+
+pricepoint <- ggplot(swd10eu, aes(x = price, y = log(quantity))) + 
+    geom_point() + xlim(0,1000) 
+pricepoint + facet_grid(partner ~ reporter) +
+    aes(color = flow)
+```
+
+
+## Oak price distribution
+```{r}
+pricepoint <- ggplot(swd91, aes(x = price, y = log(quantity))) + 
+    geom_point() + xlim(0,3000) 
+pricepoint + facet_grid(regionpartner ~ regionreporter) +
+    aes(color = flow)
+```
+
+

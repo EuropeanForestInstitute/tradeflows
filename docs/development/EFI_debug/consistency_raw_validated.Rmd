@@ -1,0 +1,61 @@
+---
+title: "Country name encoding in utf-8 only"
+author: "Paul Rougieux"
+date: "26/02/2015"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=TRUE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+## First attempt at counting
+
+```{r}
+raw  <- readdbtbl("raw_flow_yearly") %>%
+    select(reportercode, partnercode, 
+           productcode, flow, period) %>%
+    filter(productcode == 440799  &
+               !reporter == "EU-28" &
+               !partner %in% c("EU-28", "World"))
+raw %>% explain() 
+raw %>% nrow()
+
+val <- readdbtbl("validated_flow_yearly") %>%
+    filter(productcode == 440799 & flag < 5000) %>%
+    select(reportercode, partnercode, 
+           productcode, flow, period) 
+val %>% explain()
+val %>% nrow()
+```
+
+## Using SQL inside the dplyr call
+As explained in the [dplyr database vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html): 
+
+    "Any function that dplyr doesn’t know how to convert it leaves as is - that means if you want to use any other function that database provides, you can use it as is. "
+    
+```{r}
+val <- readdbtbl("validated_flow_yearly") %>%
+    filter(productcode == 440799 & flag < 5000) %>%
+    translate_sql("count () ")
+
+library(nycflights13)
+flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+c("year", "month", "day"), "carrier", "tailnum"))
+tbl(my_db, sql("SELECT * FROM flights"))
+tbl(my_db, sql("SELECT count(*) FROM flights"))
+
+```

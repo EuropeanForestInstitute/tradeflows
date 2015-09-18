@@ -742,20 +742,16 @@ if(FALSE){
     cleandbproduct(440799, "raw_flow_yearly", "validated_flow_yearly")
 
     ### clean from a file
-    load("data-raw/comtrade/sawnwood_all.RData")
-    # Step by step
-    sawnwood <- swdall %>%
-        renamecolumns %>%
-        removeduplicates %>%
-        addpartnerflow %>%
-        calculatediscrepancies
-    # All in one step, except for renamecolumns because
+    load("data-raw/comtrade/440799.RData")
+    # All in the clean() function,
+    # except for renamecolumns() because
     # it's specific to the development system
     # In the production system,
     # database columns will already have been renamed
-    sawnwood <- swdall %>%
+    sawnwood <- dtf %>%
         renamecolumns() %>%
         clean()
-    save(sawnwood, file="data/sawnwood.RData")
+    save(sawnwood, file=file.path(tempdir(),"sawnwood.RData"))
+    message("File saved to ",file.path(tempdir(),"sawnwood.RData"))
 }
 
