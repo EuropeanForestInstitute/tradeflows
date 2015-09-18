@@ -1,5 +1,7 @@
 ---
 title: "Data completeness by country for product `r as.character(productcodeinreport)` "
+author: "European Forest Institute based on validated UN COMTRADE data"
+date: "Report produced `r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document:
     toc: true
@@ -11,12 +13,11 @@ pdf_document: >
 
 
 ## Warning
-This report is generated automatically based on data from the 
-[UN Comtrade API](http://comtrade.un.org/data/Doc/api/ex).
-Tables and graphs are in development.
-They are intended for internal use within the TradeFLowsDB project.
-Country numbers in tables below might be slightly
-overestimated, use them as a rough indication only.
+This report is based on raw data from the UN Comtrade database, 
+generated automatically based on the selected variables. 
+They are primarily intended for expert use. Country data in 
+the tables below might differ from the validated trade flow 
+data that can be queried via the trade flow database user interface.
 
 
 ```{r generatereportdatafordevelopment, eval=FALSE}
