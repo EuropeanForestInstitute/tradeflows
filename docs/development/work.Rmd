@@ -1,3 +1,6 @@
+```{r}
+getwd()
+```
 
 ## Ongoing work
 
@@ -22,18 +25,15 @@ Calling the javascript files should be possible within a YAML document, see
     when the text contains a euro € sign.
 
 
+### Eurostat Comext
+Load monthly data
+Load yearly data
+Rename columns
+Copy into a database
+
+
 ### TODO by order of ease / importance
-6: Overview report list the 10 largest exporters and 10 largest importers in all plots.
-8: Overview report should be based on the validated data and include quantity besides trade values
-7: Product report on the number of countries under each flag.
-	enhancement 	major 	new 		
-3: Add abstract to country overview report
-	enhancement 	major 	new 		
-5: Include partner data into the quantity estimation for those which have missing partner data.
-1: Export prices and conversion factors to Excel files
-	enhancement 	major 	new 		
-
-
+* Add all reporters and partners to the test dataset
 * Change the docs/development folder into vignettes.
 * use an environmennt variable for the yearbegin and yearend of the
 function that chooses between reporter and partner volume
@@ -75,3 +75,18 @@ Change the docs/development folder into vignettes.
 visualise missing data
 * load from EUROSTAT comext at 10 digit level
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
+
+
+## Project issues + requests
+9: Section titles in the overview report should be those JFSQ-1 names
+6: Overview report list the 10 largest exporters and 10 largest importers in all plots.
+8: Overview report should be based on the validated data and include quantity besides trade values
+7: Product report on the number of countries under each flag.
+	enhancement 	major 	new 		
+3: Add abstract to country overview report
+	enhancement 	major 	new 		
+5: Include partner data into the quantity estimation for those which have missing partner data.
+1: Export prices and conversion factors to Excel files
+	enhancement 	major 	new 		
+
+Generate overview report accroding to JFSQ product codes.

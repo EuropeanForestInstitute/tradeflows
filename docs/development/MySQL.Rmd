@@ -94,6 +94,16 @@ germimport <- rawdata %>%
     select(year, flow, reporter, partner, tradevalue) %>%
     collect
 ```
+### Run SQL statements on the database
+Number of unique product codes and of unique countries
+```
+SELECT count(distinct(productcode)) FROM tradeflows.raw_flow_yearly;
+/* 127 */
+SELECT count(distinct(reporter)) FROM tradeflows.raw_flow_yearly;
+/* 190 */
+SELECT count(distinct(partner)) FROM tradeflows.raw_flow_yearly;
+/* 248 */
+```
 
 ### db_insert_into, for test purposes only
 ```{r insertdplyr, eval=FALSE}

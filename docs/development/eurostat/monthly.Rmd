@@ -1,0 +1,145 @@
+---
+title: "Monthly eurostat data"
+output:
+  html_document:
+    toc: true
+---
+
+```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+``` 
+
+### Download and decompress
+```{r}
+# Prepare the filename to 
+# download all comext trade flows for a given year
+year <- 2014
+month <- 12
+bulkfile <- paste0("nc",year,month, ".7z")
+bulkfile == "nc201412.7z"
+```
+
+```{r download, eval=FALSE}
+download.file(paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&downfile=comext%2F2015S1%2Fdata%2F",bulkfile), 
+              destfile = paste0("data-raw/",bulkfile))
+
+# Change to the raw-data directory
+curdir <- getwd()  
+setwd("data-raw/")
+
+# decompress file and come back to the project root directory
+tryCatch(system2("p7zip", args=c("-d", bulkfile)),
+    finally = setwd(curdir))
+```
+
+### Read .dat file
+Comext bulk files are over 400 Mb in size and cannot be read in one slice.
+One has to extract a slice of interesting product codes first.
+
+```{r readdatfile,eval=TRUE}
+# read.table takes more than 10 minutes to run on a laptop
+# nc2012 <- read.table("data-raw/nc201252.dat", header = TRUE)
+# Therefore it is necessary to filter only lines which contain a certain
+# code, as it's hard to figure out where the code is in the line
+# I filter in 2 operations:
+# 1. filter all lines containing productcode with grep
+# 2. filter all lines where the code starts with productcode in R 
+
+bulkfile <- gsub(".7z", ".dat", bulkfile)
+productcode2digit <- 44
+
+# Change to the raw-data directory
+curdir <- getwd()  
+setwd("data-raw/")
+# grep productcode2digit into a smaller file containing only those characters
+system2("grep", args=c(productcode2digit,bulkfile), 
+        stdout = paste0(productcode2digit,bulkfile))
+# Read the first line of bulkfile to use it as col.names 
+header <- readLines(bulkfile, n=1)
+header <- strsplit(header,",")[[1]]
+setwd(curdir)
+
+# read the data file
+nc <- read.table(paste0("data-raw/", productcode2digit, bulkfile),
+                     sep=",", col.names = header, as.is=TRUE)
+#str(nc)
+# use the column table 
+column_names %>% filter(!is.na(comext)) %>%
+    select(comext, efi) %>%kable
+
+nc <- renamecolumns(nc,"comext","efi")
+str(nc)
+
+ncsorted <- nc %>% group_by(productcode) %>% 
+    select(weight,quantity,tradevalue) %>%
+    summarise_each(funs(sum(.,na.rm=TRUE))) %>%
+    arrange(desc(weight)) 
+
+# Filter only columns which contain product codes starting with 44. 
+nc2 <- nc %>% 
+    filter(substring(productcode,1,2) == as.character(productcode2digit)) %>%
+    mutate(productcode = as.integer(productcode))
+```
+
+
+## Write to the database
+
+```{r eval=FALSE}
+writedbcomextraw <- function(dtf, tablewrite){
+    setdatabaseconfig(silent=TRUE)
+    db <- getOption("tradeflowsDB")
+    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+                                 user=db["user"], host=db["host"],
+                                 password=db["password"], dbname=db["dbname"])
+    dtf <- data.frame(dtf)
+    result <- RMySQL::dbWriteTable(DBwrite, name = tablewrite,
+                           value=dtf, append=TRUE, row.names = FALSE)
+    RMySQL::dbDisconnect(DBwrite)
+    return(result)
+}
+writedbcomextraw(nc2,"raw_flow_monthly_comext")
+message("Change table structure larger int for productcode and period is a tinyint, not a year")
+message("Pull back data from the database and check that both table have the same structure")
+message("elaborate the integration test first")
+```
+
+
+## Manipulate comtrade data
+```{r}
+# A tbl object to perform arbitraty operations
+monthly <- readdbtbl("raw_flow_monthly_comext")
+nrow(monthly)
+monthly %>% select(productcode) %>% distinct() %>% 
+    collect() %>% nrow()
+```
+
+
+## Product codes which never have a quantity
+```{r}
+prodcodes <-  monthly %>% select(productcode) %>% collect %>% unique() 
+
+countq <- monthly %>% 
+    mutate(noquantity = is.na(quantity)) %>%
+    group_by(productcode, noquantity) %>%
+    summarise(n = n()) %>% 
+    collect() %>%
+    spread(noquantity,n) 
+stopifnot(sum(countq[-1], na.rm=TRUE) == nrow(nc2))
+```
+
+
+## Calculate monthly prices
+```{r}
+# Data for only one product
+swd <- readdbproduct(44079991, "raw_flow_monthly_comext") %>%
+    addconversionfactorandprice()
+
+swd %>% extractprices()
+
+```
+

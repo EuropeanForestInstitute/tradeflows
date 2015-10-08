@@ -9,7 +9,7 @@ a bulk download of bilateral trade data.
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
 library(knitr)
-opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 library(tradeflows)
 library(dplyr)
 library(reshape2)
@@ -30,13 +30,6 @@ For example [Fuel wood Austria](http://epp.eurostat.ec.europa.eu/newxtweb/submit
     * [2014S2](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S2) contains yearly data
     * [2014S3](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&dir=comext%2F2014S3) contains montly and yearly data by mode of transport
     * More details in the [Instructions on how to use the bulk download facility.pdf](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2FInstructions+on+how+to+use+the+bulk+download+facility.pdf) and explanation of data format in the [readme.txt](http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=3&file=comext%2Freadme.txt)
-
-#### Renaming columns from the bulk download
-```{r}
-column_names %>% filter(!is.na(eurostat_bulk)) %>%
-    select(eurostat_bulk, efi) %>%kable
-
-```
 
 ### SDMX SOAP and Rest APIs
 Eurostat provides a [REST API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/rest_sdmx_2.1#ind_18_1) and a [SOAP API](http://epp.eurostat.ec.europa.eu/portal/page/portal/sdmx_web_services/getting_started/soap_sdmx_2.1).
@@ -65,7 +58,7 @@ It can be uncompressed in Debian GNU linux with the
 Use system2 to invoque the decompression utility.
 Example downloading 2012 data:
 
-```{r, eval=FALSE}
+```{r download, eval=FALSE}
 download.file(paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2F2014S2%2Fdata%2F",bulkfile), 
               destfile = paste0("data-raw/",bulkfile))
 
@@ -82,8 +75,8 @@ tryCatch(system2("p7zip", args=c("-d", bulkfile)),
 Comext bulk files are over 400 Mb in size and cannot be read in one slice.
 One has to extract a slice of interesting product codes first.
 
-```{r eval=TRUE}
-# This takes more than 10 minutes to run on a laptop
+```{r readdatfile,eval=TRUE}
+# read.table takes more than 10 minutes to run on a laptop
 # nc2012 <- read.table("data-raw/nc201252.dat", header = TRUE)
 bulkfile <- gsub(".7z", ".dat", bulkfile)
 productcode <- 4407
@@ -117,6 +110,8 @@ unique(nc$PRODUCT_NC)
 unique(nc$PRODUCT_NC[grepl("440799", nc$PRODUCT_NC)])
 ```
 
+
+## Explore comext bulk data
 ### Stat regime
 [Definition p 16](http://ec.europa.eu/eurostat/documents/64445/4439642/FAQ-XT-WEB-EN-final-January2012.pdf/2c387c03-5064-45bc-a949-2d3c75567973) There are broadly two approaches, closely linked with customs procedures, used for the compilation of external trade in goods: general trade system and the special trade system
 .
@@ -127,9 +122,16 @@ nc %>% group_by(STAT_REGIME) %>%
     summarise(n = n())
 ```
 
+
+### Period
+```{r period}
+unique(nc$PERIOD)
+```
+
+
 ### Products
 Products which do not start with 44 should be removed.
-```{r productseurostat}
+```{r products}
 nc %>% group_by(PRODUCT_NC) %>%
     summarise(nblines = n(),
               tradevalue = sum(VALUE_1000ECU),
@@ -141,12 +143,25 @@ nc %>% group_by(PRODUCT_NC) %>%
     head(10) %>% kable 
 ```
 
-## Add information to the Eurostat bulk data
+## Manipulate comtrade data
+### Rename columns from the bulk download to EFI names
+```{r renamecolumns}
+# use the column table 
+column_names %>% filter(!is.na(comext)) %>%
+    select(comext, efi) %>%kable
 
+nc2 <- renamecolumns(nc,"comext","efi")
+str(nc2)
+```
+
+
+### Calculate price and conversion factor
+
+
+## Add information to the Eurostat bulk data
 * Quantity units should be obtained from a product code table
 * Reporter and partner names should be obtained from 
 the Declarant and partner columns,  using a country codes and names matching tables
-
 
 
 ## Other tools 

@@ -174,7 +174,9 @@ nrowinDB <- function(tableread){
 #'
 #' Return a dplyr tbl object for the given MySQL database table
 #' tbl objects allow lazy operations. See src_mysql.
-#'
+#' The issue is that 2 table objects created with this function will
+#' not share the same source.
+#' Therefore they will not be available for a merge within the database.
 #' @param tableread name of the database table to read
 #' @return a dplyr tbl object
 #' @examples

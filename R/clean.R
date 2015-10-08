@@ -106,7 +106,7 @@ filterworldeu28 <- function(dtf){
 #' obtain an upper bound on prices
 #' @export
 extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
-                          geoaggregation="regionreporter",
+                          geoaggregation = "regionreporter",
                           includeqestimates = TRUE){
     # Geoaggregation should be a column of the data frame
     # for example regionreporter
