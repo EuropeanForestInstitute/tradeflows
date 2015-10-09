@@ -1,5 +1,7 @@
 ---
 title: '`r as.character(productcodeinreport)` discrepancies in `r reporterinreport`'
+author: "European Forest Institute based on validated UN COMTRADE data"
+date: "Report produced `r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document:
     fig_height: 7
@@ -86,7 +88,7 @@ if (lastyearreporter != max(tfdata$year)){
 
 
 ## Abstract
-The following report is an overview of major trade flows reported for product number `r as.character(productcodeinreport)` by `r reporterinreport` and its trade partners. `r reporterinreport` reported importing from
+This document presents an overview of validated trade flow data reported for product number `r as.character(productcodeinreport)` by `r reporterinreport` and its trade partners. `r reporterinreport` reported importing from
 `r length(unique(tfdata$partner[tfdata$reporter==reporterinreport & tfdata$flow=="Import"]))` countries and exporting to
 `r length(unique(tfdata$partner[tfdata$reporter==reporterinreport & tfdata$flow=="Export"]))` countries 
 between `r min(tfdata$year)` and `r lastyearreporter`.
