@@ -6,6 +6,7 @@ library(dplyr)
 ############################# #
 # ITTO product classification #
 ############################# #
+
 classificationitto <- read.csv("data-raw/classificationitto.csv", as.is=TRUE)
 classificationitto <- classificationitto %>%
     select(product = Names.of.products,
@@ -35,6 +36,21 @@ jfsq <- classificationitto %>%
     unique
 print.xtable(jfsq)#,include.rownames=FALSE, type = "latex", floating=FALSE)
 
+# As requested for the overview report in September 2015
+# Add JFSQ 1 code and names to classificationitto
+jfsq1 <- read.csv("data-raw/ittoproducts_jfsq1.csv", stringsAsFactors = FALSE)
+jfsq1names <- read.csv("data-raw/ittoproducts_jfsq1_names.csv", stringsAsFactors = FALSE) %>%
+    rename(jfsq1code = JFSQ_codes,
+           jfsq1name = JFSQ_names)
+
+jfsq1 <- jfsq1 %>%
+    select(jfsq1code = JFSQ.1,
+           productcodecomtrade = HSFULL6D) %>%
+    left_join(jfsq1names, by=c("jfsq1code"))
+
+classificationitto <- classificationitto %>%
+    left_join(jfsq1, by = "productcodecomtrade")
+
 ########################### #
 # Comtrade Classifications  #
 ########################### #
@@ -59,9 +75,9 @@ classificationcomtrade <- lapply(classificationcomtrade,
 
 
 # Keep only certain chapters
-# 44 wood products and 94 furniture
+# 44 wood products and 94 furniture, 47 and 48.
 # Add other chapters later as necessary
-keep_codes_starting_with <- c("44", "94") # list of 2 digit codes
+keep_codes_starting_with <- c("44", "94", "47", "48") # list of 2 digit codes
 classificationcomtrade <- lapply(classificationcomtrade,
                                  filter,
                                  substr(productcode, 0, 2) %in%

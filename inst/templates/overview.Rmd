@@ -5,6 +5,8 @@ output:
     toc: yes
 ---
 
+\newpage
+
 
 ```{r library, echo=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
@@ -25,10 +27,16 @@ opts_chunk$set(echo=FALSE, message=FALSE)
 reporterinreport <- "France"
 reporterinreport <- "Germany"
 reporterinreport <- "Gabon"
-tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE)
+# Generate the report from the version in development
+createoverviewreport(reporterinreport, inputpath = "inst/templates",
+                     beginyear = 2010, endyear = 2014)
+
+# Generate the tfdata dataset for development purposes within this template
+tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE,
+                               inputpath = "inst/templates")
 
 unique(tfdata$product)
-fr %>% group_by(product) %>%
+tfdata %>% group_by(product) %>%
     summarise(tradevalue = sum(tradevalue),
               quantity = sum(quantity)) %>% data.frame() %>%
     arrange(tradevalue) #%>% kable
@@ -37,22 +45,74 @@ fr %>% group_by(product) %>%
 
 
 ```{r preparedata}
-# Cosmetic, shorten a few long itto product name
+# # Cosmetic, shorten a few long itto product name
+# Not used anymore since jfsq product groups are used now
+# tfdata <- tfdata %>%
+#     mutate(product = gsub("OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ",
+#                           "", product))
+nrowtfdata <- nrow(tfdata)
+jfsqproductgroups <- classificationitto %>% 
+    select(productcode = productcodecomtrade, jfsq1name) %>% 
+    distinct()
+
+# Add jfsq1names 
+tfdata <- tfdata %>% 
+    left_join(jfsqproductgroups, by="productcode")
+stopifnot(nrowtfdata == nrow(tfdata))
+
+# Replace product by jfsq1name
+# To avoid painfull refactoring which might not be needed
+tfdata <- tfdata %>% select(-product) %>%
+    rename(product = jfsq1name)
+
+# Change productcode to a factor 
+# do it here, after the merge with jfsqproductgroups
 tfdata <- tfdata %>%
-    mutate(product = gsub("OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ",
-                          "", product))
+    mutate(productcode = as.factor(productcode),
+           year = as.numeric(year))
 
 tfsummarised <- tfdata %>%
     group_by(year, reporter, partner, partnercode, flow, product) %>%
     summarise(tradevalue = sum(tradevalue)) %>%
     collect()
 
+```
+
+```{r largepartners}
 # 100 largest trade flows
 largetf <- tfdata %>% filterworldeu28 %>% data.frame() %>% # remove grouping
     arrange(desc(tradevalue)) %>% head(100)
 
+
 # 10 largest partners for the dataframe currently in use in the report
-#' @param dtf data frame of trade flow data
+#' @param dtf data frame of summarised trade flow data
+#' @param n number of parnters to select
+#' @param product_ character vector of product names, when NULL, query all products
+#' @examples
+#'\dontrun{
+#' largepartners()
+#' largepartners(c("LOGS","SAWNWOOD"))
+#' }
+largepartnersbyflow <- function(product_, flow_, dtf = tfsummarised, n = 5){
+    dtf <- filter(dtf, flow == flow_)     
+    if (!is.null(product_)){ # In case you might want to extract for all products
+        dtf <- filter(dtf, product %in% product_) 
+    }
+    dtf <- dtf %>%
+        filterworldeu28() %>% 
+        group_by(flow, partner, partnercode) %>% 
+        summarise(tradevalue = sum(tradevalue)) %>%
+        ungroup() %>%
+        arrange(desc(tradevalue)) %>% 
+        head(n) 
+    return(dtf)
+}
+
+
+
+#' 10 largest partners for the dataframe currently in use in the report
+#' import and export are mixed
+#' @param dtf data frame of summarised trade flow data. Is this realy needed?
 #' @param n number of parnters to select
 #' @param product_ character vector of product names, when NULL, query all products
 #' @examples
@@ -68,11 +128,14 @@ largepartners <- function(product_=NULL, dtf = tfsummarised, n = 10){
         filterworldeu28() %>% 
         group_by(flow, partner, partnercode) %>% 
         summarise(tradevalue = sum(tradevalue)) %>%
-        data.frame() %>% # remove grouping
+        ungroup() %>%
         arrange(desc(tradevalue)) %>% 
-        select(partner, partnercode) %>% unique %>% head(n) # Could add flow here
+        # select(flow, partner, partnercode) %>%
+        head(n) # Could add flow here
     return(dtf)
 }
+
+
 ```
 
 
@@ -98,28 +161,47 @@ description <- function(productcodes){
 
  
 ```{r productplot}
+#' Plot product, to be used in the loop on product names below
+#' For the moment tfdata is taken from the global environment is this bad?
 #' @param product_ the itto name of a product
 productplot <- function(product_){
-    # Prepare this object first otherwise query is very slow
-    partnercodes <- largepartners(product_)$partnercode    
-    # Data
-    dtf <- filter(tfdata, product == product_ & 
-                      partnercode %in% partnercodes) 
-    # might fail for some products
-    dtf <- mutate(dtf, partner = stringr::str_wrap(partner, width = 14))
-    p <- ggplot(dtf,
-                aes(x = as.numeric(year),
-                    y = tradevalue,
-                    fill = as.factor(productcode))) +
-        geom_bar(stat="identity") +
+    # Check if the given product is in the tfdata data frame
+    stopifnot(product_ %in% unique(tfdata$product))
+    
+    filterlargepartners <- function(dtf, product_, flow_){
+        # Prepare this object first otherwise query is very slow
+        # largepartnersbyflow('ROUNDWOOD', "Export")
+        partnercodes <- largepartnersbyflow(product_, flow_)$partnercode
+        # Data
+        dtf2 <- dtf %>% filter(product == product_ & flow == flow_,
+                       partnercode %in% partnercodes)
+        # might fail for some products
+        dtf2 <- mutate(dtf2, partner = stringr::str_wrap(partner, width = 14))
+    }
+    import <- filterlargepartners(tfdata, product_, "Import")
+    export <- filterlargepartners(tfdata, product_, "Export")
+    
+    p <- ggplot(NULL,
+                aes(x = year, y = tradevalue,
+                    fill = productcode)) +
+        # geom_bar(stat="identity") +
         ylab("Trade value in  US dollars") +
         theme(legend.position= "bottom") +
-        scale_x_continuous(breaks = c(2010,2012)) +
-        ggtitle(paste("Largest ", product_, " flows reported by", reporterinreport)) +
+        # Scale might be changed to avoid year overlapping when there are many years
+        # scale_x_continuous(breaks = c(2010,2012)) +
         facet_grid(flow + reporter ~ partner, scales="free_y") + 
         guides(fill=guide_legend(nrow=2,byrow=TRUE))
-    try(print(p))
-    try(description(unique(dtf$productcode)))
+    # One plot for import and one plot for export
+    importp <- p + geom_bar(data = import, 
+                            stat="identity") + 
+        ggtitle(paste("Largest ", product_, " imports reported by", reporterinreport)) 
+    exportp <- p + geom_bar(data = export, 
+                            stat="identity") + 
+        ggtitle(paste("Largest ", product_, " exports reported by", reporterinreport)) 
+    try(print(importp))
+    try(print(exportp))
+    combined <- rbind(import, export)
+    try(description(as.character(unique(combined$productcode))))
 }
 
 
@@ -133,7 +215,9 @@ ploterror <- function(e) {
 ```
 
 
-```{r looponittoproducts, results='asis', fig.height=7, fig.width=12}
+```{r looponittoproducts, results='asis', fig.height=5, fig.width=12}
+message("Rerun the Comtrade Classification part of product_classification.R to add description for product starting with 47 and 48")
+message("Try to see if it's possible to have 2 plots sharing the same legend, check tile plot from erlier versions")
 for (product_ in unique(tfdata$product)){
     cat("\n##",product_,"\n\n")
     tryCatch(productplot(product_),
@@ -141,20 +225,27 @@ for (product_ in unique(tfdata$product)){
     cat("\n\\newpage\n\n")
 }
 
-# There is an issue for some products 
-# Error: unsupported type for column 'partner' (NILSXP, classes = NULL) 
-# It seems to happen when "Côte d'Ivoire" is a partner, probably due to differences in encoding
+
 if (FALSE){
+    unique(tfdata$product)
+    # plot one product
+    productplot("ROUNDWOOD")
+    
+    # There is an issue for some products 
+    # Error: unsupported type for column 'partner' (NILSXP, classes = NULL) 
+    # It seems to happen when "Côte d'Ivoire" is a partner, probably due to differences in encoding
     filterpaper <- "OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: FILTER PAPER AND PAPERBOARD , READY FOR USE"
     productplot(filterpaper)
     filterpaperdata <- filter(tfdata, product == filterpaper)
     unique(filterpaperdata$partner)
+   
+    
 }
 ```
 
 
 ## All products
-```{r fig.height=17, fig.width=12}
+```{r allproducts, fig.height=17, fig.width=12}
 partnercodes <- largepartners()$partnercode
 # filter(tfdata, partner %in% largetf$partner)
 ggplot(filter(tfsummarised, partnercode %in% partnercodes),

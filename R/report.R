@@ -184,7 +184,7 @@ createoverviewreport <- function(reporter_,
     tfdata <- tbl(DBread, tableread) %>%
         filter(reporter == reporter_&
                    year >= beginyear & year <= endyear) %>%
-        select(year, reporter, partner, partnercode,
+        select(year, period, reporter, reportercode, partner, partnercode,
                flow, flag, productcode, tradevalue, quantity)
 
     # Load itto product names --------------------------------------------------------

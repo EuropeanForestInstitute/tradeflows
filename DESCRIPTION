@@ -4,19 +4,20 @@ Version: 0.1.1
 Authors@R: "Paul Rougieux<paul.rougieux@gmail.com> [aut, cre]"
 Description: Grab data from the COMTRADE API and the COMEXT system,
     feed it through algorithms to compare and amend unit values
-    and mirror export and import values,
-    and then deliver to several output file formats and database.
-Depends: 
+    and mirror export and import values.
+    Then deliver to several output file formats and a database.
+Depends:
     R (>= 3.1.1)
 License: GNU GPLV3
 LazyData: true
-Imports: 
+Imports:
     dplyr,
     jsonlite,
     RMySQL
-Suggests: 
+Suggests:
     ggplot2,
     testthat,
+    stringr,
     rmarkdown,
     knitr
 VignetteBuilder: knitr

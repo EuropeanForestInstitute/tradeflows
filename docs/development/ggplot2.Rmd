@@ -90,3 +90,34 @@ completeness <- rawdata %>%
 ggplot(data.frame(x = seq(1,6)), aes(x = x,y =x,shape=as.factor(x),color=as.factor(x))) + geom_point(size=10)
 
 ```
+
+
+## Two plots with grid.arrange() sharing one legend
+Seen in [Hadley's wiki](https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs)
+and in this [Stackoverflow question](http://stackoverflow.com/questions/13649473/add-a-common-legend-for-combined-ggplots/28594060#28594060)
+```{r}
+library(ggplot2)
+library(grid) # to use unit.c
+library(gridExtra)
+
+grid_arrange_shared_legend <- function(...) {
+    plots <- list(...)
+    g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
+    legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+    lheight <- sum(legend$height)
+    grid.arrange(
+        do.call(arrangeGrob, lapply(plots, function(x)
+            x + theme(legend.position="none"))),
+        legend,
+        ncol = 1,
+        heights = unit.c(unit(1, "npc") - lheight, lheight))
+}
+
+dsamp <- diamonds[sample(nrow(diamonds), 1000), ]
+p1 <- qplot(carat, price, data=dsamp, colour=clarity)
+p2 <- qplot(cut, price, data=dsamp, colour=clarity)
+p3 <- qplot(color, price, data=dsamp, colour=clarity)
+p4 <- qplot(depth, price, data=dsamp, colour=clarity)
+grid_arrange_shared_legend(p1, p2, p3, p4)
+     
+```
