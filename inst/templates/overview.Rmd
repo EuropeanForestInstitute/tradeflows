@@ -1,5 +1,7 @@
 ---
-title: "Forest produts trade in `r reporterinreport`"
+title: "Forest products trade in `r reporterinreport`"
+author: "European Forest Institute based on validated UN COMTRADE data"
+date: "Report produced `r format(Sys.time(), '%d %B, %Y')`"
 output: 
   pdf_document:
     toc: yes
@@ -17,6 +19,15 @@ options(digits = 4) #  Number of digits in knitr tables
 opts_chunk$set(echo=FALSE, message=FALSE)
 ```
 
+## Abstract
+This document presents an overview of validated UN COMTRADE trade flow data for 
+key forest product categories. The key forest product categories follow the main 
+product groups of the FAO/ITTO/ECE/Eurostat forest products classification system. 
+For each of these main forest product categories, the value and quantity of trade 
+is shown for the relevant 6-digit product codes of the Harmonized System, i.e. the 
+world customs commodity classification system. You can query detailed trade 
+statistics via the Data Query and Visualisation interface at 
+http://www.efi.int/portal/virtual_library/databases/forest_products_trade_flow_database/
 
 ```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
 ######### #
