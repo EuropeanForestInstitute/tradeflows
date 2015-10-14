@@ -166,7 +166,7 @@ createoverviewreport <- function(reporter_,
                                  beginyear = 0, endyear = 9999,
                                  template = "overview_tradevalue.Rmd",
                                  outputdir = "reports/overview",
-                                 tableread = "raw_flow_yearly",
+                                 tableread = "validated_flow_yearly",
                                  dataonly = FALSE, ...){
 
     message("Trade values are the same in raw flow and validated flow")
@@ -185,7 +185,12 @@ createoverviewreport <- function(reporter_,
         filter(reporter == reporter_&
                    year >= beginyear & year <= endyear) %>%
         select(year, period, reporter, reportercode, partner, partnercode,
-               flow, flag, productcode, tradevalue, quantity)
+               flow, flag, unit, productcode, tradevalue, quantity) %>%
+        # This conversion from utf-8 to utf-8 shouldn't be necessary but it
+        # appears to fix an error with Côte d'Ivoire
+        mutate(reporter = iconv(reporter, "utf-8", "utf-8"),
+               partner = iconv(partner, "utf-8", "utf-8"))
+
 
     # Load itto product names --------------------------------------------------------
     message("Discuss with Simo and Janne to change column names in the product work table, rename them as such: (product = name_short, productcode = code) ")
