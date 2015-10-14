@@ -26,8 +26,7 @@ product groups of the FAO/ITTO/ECE/Eurostat forest products classification syste
 For each of these main forest product categories, the value and quantity of trade 
 is shown for the relevant 6-digit product codes of the Harmonized System, i.e. the 
 world customs commodity classification system. You can query detailed trade 
-statistics via the Data Query and Visualisation interface at 
-http://www.efi.int/portal/virtual_library/databases/forest_products_trade_flow_database/
+statistics via the [Data Query and Visualisation interface](http://www.efi.int/portal/virtual_library/databases/forest_products_trade_flow_database/).
 
 ```{r development, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
 ######### #
@@ -40,6 +39,7 @@ reporterinreport <- "Germany"
 reporterinreport <- "Gabon"
 # Generate the report from the version in development
 createoverviewreport(reporterinreport, inputpath = "inst/templates",
+                     template = "overview_quantity",
                      beginyear = 2010, endyear = 2014)
 
 # Generate the tfdata dataset for development purposes within this template
@@ -253,51 +253,4 @@ if (FALSE){
     
 }
 ```
-
-
-## All products
-```{r allproducts, fig.height=17, fig.width=12}
-partnercodes <- largepartners()$partnercode
-# filter(tfdata, partner %in% largetf$partner)
-ggplot(filter(tfsummarised, partnercode %in% partnercodes),
-       aes(x = as.numeric(year), y = tradevalue/1e6,
-                       fill = as.factor(product))) +
-    geom_bar(stat="identity") +
-    ylab("Trade value in million US dollars") +
-    theme(legend.position= "bottom") +
-    scale_x_continuous(breaks = c(2010,2012)) +
-    ggtitle(paste("Largest wood products flows reported by", reporterinreport)) +
-    facet_grid(flow + reporter ~ partner) + 
-    guides(fill=guide_legend(ncol=1,byrow=TRUE))
-
-message("place country names over 2 lines if necessary")
-# http://stackoverflow.com/questions/9052650/ggplot2-splitting-facet-strip-text-into-two-lines
-# Using stringr::str_wrap
-# stringr::str_wrap("lkj lkj lkjlkj lkj lkj ", width = 20) 
-# Or with base functions, without the stringr package
-# paste(strwrap("lkj lkj lkjlkj lkj lkj ", width = 20), collapse="\n")
-
-# Optionally 
-# Make the same plot with flows reported from those countries
-
-```
-
-
-
-```{r eval=FALSE}
-### Trade between `r reporterinreport` and the EU
-# EU is a reporter in the database, but not a partner.
-ggplot(filter(tfdata, partner == "EU28"),
-       aes(x = as.numeric(year), y = tradevalue/1e6,
-                       fill = as.factor(product))) +
-    geom_bar(stat="identity") +
-    scale_x_continuous(breaks = c(2010,2012)) +
-    ggtitle("100 Largest wood products import flows reported by the EU with China") +
-    facet_grid(flow + reporter ~ partner) + 
-    ylab("Trade value in million US dollars") +
-    theme(legend.position= "bottom") +
-    guides(fill=guide_legend(nrow=4,byrow=TRUE))
-```
-
-
 

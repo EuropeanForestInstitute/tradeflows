@@ -20,7 +20,8 @@ library(RMySQL)
 The following commands can be used to load mysql dump files:
 ```
 cat raw_flow_yearly.sql | mysql -u paul -p  tradeflows
-cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows?``
+cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows
+```
 
 ## SELECT using dplyr
 * Description and examples in the `?src_mysql` documentation

@@ -76,17 +76,15 @@ visualise missing data
 * load from EUROSTAT comext at 10 digit level
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
+## Done
+2015109: Section titles in the overview report should be those JFSQ-1 names
+         Generate overview report plots accroding to JFSQ product codes.
+2015109: Overview report list the 10 largest exporters and 10 largest importers in all plots.
 
 ## Project issues + requests
-9: Section titles in the overview report should be those JFSQ-1 names
-6: Overview report list the 10 largest exporters and 10 largest importers in all plots.
 8: Overview report should be based on the validated data and include quantity besides trade values
 7: Product report on the number of countries under each flag.
-	enhancement 	major 	new 		
 3: Add abstract to country overview report
-	enhancement 	major 	new 		
 5: Include partner data into the quantity estimation for those which have missing partner data.
 1: Export prices and conversion factors to Excel files
-	enhancement 	major 	new 		
 
-Generate overview report accroding to JFSQ product codes.
