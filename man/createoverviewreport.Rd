@@ -5,8 +5,8 @@
 \title{Create reports for all products in the given reporter country}
 \usage{
 createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
-  endyear = 9999, template = "overview.Rmd",
-  outputdir = "reports/overview", tableread = "raw_flow_yearly",
+  endyear = 9999, template = "overview_tradevalue.Rmd",
+  outputdir = "reports/overview", tableread = "validated_flow_yearly",
   dataonly = FALSE, ...)
 }
 \arguments{

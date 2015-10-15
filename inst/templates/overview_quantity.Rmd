@@ -44,13 +44,13 @@ createoverviewreport(reporterinreport, inputpath = "inst/templates",
 
 # Generate the tfdata dataset for development purposes within this template
 tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE,
-                               inputpath = "inst/templates")
+                               inputpath = "inst/templates") 
 
 unique(tfdata$product)
 tfdata %>% group_by(product) %>%
     summarise(tradevalue = sum(tradevalue),
               quantity = sum(quantity)) %>% data.frame() %>%
-    arrange(tradevalue) #%>% kable
+    arrange(desc(tradevalue)) #%>% kable
 ```
 
 
@@ -191,12 +191,13 @@ productplot <- function(product_){
     }
     import <- filterlargepartners(tfdata, product_, "Import")
     export <- filterlargepartners(tfdata, product_, "Export")
-    
+    combined <- rbind(import, export)
+    # test if there are more than one unit, give a warning
     p <- ggplot(NULL,
                 aes(x = year, y = tradevalue,
                     fill = productcode)) +
         # geom_bar(stat="identity") +
-        ylab("Trade value in  US dollars") +
+        ylab(paste(unique(combined$unit))) +
         theme(legend.position= "bottom") +
         # Scale might be changed to avoid year overlapping when there are many years
         # scale_x_continuous(breaks = c(2010,2012)) +
@@ -211,7 +212,6 @@ productplot <- function(product_){
         ggtitle(paste("Largest ", product_, " exports reported by", reporterinreport)) 
     try(print(importp))
     try(print(exportp))
-    combined <- rbind(import, export)
     try(description(as.character(unique(combined$productcode))))
 }
 
@@ -239,8 +239,10 @@ for (product_ in unique(tfdata$product)){
 
 if (FALSE){
     unique(tfdata$product)
-    # plot one product
+    # plot one product only
     productplot("ROUNDWOOD")
+    # Encoding problem for Gabon
+    productplot("PAPER AND PAPERBOARD")
     
     # There is an issue for some products 
     # Error: unsupported type for column 'partner' (NILSXP, classes = NULL) 
@@ -253,4 +255,7 @@ if (FALSE){
     
 }
 ```
+
+When displaying validated data, trade flows "reported by" one country can also mean that these flows have been estimated or corrected.
+
 
