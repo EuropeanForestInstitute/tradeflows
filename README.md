@@ -4,6 +4,8 @@ output:
   html_document:
     toc : true
 ---
+![](https://api.travis-ci.org/paul4forest/tradeflows.svg?branch=master)
+
 This package prepares data for a forest products trade flow database.
 It contains functions that automatically grab data from the 
 COMTRADE and COMEXT databases, feed it through algorithms to compare 
