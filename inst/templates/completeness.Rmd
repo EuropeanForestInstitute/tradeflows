@@ -21,16 +21,19 @@ data that can be queried via the trade flow database user interface.
 
 
 ```{r generatereportdatafordevelopment, eval=FALSE}
+productcodeinreport <- 440799
 # Generate report data for development purposes only
-tfdata2 <- readdbproduct(440799, "raw_flow_yearly")
+tfdata2 <- readdbproduct(productcodeinreport, "raw_flow_yearly")
 # optional filter by year
 #tfdata2 <- tfdata2 %>% filter(year %in% c(2010,2011))
 
-productcodeinreport <- 440799
 # Then generate the completeness data frame below
 # These data frames should be enough to run all chunks below
 # Give a value to r to generate only one of the completeness plot 
 # in the loop, in the plot chunk below
+
+# Generate report from the development version
+createcompletenessreport(440710, inputpath="inst/templates")
 ```
 
 
@@ -77,9 +80,10 @@ completeness %>%
 ```
 
 
-List of countries using each classification type in `r max(completeness$year)`.
+List of countries by classification type in the most recent year available in the dataset (`r max(completeness$year)` for most countries).
 ```{r reportername_by_classification, results='asis', eval=TRUE}
 reporterbyclassif <- completeness %>% 
+    group_by(reporter) %>%
     filter(year == max(year)) %>%
     select(year, classification, reporter) %>%
     unique()
