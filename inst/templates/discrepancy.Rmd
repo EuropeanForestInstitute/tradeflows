@@ -31,6 +31,7 @@ library(reshape2)
 # Test countries: Cameroon, Ghana, Indonesia
 message("Using the development template in ",
         "inputpath = 'inst/templates/'")
+
 # Instruction to generate the report before building the package
 creatediscrepancyreport(440799, "China", inputpath = "inst/templates")
 
@@ -201,7 +202,7 @@ When the relative discrepancy is equal to 0 both reporter and partner reported t
 
 ```{r replativediscrepancyplot, eval=TRUE, warning=FALSE}
 ## Trade flows as a point cloud
-tfdata <- tfdata %>% filterworldeu28 %>% addregion 
+tfdata <- tfdata %>% filterworldeu28() %>% addregion()
 ggplot(filter(tfdata, reporter == reporterinreport), 
        aes(x = quantity, y = reldiscrq, color = regionpartner)) +
     geom_point() + 

@@ -33,6 +33,7 @@ from the comtrade API in a temporary directory and returns a dataframe.
 It loads trade flows between one reporting country (column `reporter`) and all its partner countries (column `partner`).
 ```{r loadcomtradebycode, echo=TRUE, eval=TRUE}
 library(tradeflows)
+library(dplyr)
 library(knitr) # Package to display nice tables
 
 # Load "other sawnwood" flows reported by France (country code 251) 
