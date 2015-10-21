@@ -4,7 +4,8 @@ output:
   html_document:
     toc : true
 ---
-![](https://api.travis-ci.org/paul4forest/tradeflows.svg?branch=master)
+
+[![Travis](https://api.travis-ci.org/paul4forest/tradeflows.svg?branch=master)](https://travis-ci.org/paul4forest/tradeflows)
 
 This package prepares data for a forest products trade flow database.
 It contains functions that automatically grab data from the 
