@@ -225,7 +225,7 @@ message("Try to see if it's possible to have 2 plots sharing the same legend, ch
 #' @examples
 #' titleandplot("PAPER AND PAPERBOARD","Weight in kilograms")
 titleandplot <- function(product_,unit_){
-    cat("\n## ",product_, " (",unit_,")\n\n", sep="")
+    cat("\n## ",as.character(product_), " (",unit_,")\n\n", sep="")
     tryCatch(productplot(product_, unit_),
              error = ploterror)
     cat("\n\\newpage\n\n")
