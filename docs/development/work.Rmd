@@ -77,14 +77,17 @@ visualise missing data
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
 ## Done
-2015109: Section titles in the overview report should be those JFSQ-1 names
+
+20151009 Section titles in the overview report should be those JFSQ-1 names
          Generate overview report plots accroding to JFSQ product codes.
-2015109: Overview report list the 10 largest exporters and 10 largest importers in all plots.
+20151009 Overview report list the 10 largest exporters and 10 largest importers in all plots.
+20150904 Include partner data into the quantity estimation for those which have missing partner data.
+         in commit c3d92e77e33008eef2eef64fb465c77d0829bb73
 
 ## Project issues + requests
 8: Overview report should be based on the validated data and include quantity besides trade values
 7: Product report on the number of countries under each flag.
 3: Add abstract to country overview report
-5: Include partner data into the quantity estimation for those which have missing partner data.
+
 1: Export prices and conversion factors to Excel files
 

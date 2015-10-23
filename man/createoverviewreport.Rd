@@ -7,7 +7,7 @@
 createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
   endyear = 9999, template = "overview_tradevalue.Rmd",
   outputdir = "reports/overview", tableread = "validated_flow_yearly",
-  dataonly = FALSE, ...)
+  fileprefix = gsub("\\\\..*", "", template), dataonly = FALSE, ...)
 }
 \arguments{
 \item{reporter_}{}

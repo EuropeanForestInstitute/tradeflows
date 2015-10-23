@@ -38,9 +38,7 @@ reporterinreport <- "France"
 reporterinreport <- "Germany"
 reporterinreport <- "Gabon"
 # Generate the report from the version in development
-createoverviewreport(reporterinreport, inputpath = "inst/templates",
-                     template = "overview_quantity",
-                     beginyear = 2010, endyear = 2014)
+createoverviewreport(reporterinreport, inputpath = "inst/templates", template = "overview_quantity.Rmd", beginyear = 2010, endyear = 2014)
 
 # Generate the tfdata dataset for development purposes within this template
 tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE,
@@ -82,10 +80,12 @@ tfdata <- tfdata %>%
     mutate(productcode = as.factor(productcode),
            year = as.numeric(year))
 
-tfsummarised <- tfdata %>%
-    group_by(year, reporter, partner, partnercode, flow, product) %>%
-    summarise(tradevalue = sum(tradevalue)) %>%
-    collect()
+if(FALSE){
+    tfdata %>% select(product, unit) %>%
+        distinct() %>% arrange(product)
+    bli<- tfdata %>% select(product, productcode, unit) %>%
+        distinct() %>% arrange(product)
+}
 
 ```
 
@@ -95,57 +95,56 @@ largetf <- tfdata %>% filterworldeu28 %>% data.frame() %>% # remove grouping
     arrange(desc(tradevalue)) %>% head(100)
 
 
-# 10 largest partners for the dataframe currently in use in the report
-#' @param dtf data frame of summarised trade flow data
+#' n largest partners for the dataframe currently in use in the report
+#' 
+#' Filter data in dtf for those 10 large partners
+#' @param dtf data frame of trade flow data
 #' @param n number of parnters to select
 #' @param product_ character vector of product names, when NULL, query all products
 #' @examples
 #'\dontrun{
-#' largepartners()
-#' largepartners(c("LOGS","SAWNWOOD"))
+#' largepartnersbyflow(tfdata,"ROUNDWOOD", "Volume in cubic meters","Import")
 #' }
-largepartnersbyflow <- function(product_, flow_, dtf = tfsummarised, n = 5){
-    dtf <- filter(dtf, flow == flow_)     
-    if (!is.null(product_)){ # In case you might want to extract for all products
-        dtf <- filter(dtf, product %in% product_) 
-    }
-    dtf <- dtf %>%
+largepartnersbyflow <- function(dtf, product_, unit_, flow_, n = 5){
+    dtf %>%
+        filter(product %in% product_ & 
+                   unit == unit_ & 
+                   flow == flow_) %>%
+        # Group by year as well
+        group_by(year, reporter, partner, partnercode, flow, product, unit) %>%
+        summarise(tradevalue = sum(tradevalue)) %>%
         filterworldeu28() %>% 
+        # Group again without years, this will get the sum of all years
         group_by(flow, partner, partnercode) %>% 
         summarise(tradevalue = sum(tradevalue)) %>%
         ungroup() %>%
         arrange(desc(tradevalue)) %>% 
         head(n) 
-    return(dtf)
 }
 
-
-
-#' 10 largest partners for the dataframe currently in use in the report
-#' import and export are mixed
-#' @param dtf data frame of summarised trade flow data. Is this realy needed?
-#' @param n number of parnters to select
-#' @param product_ character vector of product names, when NULL, query all products
+#' Filter trade flows for the largest partners
+#'
+#' @param dtf data frame of trade flows
+#' @param product_ given product name
+#' @param unit_ unit
+#' @param flow character, flow name
 #' @examples
 #'\dontrun{
-#' largepartners()
-#' largepartners(c("LOGS","SAWNWOOD"))
+#' filterlargepartners(tfdata,"ROUNDWOOD", "Volume in cubic meters","Import")
 #' }
-largepartners <- function(product_=NULL, dtf = tfsummarised, n = 10){
-    if (!is.null(product_)){
-        dtf <- filter(dtf, product %in% product_) 
-    }
-    dtf <- dtf %>%
-        filterworldeu28() %>% 
-        group_by(flow, partner, partnercode) %>% 
-        summarise(tradevalue = sum(tradevalue)) %>%
-        ungroup() %>%
-        arrange(desc(tradevalue)) %>% 
-        # select(flow, partner, partnercode) %>%
-        head(n) # Could add flow here
-    return(dtf)
+filterlargepartners <- function(dtf, product_, unit_, flow_){
+    # Prepare this object first otherwise query is very slow
+    partnercodes <- largepartnersbyflow(dtf, product_, unit_, flow_)$partnercode
+    # Data
+    dtf2 <- dtf %>% 
+        filter(product == product_ & 
+                   unit == unit_ & 
+                   flow == flow_ & 
+                   partnercode %in% partnercodes)
+    # might fail for some products
+    dtf2 <- mutate(dtf2, partner = stringr::str_wrap(partner, width = 14))
+    return(dtf2)
 }
-
 
 ```
 
@@ -175,22 +174,11 @@ description <- function(productcodes){
 #' Plot product, to be used in the loop on product names below
 #' For the moment tfdata is taken from the global environment is this bad?
 #' @param product_ the itto name of a product
-productplot <- function(product_){
+productplot <- function(product_, unit_){
     # Check if the given product is in the tfdata data frame
     stopifnot(product_ %in% unique(tfdata$product))
-    
-    filterlargepartners <- function(dtf, product_, flow_){
-        # Prepare this object first otherwise query is very slow
-        # largepartnersbyflow('ROUNDWOOD', "Export")
-        partnercodes <- largepartnersbyflow(product_, flow_)$partnercode
-        # Data
-        dtf2 <- dtf %>% filter(product == product_ & flow == flow_,
-                       partnercode %in% partnercodes)
-        # might fail for some products
-        dtf2 <- mutate(dtf2, partner = stringr::str_wrap(partner, width = 14))
-    }
-    import <- filterlargepartners(tfdata, product_, "Import")
-    export <- filterlargepartners(tfdata, product_, "Export")
+    import <- filterlargepartners(tfdata, product_, unit_, "Import")
+    export <- filterlargepartners(tfdata, product_, unit_, "Export")
     combined <- rbind(import, export)
     # test if there are more than one unit, give a warning
     p <- ggplot(NULL,
@@ -212,6 +200,8 @@ productplot <- function(product_){
         ggtitle(paste("Largest ", product_, " exports reported by", reporterinreport)) 
     try(print(importp))
     try(print(exportp))
+    # Description call has to be placed here 
+    # because the combined dataframe is created in this function
     try(description(as.character(unique(combined$productcode))))
 }
 
@@ -219,22 +209,37 @@ productplot <- function(product_){
 #' Function to return an error while plotting
 #' tryCatch(stop(e), error = ploterror)
 ploterror <- function(e) {
-        cat("\nThere was an error while drawing the plot :\n")
-        print(e)
+    cat("\nThere was an error while drawing the plot :\n")
+    # Have to use the print method because 
+    # argument 1 (type 'list') cannot be handled by 'cat' 
+    print(e)
 }
-
 ```
 
 
 ```{r looponittoproducts, results='asis', fig.height=5, fig.width=12}
 message("Rerun the Comtrade Classification part of product_classification.R to add description for product starting with 47 and 48")
 message("Try to see if it's possible to have 2 plots sharing the same legend, check tile plot from erlier versions")
-for (product_ in unique(tfdata$product)){
-    cat("\n##",product_,"\n\n")
-    tryCatch(productplot(product_),
+
+#' 
+#' @examples
+#' titleandplot("PAPER AND PAPERBOARD","Weight in kilograms")
+titleandplot <- function(product_,unit_){
+    cat("\n## ",product_, " (",unit_,")\n\n", sep="")
+    tryCatch(productplot(product_, unit_),
              error = ploterror)
     cat("\n\\newpage\n\n")
+    return(data.frame(one = c(1)))
 }
+
+donotdisplay <- tfdata %>% 
+    select(product, unit) %>% 
+    distinct() %>%
+    group_by(product,unit) %>%
+    # Do operation is like a nested loop on the product and unit variables
+    do(titleandplot(.$product, .$unit))
+
+
 
 
 if (FALSE){

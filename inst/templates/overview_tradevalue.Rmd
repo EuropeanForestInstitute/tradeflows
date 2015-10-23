@@ -86,6 +86,13 @@ tfsummarised <- tfdata %>%
     summarise(tradevalue = sum(tradevalue)) %>%
     collect()
 
+
+if(FALSE){
+    # Some products are missing from the description
+    tfdata %>% filter(is.na(product)) %>%
+        select(productcode, product) %>%
+        distinct() %>% kable
+}
 ```
 
 ```{r largepartners}

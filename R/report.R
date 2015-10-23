@@ -167,6 +167,7 @@ createoverviewreport <- function(reporter_,
                                  template = "overview_tradevalue.Rmd",
                                  outputdir = "reports/overview",
                                  tableread = "validated_flow_yearly",
+                                 fileprefix = gsub("\\..*","",template),
                                  dataonly = FALSE, ...){
 
     message("Trade values are the same in raw flow and validated flow")
@@ -185,11 +186,7 @@ createoverviewreport <- function(reporter_,
         filter(reporter == reporter_&
                    year >= beginyear & year <= endyear) %>%
         select(year, period, reporter, reportercode, partner, partnercode,
-               flow, flag, unit, productcode, tradevalue, quantity) %>%
-        # This conversion from utf-8 to utf-8 shouldn't be necessary but it
-        # appears to fix an error with Côte d'Ivoire
-        mutate(reporter = iconv(reporter, "utf-8", "utf-8"),
-               partner = iconv(partner, "utf-8", "utf-8"))
+               flow, flag, unit, productcode, tradevalue, quantity)
 
 
     # Load itto product names --------------------------------------------------------
@@ -202,7 +199,11 @@ createoverviewreport <- function(reporter_,
     # both are dplyr::tbl objects the statements will be converted to SQL
     tfdata <- tfdata %>%
         left_join(productitto) %>%  # joining late in the pipe, after filter is faster
-        collect()
+        collect() %>%
+        # This conversion from utf-8 to utf-8 shouldn't be necessary but it
+        # appears to fix a display error with Côte d'Ivoire
+        mutate(reporter = iconv(reporter, "utf-8", "utf-8"),
+               partner = iconv(partner, "utf-8", "utf-8"))
 
     # Select only productcode
     if(!is.null(productcode_)){
@@ -222,7 +223,7 @@ createoverviewreport <- function(reporter_,
                  template = template,
                  outputdir = outputdir,
                  reporterinreport = reporter_,
-                 fileprefix = "overview",
+                 fileprefix = fileprefix,
                  filesuffix = paste0(beginyear, endyear),
                  ...)
 }

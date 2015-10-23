@@ -2,7 +2,7 @@
 # Prepare the product classification reference tables for use
 # within the package
 library(dplyr)
-
+library(xtable)
 ############################# #
 # ITTO product classification #
 ############################# #
@@ -49,7 +49,10 @@ jfsq1 <- jfsq1 %>%
     left_join(jfsq1names, by=c("jfsq1code"))
 
 classificationitto <- classificationitto %>%
-    left_join(jfsq1, by = "productcodecomtrade")
+    full_join(jfsq1, by = "productcodecomtrade")
+
+# is 440210 in there? itto doesn't want it as wood charcoal
+classificationitto %>% filter(productcodecomtrade == 440210)
 
 ########################### #
 # Comtrade Classifications  #
