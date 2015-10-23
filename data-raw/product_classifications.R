@@ -34,7 +34,7 @@ jfsq <- classificationitto %>%
     filter(code4 %in% c(4407,4404)) %>%
     select(product, jfsqcode  = productcodeitto, productcodecomtrade) %>%
     unique
-print.xtable(jfsq)#,include.rownames=FALSE, type = "latex", floating=FALSE)
+#print.xtable(jfsq)#,include.rownames=FALSE, type = "latex", floating=FALSE)
 
 # As requested for the overview report in September 2015
 # Add JFSQ 1 code and names to classificationitto
