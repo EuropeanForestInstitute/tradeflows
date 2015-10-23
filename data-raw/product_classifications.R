@@ -42,6 +42,9 @@ jfsq1 <- read.csv("data-raw/ittoproducts_jfsq1.csv", stringsAsFactors = FALSE)
 jfsq1names <- read.csv("data-raw/ittoproducts_jfsq1_names.csv", stringsAsFactors = FALSE) %>%
     rename(jfsq1code = JFSQ_codes,
            jfsq1name = JFSQ_names)
+# Change names to an ordered factor
+jfsq1names$jfsq1name <- factor(jfsq1names$jfsq1name,
+                               levels = jfsq1names$jfsq1name)
 
 jfsq1 <- jfsq1 %>%
     select(jfsq1code = JFSQ.1,

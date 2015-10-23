@@ -236,10 +236,9 @@ donotdisplay <- tfdata %>%
     select(product, unit) %>% 
     distinct() %>%
     group_by(product,unit) %>%
+    arrange() %>%
     # Do operation is like a nested loop on the product and unit variables
     do(titleandplot(.$product, .$unit))
-
-
 
 
 if (FALSE){
