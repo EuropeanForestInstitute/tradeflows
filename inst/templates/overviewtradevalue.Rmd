@@ -37,13 +37,16 @@ You can query detailed trade statistics via the [Data Query and Visualisation in
 reporterinreport <- "France"
 reporterinreport <- "Germany"
 reporterinreport <- "Gabon"
-# Generate the report from the version in development
-createoverviewreport(reporterinreport, inputpath = "inst/templates",
-                     beginyear = 2010, endyear = 2014)
+# Generate the report from the version in development, JFSQ level 1 titles (default)
+createoverviewreport(reporterinreport, inputpath = "inst/templates", beginyear = 2010, endyear = 2014)
 
-# Generate the tfdata dataset for development purposes within this template
-tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE,
-                               inputpath = "inst/templates")
+# JFSQ level 2 titles
+createoverviewreport(reporterinreport, inputpath = "inst/templates", beginyear = 2010, endyear = 2014, jfsqlevel = 2)
+
+# Generate the tfdata dataset for development purposes within this template, JFSQ level 1 titles (default)
+tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE, inputpath = "inst/templates")
+# dataset with level 2 titles
+tfdata <- createoverviewreport(reporterinreport, dataonly = TRUE, inputpath = "inst/templates", jfsqlevel = 2)
 
 unique(tfdata$product)
 tfdata %>% group_by(product) %>%
@@ -54,105 +57,61 @@ tfdata %>% group_by(product) %>%
 
 
 
-```{r preparedata}
-# # Cosmetic, shorten a few long itto product name
-# Not used anymore since jfsq product groups are used now
-# tfdata <- tfdata %>%
-#     mutate(product = gsub("OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ",
-#                           "", product))
-nrowtfdata <- nrow(tfdata)
-jfsqproductgroups <- classificationitto %>% 
-    select(productcode = productcodecomtrade, jfsq1name) %>% 
-    distinct()
-
-# Add jfsq1names 
-tfdata <- tfdata %>% 
-    left_join(jfsqproductgroups, by="productcode")
-stopifnot(nrowtfdata == nrow(tfdata))
-
-# Replace product by jfsq1name
-# To avoid painfull refactoring which might not be needed
-tfdata <- tfdata %>% select(-product) %>%
-    rename(product = jfsq1name)
-
-# Change productcode to a factor 
-# do it here, after the merge with jfsqproductgroups
-tfdata <- tfdata %>%
-    mutate(productcode = as.factor(productcode),
-           year = as.numeric(year))
-
-tfsummarised <- tfdata %>%
-    group_by(year, reporter, partner, partnercode, flow, product) %>%
-    summarise(tradevalue = sum(tradevalue)) %>%
-    collect()
-
-
-if(FALSE){
-    # Some products are missing from the description
-    tfdata %>% filter(is.na(product)) %>%
-        select(productcode, product) %>%
-        distinct() %>% kable
-}
-```
-
 ```{r largepartners}
 # 100 largest trade flows
 largetf <- tfdata %>% filterworldeu28 %>% data.frame() %>% # remove grouping
     arrange(desc(tradevalue)) %>% head(100)
 
 
-# 10 largest partners for the dataframe currently in use in the report
-#' @param dtf data frame of summarised trade flow data
+#' n largest partners for the dataframe currently in use in the report
+#' 
+#' Filter data in dtf for those 10 large partners
+#' @param dtf data frame of trade flow data
 #' @param n number of parnters to select
 #' @param product_ character vector of product names, when NULL, query all products
 #' @examples
 #'\dontrun{
-#' largepartners()
-#' largepartners(c("LOGS","SAWNWOOD"))
+#' largepartnersbyflow(tfdata,"ROUNDWOOD", "Import")
 #' }
-largepartnersbyflow <- function(product_, flow_, dtf = tfsummarised, n = 5){
-    dtf <- filter(dtf, flow == flow_)     
-    if (!is.null(product_)){ # In case you might want to extract for all products
-        dtf <- filter(dtf, product %in% product_) 
-    }
-    dtf <- dtf %>%
+largepartnersbyflow <- function(dtf, product_, flow_, n = 5){
+    dtf %>%
+        filter(product %in% product_ & 
+                   flow == flow_) %>%
+        # Group by year as well
+        group_by(year, reporter, partner, partnercode, flow, product) %>%
+        summarise(tradevalue = sum(tradevalue)) %>%
         filterworldeu28() %>% 
+        # Group again without years, this will get the sum of all years
         group_by(flow, partner, partnercode) %>% 
         summarise(tradevalue = sum(tradevalue)) %>%
         ungroup() %>%
         arrange(desc(tradevalue)) %>% 
         head(n) 
-    return(dtf)
 }
 
 
 
-#' 10 largest partners for the dataframe currently in use in the report
-#' import and export are mixed
-#' @param dtf data frame of summarised trade flow data. Is this realy needed?
-#' @param n number of parnters to select
-#' @param product_ character vector of product names, when NULL, query all products
+#' Filter trade flows for the largest partners
+#'
+#' @param dtf data frame of trade flows
+#' @param product_ given product name
+#' @param flow character, flow name
 #' @examples
 #'\dontrun{
-#' largepartners()
-#' largepartners(c("LOGS","SAWNWOOD"))
+#' filterlargepartners(tfdata,"ROUNDWOOD", "Volume in cubic meters","Import")
 #' }
-largepartners <- function(product_=NULL, dtf = tfsummarised, n = 10){
-    if (!is.null(product_)){
-        dtf <- filter(dtf, product %in% product_) 
-    }
-    dtf <- dtf %>%
-        filterworldeu28() %>% 
-        group_by(flow, partner, partnercode) %>% 
-        summarise(tradevalue = sum(tradevalue)) %>%
-        ungroup() %>%
-        arrange(desc(tradevalue)) %>% 
-        # select(flow, partner, partnercode) %>%
-        head(n) # Could add flow here
-    return(dtf)
+filterlargepartners <- function(dtf, product_, flow_){
+    # Prepare this object first otherwise query is very slow
+    partnercodes <- largepartnersbyflow(dtf, product_, flow_)$partnercode
+    # Data
+    dtf2 <- dtf %>% 
+        filter(product == product_ & 
+                   flow == flow_ & 
+                   partnercode %in% partnercodes)
+    # might fail for some products
+    dtf2 <- mutate(dtf2, partner = stringr::str_wrap(partner, width = 14))
+    return(dtf2)
 }
-
-
 ```
 
 
@@ -184,17 +143,6 @@ description <- function(productcodes){
 productplot <- function(product_){
     # Check if the given product is in the tfdata data frame
     stopifnot(product_ %in% unique(tfdata$product))
-    
-    filterlargepartners <- function(dtf, product_, flow_){
-        # Prepare this object first otherwise query is very slow
-        # largepartnersbyflow('ROUNDWOOD', "Export")
-        partnercodes <- largepartnersbyflow(product_, flow_)$partnercode
-        # Data
-        dtf2 <- dtf %>% filter(product == product_ & flow == flow_,
-                       partnercode %in% partnercodes)
-        # might fail for some products
-        dtf2 <- mutate(dtf2, partner = stringr::str_wrap(partner, width = 14))
-    }
     import <- filterlargepartners(tfdata, product_, "Import")
     export <- filterlargepartners(tfdata, product_, "Export")
     
@@ -263,6 +211,38 @@ if (FALSE){
 
 ## All products
 ```{r allproducts, fig.height=17, fig.width=12}
+tfsummarised <- tfdata %>%
+    group_by(year, reporter, partner, partnercode, flow, product) %>%
+    summarise(tradevalue = sum(tradevalue)) %>%
+    collect()
+
+
+#' 10 largest partners for the dataframe currently in use in the report
+#' import and export are mixed
+#' @param dtf data frame of summarised trade flow data. Is this realy needed?
+#' @param n number of parnters to select
+#' @param product_ character vector of product names, when NULL, query all products
+#' @examples
+#'\dontrun{
+#' largepartners()
+#' largepartners(c("LOGS","SAWNWOOD"))
+#' }
+largepartners <- function(product_=NULL, dtf = tfsummarised, n = 10){
+    if (!is.null(product_)){
+        dtf <- filter(dtf, product %in% product_) 
+    }
+    dtf <- dtf %>%
+        filterworldeu28() %>% 
+        group_by(flow, partner, partnercode) %>% 
+        summarise(tradevalue = sum(tradevalue)) %>%
+        ungroup() %>%
+        arrange(desc(tradevalue)) %>% 
+        # select(flow, partner, partnercode) %>%
+        head(n) # Could add flow here
+    return(dtf)
+}
+
+
 partnercodes <- largepartners()$partnercode
 # filter(tfdata, partner %in% largetf$partner)
 ggplot(filter(tfsummarised, partnercode %in% partnercodes),

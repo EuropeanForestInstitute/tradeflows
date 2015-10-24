@@ -5,9 +5,10 @@
 \title{Create reports for all products in the given reporter country}
 \usage{
 createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
-  endyear = 9999, template = "overview_tradevalue.Rmd",
+  endyear = 9999, template = "overviewtradevalue.Rmd",
   outputdir = "reports/overview", tableread = "validated_flow_yearly",
-  fileprefix = gsub("\\\\..*", "", template), dataonly = FALSE, ...)
+  jfsqlevel = 1, fileprefix = gsub("\\\\..*", "", template),
+  dataonly = FALSE, ...)
 }
 \arguments{
 \item{reporter_}{}
@@ -19,12 +20,20 @@ createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
 \item{outputdir}{path where report will be saved, relative to the working directory
 or an absolute path.}
 
+\item{jfsqlevel}{integer 1 or 2 the level of jfsq product names to be used, see the internal table classificationitto}
+
 \item{...}{further arguments passed to \code{\link{createreport}()}}
 }
 \description{
 The location of the report can be changed by changing the outputdir parameter.
 See arguments of \code{\link{createreport}()}
 to determine in which folder the template is located.
+}
+\details{
+jfsqlevel determines the product group levels,
+there are approximatley a dozen of product groups under jfsq level 1
+and sixty product groups under level 2.
+Depending on the level choosen, there will be a dozen or sixty titles in the overview report.
 }
 \examples{
 \dontrun{

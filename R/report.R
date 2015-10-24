@@ -149,11 +149,17 @@ createreportfromdb <- function(tableread,
 #' The location of the report can be changed by changing the outputdir parameter.
 #' See arguments of \code{\link{createreport}()}
 #' to determine in which folder the template is located.
+#'
+#' jfsqlevel determines the product group levels,
+#' there are approximatley a dozen of product groups under jfsq level 1
+#' and sixty product groups under level 2.
+#' Depending on the level choosen, there will be a dozen or sixty titles in the overview report.
 #' @param reporter_
 #' @param productcode_ vector of product code, NULL by default to generate the report for all products
 #' @param template name of the template file.
 #' @param outputdir path where report will be saved, relative to the working directory
 #' or an absolute path.
+#' @param jfsqlevel integer 1 or 2 the level of jfsq product names to be used, see the internal table classificationitto
 #' @param ... further arguments passed to \code{\link{createreport}()}
 #' @examples
 #'\dontrun{
@@ -164,9 +170,10 @@ createreportfromdb <- function(tableread,
 createoverviewreport <- function(reporter_,
                                  productcode_ = NULL,
                                  beginyear = 0, endyear = 9999,
-                                 template = "overview_tradevalue.Rmd",
+                                 template = "overviewtradevalue.Rmd",
                                  outputdir = "reports/overview",
                                  tableread = "validated_flow_yearly",
+                                 jfsqlevel = 1,
                                  fileprefix = gsub("\\..*","",template),
                                  dataonly = FALSE, ...){
 
@@ -203,7 +210,46 @@ createoverviewreport <- function(reporter_,
         # This conversion from utf-8 to utf-8 shouldn't be necessary but it
         # appears to fix a display error with Côte d'Ivoire
         mutate(reporter = iconv(reporter, "utf-8", "utf-8"),
-               partner = iconv(partner, "utf-8", "utf-8"))
+               partner = iconv(partner, "utf-8", "utf-8")) %>%
+        # Cosmetic, shorten a few long itto product name
+        mutate(product = gsub("OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ",
+                              "", product))
+    # Change product to a factor, so that it keeps the same order
+    tfdata$product <- factor(tfdata$product, levels=unique(tfdata$product))
+
+
+    # Replace product by jfsq1name if required by the jfsqlevel parameter
+    if (jfsqlevel == 1){
+        nrowtfdata <- nrow(tfdata)
+        jfsqproductgroups <- classificationitto %>%
+            select(productcode = productcodecomtrade, jfsq1name) %>%
+            distinct()
+        tfdata <- tfdata %>%
+            left_join(jfsqproductgroups, by="productcode")
+
+        tfdata <- tfdata %>%
+            # This replacement of the product column was done
+            # To avoid painfull refactoring which might not be needed
+            select(-product) %>%
+            rename(product = jfsq1name)
+        if(FALSE){#debug find out that there is a duplicate product code
+            message("there is an issue with SECONDARY PAPER PRODUCTS and WOOD-BASED PANELS")
+            bla <- tfdata %>% group_by(productcode) %>%
+                summarise(n = n())
+            #bla0 <- bla
+            bla <- bla %>% mutate(count = n - bla0$n) %>%
+                arrange(desc(count))
+            jfsqproductgroups %>% filter(productcode == 441129)
+            classificationitto %>% filter(productcodecomtrade == 441129)
+        }
+        stopifnot(nrowtfdata == nrow(tfdata))
+    }
+
+    # Change productcode to a factor
+    # do it here, after the merge with jfsqproductgroups
+    tfdata <- tfdata %>%
+        mutate(productcode = as.factor(productcode),
+               year = as.numeric(year))
 
     # Select only productcode
     if(!is.null(productcode_)){
@@ -224,7 +270,7 @@ createoverviewreport <- function(reporter_,
                  outputdir = outputdir,
                  reporterinreport = reporter_,
                  fileprefix = fileprefix,
-                 filesuffix = paste0(beginyear, endyear),
+                 filesuffix = paste0(beginyear, endyear,"jfsq",jfsqlevel),
                  ...)
 }
 

@@ -46,10 +46,21 @@ jfsq1names <- read.csv("data-raw/ittoproducts_jfsq1_names.csv", stringsAsFactors
 jfsq1names$jfsq1name <- factor(jfsq1names$jfsq1name,
                                levels = jfsq1names$jfsq1name)
 
+
+# SECONDARY PAPER PRODUCTS
+
+
 jfsq1 <- jfsq1 %>%
     select(jfsq1code = JFSQ.1,
            productcodecomtrade = HSFULL6D) %>%
     left_join(jfsq1names, by=c("jfsq1code"))
+
+# Check uniqueness of productcodes
+jfsq1 %>% group_by(productcodecomtrade) %>% summarise(n=n()) %>% arrange(desc(n))
+
+# Issue with 441129 beeing present twice
+jfsq1 <- jfsq1 %>% filter(!(productcodecomtrade == 441129 & jfsq1name == "SECONDARY PAPER PRODUCTS"))
+
 
 classificationitto <- classificationitto %>%
     full_join(jfsq1, by = "productcodecomtrade")
