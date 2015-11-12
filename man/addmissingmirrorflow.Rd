@@ -2,8 +2,7 @@
 % Please edit documentation in R/clean.R
 \name{addmissingmirrorflow}
 \alias{addmissingmirrorflow}
-\title{Add the partner flow when quantity is missing
-When a flow does not have a mirror flow.}
+\title{Add the partner flow when quantity is missing}
 \usage{
 addmissingmirrorflow(dtf)
 }
@@ -11,7 +10,6 @@ addmissingmirrorflow(dtf)
 \item{dtf}{a data frame containing world trade flows for one product}
 }
 \description{
-Add the partner flow when quantity is missing
 When a flow does not have a mirror flow.
 }
 

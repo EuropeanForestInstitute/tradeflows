@@ -7,7 +7,7 @@
 createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
   endyear = 9999, template = "overviewtradevalue.Rmd",
   outputdir = "reports/overview", tableread = "validated_flow_yearly",
-  jfsqlevel = 1, fileprefix = gsub("\\\\..*", "", template),
+  jfsqlevel = 2, fileprefix = gsub("\\\\..*", "", template),
   dataonly = FALSE, ...)
 }
 \arguments{

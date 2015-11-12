@@ -90,4 +90,4 @@ visualise missing data
 7: Product report on the number of countries under each flag.
 3: Add abstract to country overview report
 1: Export prices and conversion factors to Excel files
-
+9: Methodology report add a paragraph on the different types of predefined automated reports that can be generated, with indication of the parameters that can be set. Four different report types: - completeness report - discrepancy report - overview report- trade network analysis 

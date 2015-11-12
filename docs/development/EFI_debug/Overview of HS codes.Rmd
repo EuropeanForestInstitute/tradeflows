@@ -1,0 +1,85 @@
+---
+title: "Overview of HS codes"
+author: "Paul Rougieux"
+date: "11 November 2015"
+header-includes:
+   - \usepackage{longtable}
+output: 
+  pdf_document: 
+    toc: yes
+---
+
+```{r message=FALSE}
+library(tradeflows)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(xtable)
+options(xtable.comment = FALSE) 
+```
+
+
+# An overview of changes in HS codes 
+This is Jo's question:
+
+> A big thing in terms of pages is that I would like to replace the ANNEX a1 with an overview of the HS codes and the HS system under which they are applicable.
+
+I think he wants to display changes in HS codes 
+between H1 and H2, between H2 and H3 and between H3 and H4.
+There are much less changes between H3 and H4 than between the other ones.
+
+
+```{r results='asis'}
+#' Print a table of productcode, description, parentcode, with nice formating 
+#' @examples printtable(mutate(cars,bli = speed+1))
+printtable <- function(dtf){
+    dtf %>%
+        xtable(align = "p{50pt}p{50pt}p{300pt}p{55pt}") %>%
+        print.xtable(tabular.environment = "longtable", 
+                     # booktabs = TRUE,
+                     include.rownames=FALSE, type = "latex", floating=FALSE)
+}
+message("use anti_joint instead")
+#' Display product codes that disappear and product codes that appear during a change of 
+#' HS classification
+#' @param Ha old classification
+#' @param Hb new classification
+#' @param newerHSname name of the newer HS classification
+changes <- function(Ha,Hb,newerHSname){
+    # Check that description is non-empty 
+    # missing description will be used below after the merge 
+    # to check codes appearing and disapearing 
+    stopifnot(sum(is.na(Ha$description))==0)
+    stopifnot(sum(is.na(Hb$description))==0)
+    HSchanges <- full_join(Ha,Hb,by="productcode")
+    cat("\n\n## Product codes that disappeared in",newerHSname,"\n\n")
+    # cat(HSchanges$productcode[is.na(HSchanges$description.x)], sep=", ")
+    HSchanges %>%
+        filter(is.na(description.y)) %>%
+        select(productcode, description.x, parentcode.x) %>%
+        printtable()
+
+    
+    cat("\n\n## Product codes that appeared in",newerHSname,"\n\n")
+    # cat(HSchanges$productcode[is.na(HSchanges$description.x)], sep=", ")
+    HSchanges %>% 
+        filter(is.na(description.x)) %>% 
+        select(productcode, description.y,parentcode.y) %>%
+        printtable()
+}
+```
+
+
+\newpage
+
+```{r listofchanges, results='asis'}
+attach(classificationcomtrade)
+changes(H1,H2,"H2")
+cat("\n\n\\newpage")
+changes(H2,H3,"H3")
+cat("\n\n\\newpage")
+changes(H3,H4,"H4")
+detach(classificationcomtrade)
+anti_join(classificationcomtrade$H3,classificationcomtrade$H4,by="productcode")
+```
+

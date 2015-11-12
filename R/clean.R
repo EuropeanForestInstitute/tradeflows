@@ -342,12 +342,11 @@ calculatediscrepancies <- function(dtf){
 #' comput quantity_up from the trade value using a unit price.
 #' These columns will be available in the data frame output of this function,
 #' but they will not be saved in the validated database.
-#' Then split the data frame
+#'
+#' Split the data frame between flows which have a quantity from those which don't
 #' complete missing quantity from weight when available or from the
 #' tradevalue when the weight is not available
-#' Check unit price
-#' Check unit price of the trade flow, against a table of reference unit prices
-#' Check upper and lower bounds on price.
+#' Check upper and lower bounds on price against a table of reference unit prices
 #' In general NA values should be avoided for the
 #'  upper and lower bounds on prices
 #' @param dtf data frame
@@ -475,7 +474,11 @@ replacebypartnerquantity <- function(dtf, choice){
 #' Check unit price for all flows
 #' recalculate unit price based on quantity estimate
 #' Those which have been estimated from tradevalue will have correct prices
-#' those which have been estimated from weight might be changed as well
+#' Those which have been estimated from weight might be changed as well
+#' Split trade flows between those which are within the price bounds
+#' and those which are out of the price bounds.
+#' For trade flows outside the price bounds,
+#' use the unit price to estimate the quantity
 #' @param dtf data frame
 #' @export
 shaveprice <- function(dtf){
@@ -503,6 +506,7 @@ shaveprice <- function(dtf){
 
 
 #' Add the partner flow when quantity is missing
+#'
 #' When a flow does not have a mirror flow.
 #' @param dtf a data frame containing world trade flows for one product
 #' @export

@@ -18,6 +18,10 @@ check this order in the source of the clean() function.
 Check unit price for all flows
 recalculate unit price based on quantity estimate
 Those which have been estimated from tradevalue will have correct prices
-those which have been estimated from weight might be changed as well
+Those which have been estimated from weight might be changed as well
+Split trade flows between those which are within the price bounds
+and those which are out of the price bounds.
+For trade flows outside the price bounds,
+use the unit price to estimate the quantity
 }
 

@@ -118,26 +118,6 @@ filterlargepartners <- function(dtf, product_, unit_, flow_){
 ```
 
 
-```{r productdescription}
-#' Product description
-#' Use:
-#' description(c(440799, 440795))
-description <- function(productcodes){
-    descr <- classificationcomtrade$HS %>%
-        filter(productcode %in% productcodes) 
-    # Individual codes and description remove product code if its
-    # at the begining of the description
-    if (sum(as.character(descr$productcode) !=
-        substring(descr$description, 1, 6))==0){
-        descr$description <- substring(descr$description,7)
-        }
-    for(code in descr$productcode){
-        cat("\n\n__",code,":__ ", sep="")
-        cat(descr$description[descr$productcode == code])
-    }
-}
-```
-
  
 ```{r productplot}
 #' Plot product, to be used in the loop on product names below

@@ -173,7 +173,7 @@ createoverviewreport <- function(reporter_,
                                  template = "overviewtradevalue.Rmd",
                                  outputdir = "reports/overview",
                                  tableread = "validated_flow_yearly",
-                                 jfsqlevel = 1,
+                                 jfsqlevel = 2,
                                  fileprefix = gsub("\\..*","",template),
                                  dataonly = FALSE, ...){
 
@@ -359,6 +359,28 @@ creatediscrepancyreport <- function(productcode_, reporter_,
                  ...)
 }
 
+
+#' Product description
+#'
+#' To be used in a markdown formated document.
+#' Use:
+#' description(c(440799, 440795))
+#' @param productcodes numeric vector of product codes
+#' @export
+description <- function(productcodes){
+    descr <- classificationcomtrade$HS %>%
+        filter(productcode %in% productcodes)
+    # Individual codes and description remove product code if its
+    # at the begining of the description
+    if (sum(as.character(descr$productcode) !=
+            substring(descr$description, 1, 6))==0){
+        descr$description <- substring(descr$description,7)
+    }
+    for(code in descr$productcode){
+        cat("\n\n__",code,":__ ", sep="")
+        cat(descr$description[descr$productcode == code])
+    }
+}
 
 if (FALSE){
     library(tradeflows)
