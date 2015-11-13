@@ -166,6 +166,17 @@ The test_check function documentation tells us that tests should be placed in te
 * [Example tests of the stringr package](https://github.com/hadley/stringr/tree/master/tests/testthat)
 
 
+### Code coverage 
+The `covr` package can be used to measure code coverage.
+`covr::package_coverage()`
+Shows test coverage of scripts in the `./R` directory.
+Visualise coverage in a shiny application:
+```
+x <- package_coverage()
+shine(x)
+```
+
+
 ### Data frame manipulation with dplyr
 dplyr uses non standard evaluation. See vignette("nse") 
 NSE is powered by the lazyeval package

@@ -1,11 +1,19 @@
-
 # This test suite assumes that
 # The package contains a test dataset called sawnwoodexample.
 swd <- tradeflows::sawnwoodexample
-
-
+require(dplyr, warn.conflicts = FALSE)
 
 context("Clean functions")
+
+test_that("Add region works",{
+    dtf <- data_frame(reportercode = c(4,8,716),
+                      partnercode = c(716,894,8)) %>%
+        addregion()
+    expect_that(dtf$regionreporter, equals(c("Africa", "Asia", "Europe")))
+    expect_that(dtf$regionpartner, equals(c("Europe", "Africa", "Africa")))
+})
+
+
 test_that("Price and conversion factorcalculation, deals with NA", {
     dtf <- data.frame(weight = c(1,NA,5),
                       quantity = c(2,4,6),
@@ -19,14 +27,29 @@ test_that("Price and conversion factorcalculation, deals with NA", {
 })
 
 
+test_that("Price extraction ", {
+    dtf <- data_frame(reporter = letters[1:6],
+                      partner = letters[21:26],
+                      flow = rep(c("Import","Export"),3),
+                      regionreporter = rep(c("a","a","b"),2),
+                      tradevalue = rnorm(6,100000,10000),
+                      quantity = rnorm(6,1000,100),
+                      unit = "m3",
+                      year = 2013) %>%
+        mutate(price = tradevalue / quantity)
+    dtf2 <- dtf %>% extractprices()
+
+    message("Try to use a different geoaggregation level in clean")
+})
+
+
+
+
 test_that("Grouping works in priceextraction", {
     dtf <- data.frame(price = rnorm(3,10),
                       aggregationregion = c("a","a","b"))
-
     message("Use a different geoaggregation level in clean")
-
 })
-
 
 
 context("Clean functions do not change total quantity")

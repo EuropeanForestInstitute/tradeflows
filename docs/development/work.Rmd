@@ -77,6 +77,10 @@ visualise missing data
 * Javascript visualisation: [Add googleVis and Rcharts to Markdown documents](http://al2na.github.io/Rmarkdown_JSviz/)
 
 ## Done
+20151103 Methodology report add a paragraph on the different types of predefined automated reports that can be generated, with indication of the parameters that can be set. Four different report types: - completeness report - discrepancy report - overview report- trade network analysis 
+3: Add abstract to country overview report
+20151023 commit a58d6e4fb Overview report should be based on the validated data
+         and include quantity besides trade values
 20151009 Section titles in the overview report should be those JFSQ-1 names
          Generate overview report plots accroding to JFSQ product codes.
 20151009 Overview report list the 10 largest exporters and 10 largest importers in all plots.
@@ -84,10 +88,9 @@ visualise missing data
          in commit c3d92e77e33008eef2eef64fb465c77d0829bb73
          git diff fd724fa080cc c3d92e77e330 # View changes introduced
          See the function addmissingmirrorflow()
+
          
 ## Project issues + requests
-8: Overview report should be based on the validated data and include quantity besides trade values
-7: Product report on the number of countries under each flag.
-3: Add abstract to country overview report
-1: Export prices and conversion factors to Excel files
-9: Methodology report add a paragraph on the different types of predefined automated reports that can be generated, with indication of the parameters that can be set. Four different report types: - completeness report - discrepancy report - overview report- trade network analysis 
+* place the methodology report datasets and plots in an R script that can be called from the package
+* Product report on the number of countries under each flag.
+* Export prices and conversion factors to Excel files
