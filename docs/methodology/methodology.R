@@ -1,10 +1,42 @@
-#' R output for the methodology report Lyx file
-#'
+# Create data frames and plots for the methodology report Lyx file
+#
+# Absolute path for execution within lyx
+# Future: Place data file in the deliverable/reports directory
+# for development purposes
+# dtf <- readRDS("~/hubic/work/EFI/Research/projects/ITTO_Trade_DB/deliverables/data/440799.rds")
+# Relative path, only valid from Lyx in the "deliverables" folder
+dtf <- readRDS("data/440799.rds")
+
+# For development purposes
 library(tradeflows)
 library(dplyr)
 library(xtable)
 library(ggplot2)
 library(reshape2)
+
+
+#### Calculate price and conversion factors ####
+swd99 <- dtf %>%
+    filter(year %in% c(2010,2011)) %>%
+    removeduplicatedflows %>%
+    addconversionfactorandprice %>%
+    addregion
+swd99conv <- swd99 %>% extractconversionfactors %>%
+    arrange(year,flow) %>% select(-unit) %>% data.frame
+swd99price <- swd99 %>% extractprices %>% select(-unit) %>% data.frame
+
+
+swd99region <- swd99 %>%
+    filter(flow %in% c("Import", "Export")) %>%
+    group_by(flow, regionreporter, year) %>%
+    summarise(lowerprice = round(0.5 * quantile(price, 0.25,
+                                                names=FALSE, na.rm=TRUE)),
+              medianprice = round(median(price, na.rm=TRUE)),
+              upperprice = round(2 * quantile(price, 0.75,
+                                              names=FALSE, na.rm=TRUE)),
+              priceregion = round(sum(tradevalue) / sum(quantity))) %>%
+    arrange(-medianprice)
+
 
 #' Print data frame in latex format
 #' @param dtf data frame
@@ -28,59 +60,9 @@ printtable <- function(dtf, label=NULL, caption=NULL, align=NULL){
 }
 
 
-#### Conversion factors ####
-# Absolute path for execution within lyx
-load("/home/paul/R/tradeflows/data-raw/comtrade/440799.RData")
-swd99 <- dtf %>% renamecolumns %>%
-    filter(year %in% c(2010,2011)) %>%
-    removeduplicatedflows %>%
-    addconversionfactorandprice %>%
-    addregion
-swd99conv <- swd99 %>% extractconversionfactors %>%
-    arrange(year,flow) %>% select(-unit) %>% data.frame
-swd99price <- swd99 %>% extractprices %>% select(-unit) %>% data.frame
-
-
-#### Product codes ####
-jfsqcomtrade <- classificationitto %>%
-    # Filter logs and sawnwood
-    # filter(product %in% c("LOGS","SAWNWOOD")) %>%
-    # The filter instruction is commented out because we
-    # Select all nomenclatures in the itto tables
-    # Deal with duplicates with the unique() statement at the end
-    # filter(nomenclature=="HS12") %>%
-    select(product, productcodeitto, productcodecomtrade, tropical) %>%
-    merge(classificationcomtrade$HS, by.x="productcodecomtrade", by.y="productcode") %>%
-    mutate(description = substring(description,10)) %>%
-    mutate(description = gsub("/","/ ",description),
-           description = gsub("cm³","cm^3", description),
-           product = gsub("’","",product)) %>%
-    select(Product = product, JFSQ = productcodeitto,
-           Comtrade = productcodecomtrade,
-           # Tropical = tropical,
-           Description = description) %>%
-    unique %>%
-    arrange(JFSQ) #%>% kable(row.names=FALSE)
-
-
-swd99region <- swd99 %>%
-    filter(flow %in% c("Import", "Export")) %>%
-    group_by(flow, regionreporter, year) %>%
-    summarise(lowerprice = round(0.5 * quantile(price, 0.25,
-                                                names=FALSE, na.rm=TRUE)),
-              medianprice = round(median(price, na.rm=TRUE)),
-              upperprice = round(2 * quantile(price, 0.75,
-                                              names=FALSE, na.rm=TRUE)),
-              priceregion = round(sum(tradevalue) / sum(quantity))) %>%
-    arrange(-medianprice)
-
-
-########################## #
-### Price distribution ### #
-########################## #
+### Plot price distribution ####
 # Plot trade value distribution and median trade value by region
 # Calculate total trade value by region, year and show total trade value
-
 pricedistri <- swd99 %>%
     mutate(pricegroup = round(price/100) * 100) %>%
     filter(flow %in% c("Import", "Export")) %>%
@@ -101,6 +83,7 @@ pricedistriagg <- pricedistri %>%
               number_of_flows = sum(number)) %>%
     melt(id = c("pricegroup", "flow", "flag"))
 
+
 # Error with fill = flag, when flag contains NA values.
 pricedistriplot <- ggplot(pricedistri,
                          aes(x = pricegroup, y = quantity/1e6, fill = flag)) +
@@ -111,6 +94,7 @@ pricedistriplot <- ggplot(pricedistri,
 # pricedistriplot + facet_grid(flow~.) + ggtitle("World trade flows for 440799") #+ aes(fill=region)
 # message("separate by flag")
 # pricedistriplot + aes(y = tradevalue) + facet_grid(flow~.)
+
 
 pricedistriaggplot <- ggplot(pricedistriagg,
                              aes(x= pricegroup, y = value, fill = flag)) +
@@ -135,8 +119,31 @@ message("Change this for total trade volume at a given price and delete this mes
 message("Maybe the plot in total trade value was good after all")
 # At least it had a higher values for the red part of the plot
 
+
+# #### Product codes ####
+# jfsqcomtrade <- classificationitto %>%
+#     # Filter logs and sawnwood
+#     # filter(product %in% c("LOGS","SAWNWOOD")) %>%
+#     # The filter instruction is commented out because we
+#     # Select all nomenclatures in the itto tables
+#     # Deal with duplicates with the unique() statement at the end
+#     # filter(nomenclature=="HS12") %>%
+#     select(product, productcodeitto, productcodecomtrade, tropical) %>%
+#     merge(classificationcomtrade$HS, by.x="productcodecomtrade", by.y="productcode") %>%
+#     mutate(description = substring(description,10)) %>%
+#     mutate(description = gsub("/","/ ",description),
+#            description = gsub("cm³","cm^3", description),
+#            product = gsub("’","",product)) %>%
+#     select(Product = product, JFSQ = productcodeitto,
+#            Comtrade = productcodecomtrade,
+#            # Tropical = tropical,
+#            Description = description) %>%
+#     unique %>%
+#     arrange(JFSQ) #%>% kable(row.names=FALSE)
+
+
 if (FALSE){
-    # Begining of
+    # Begining of trying things out
     classificationitto %>% filter(productcodecomtrade==440320)
 
     # Tables used in lyx
@@ -240,4 +247,16 @@ if (FALSE){
     }
     logsde$product <- "LOGS"
     productplot("LOGS",  "Volume in cubic meters", "Germany")
+}
+
+
+if(FALSE){
+    load("/home/paul/R/tradeflows/data-raw/comtrade/440799.RData")
+    swd99 <- dtf %>% renamecolumns
+    saveRDS(swd99, "data-raw/comtrade/440799.rds")
+    # See if the file size is fine for use as a package object
+    saveRDS(dtf,"data-raw/comtrade/440799.rds")
+
+    saveRDS(swd99,"data-raw/comtrade/swd99.rds")
+    saveRDS(pricedistri,"data-raw/comtrade/pricedistri.rds")
 }
