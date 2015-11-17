@@ -3,13 +3,14 @@
 #' Keep price, conversion factor andflow choice in a separate table
 #' for further analysis
 #' @param dtf data frame
-#' @param filename path and name of the output files
+#' @param file a character string naming an Excel file, should end by ".xlsx"
+#' @param path a character string specifying where the excel file will be saved
 #' @param returnresults TRUE if the list of results should be returned
 #' usefull for the function cleanrdata2excel.
-#' @param ... furhter arguments passed to clean()
+#' @param ... further arguments passed to \code{\link{clean()}}
 #'  without extensions
 #' @export
-clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
+clean2excel <- function(dtf, file, path = "data-raw/excel", returnresults = FALSE, ...){
     require(xlsx)
     require(reshape2)
     results <- clean(dtf,outputalltables = TRUE, ...)
@@ -88,9 +89,9 @@ clean2excel <- function(dtf, filenamestart, returnresults = FALSE, ...){
                  sheet = createSheet(wb, sheetName="Quantity change by flag"))
     sheet7  <- createSheet(wb, sheetName="Quantity change world")
     addDataFrame(results$worldchange, sheet7, row.names=FALSE)
-    saveWorkbook(wb, paste0(filenamestart, ".xlsx"))
+    saveWorkbook(wb, file.path(path,file))
 
-    if(returnresults){
+    if(returnresults){ # You might want to return invisibly instead?
         return(results)
     }
 }
@@ -127,46 +128,43 @@ extractflags <- function(dtf){
 
 #' Clean from a database table to Excel, for expert analysis.
 #'
-#' Use the argument filenamestart to specify where the Excel file will be located.
+#' Use the argument file to specify where the Excel file will be located.
 #' @param productcode code of a product
 #' @param tableread names of the database table to read
-#' @param filenamestart begining of the Excel file name
-#' @param ... further arguments passed to clean()
 #' @rdname clean2excel
 #' @export
-cleandb2excel <-function(productcode, tableread = "raw_flow_yearly" , ...){
+cleandb2excel <-function(productcode, file = paste0(productcode, ".xlsx"),
+                         tableread = "raw_flow_yearly" , ...){
     readdbproduct(productcode, tableread) %>%
-        clean2excel(returnresults = FALSE, ...)
+        clean2excel(returnresults = FALSE, file = file,  ...)
 }
 
 
 #' Clean from raw data file to Excel and a csv file
 #' @param rawfile name of a .RData file containing raw trade flows
-#' @param ... further arguements passed to clean2Excel()
 #' @rdname clean2excel
 #' @export
 cleanrdata2excel <- function(rawfilename, ...){
     load(rawfilename)
-    filenamestart <- gsub("comtrade", "excel", rawfilename)
-    filenamestart <- gsub(".RData", "", filenamestart)
+    file <- gsub("comtrade", "excel", rawfilename)
+    file <- gsub(".RData", ".xlsx", file)
     results <- dtf %>% renamecolumns %>%
-        clean2excel(filenamestart = filenamestart,
+        clean2excel(file = file,
                     returnresults = TRUE, ...)
 
     # Write trade flows data frame to  csv
     # (to be compressed later)
     write.csv(results$dtf,
-              paste0(filenamestart, ".csv"), row.names = FALSE)
+              paste0(file, ".csv"), row.names = FALSE)
 
     # Compress csv and excel file in a zip archive
-    zip(paste0(filenamestart, ".zip"),
-        files = c(paste0(filenamestart, ".csv"),
-                     paste0(filenamestart, ".xlsx")))
+    zip(paste0(file, ".zip"),
+        files = c(paste0(file, ".csv"),
+                     paste0(file, ".xlsx")))
 }
 
 
-if (FALSE){
-    #### Based on raw RDATA files
+if (FALSE){ #### Clean from raw RDATA files ####
     # Write other sawnwood to Excel for expert analysis
     # 440799
     # All changes, including replacing quantity by partner value
@@ -200,7 +198,12 @@ if (FALSE){
 }
 
 
-if(FALSE){
-    ### Data loaded from the database
-    cleandb2excel(440799, filenamestart = "data-raw/excel/440799fromdb")
+if(FALSE){ ### Clean from the database ####
+    library(tradeflows)
+    cleandb2excel(440799)
+    # MDF > 9mm
+    cleandb2excel(441114, "mdf441114.xlsx")
+    # Carton board > 225 g/m2
+    cleandb2excel(480459, "carton480459.xlsx")
+    cleandb2excel(440110,file = "woodfuel440110.xlsx")
 }

@@ -1,0 +1,82 @@
+---
+title: "Trade Mapper"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+Prepare data for this site: trademapper.aptivate.org/
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_chunk$set(echo=TRUE)
+library(tradeflows)   # Which package is this?
+library(dplyr)
+``` 
+
+```{r eval=FALSE}
+# Dataset send by Ed in November 2015
+meli <- read.csv("~/downloads/Swietenia_spp_2000_2012_all_trade.csv")
+names(meli)
+
+```
+
+
+```{r load}
+# swd99 <- readRDS("data-raw/comtrade/swd99.rds") %>%
+#     clean()
+swd99 <- readdbproduct(440799, "validated_flow_yearly")
+# Change quantity to an int for ease of export
+swd99 <- swd99 %>%
+    mutate(quantity = round(quantity))
+
+# Import flows
+imp <- swd99 %>% filter(flow == "Import")
+
+# Export flows change column names to importer and exporter accordingly
+
+# Merge import and export flows 
+# distinguishing quantity reported by partner and reporter
+dtf <- imp # continue later
+
+# Change reporter and partner to iso 2 code
+# mapping UN country code to the ISO 2 country code
+# faocountry <- FAOcountryProfile %>%
+#     select(iso2 = ISO2_WB_CODE, uncode = UN_CODE) 
+# # add China and France
+# faocountry <- faocountry %>% 
+#     rbind(data_frame(iso2 = c("CN"), 
+#                      uncode = c(156)))
+countryiso <- read.csv("data-raw/CountryCodeandNameISO2ISO3.csv") %>%
+    select(iso2 = ISO2.digit.Alpha,
+           uncode = Country.Code)
+
+dtf <- dtf %>%
+    left_join(rename(countryiso,iso2reporter = iso2,
+                     reportercode = uncode), by="reportercode") %>%
+    left_join(rename(countryiso,iso2partner = iso2,
+                     partnercode = uncode), by = "partnercode")
+
+# Rename columns according to the dataset above (is this necessary?)
+swd99flows <- dtf %>% 
+    select(Year = year,
+           Family = productdescription,
+           Importer = iso2reporter,
+           Exporter = iso2partner,
+           quantity = quantity,
+           Term = productcode,
+           Unit = unit) %>%
+    mutate(App. = "II") # Not sure if this is necessary?
+
+write.csv(swd99flows,"/tmp/swd99flows.csv")
+
+# Filter Indonesia
+write.csv(filter(swd99flows, Exporter == "ID" & !is.na(Importer)), 
+          "/tmp/swd99ID.csv")
+# Filter Cameroon
+write.csv(filter(swd99flows, Exporter == "CM"& !is.na(Importer)), 
+          "/tmp/swd99CM.csv")
+```

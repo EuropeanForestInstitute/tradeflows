@@ -127,16 +127,16 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
         filter(!is.na(quantity)& unit !="No Quantity") %>%
         # Calculate yearly regional prices
         group_by(flow, regionreporter, year, unit) %>%
-        summarise(lowerprice = round(lowercoef * quantile(price, 0.25,
-                                                          names=FALSE, na.rm=TRUE)),
-                  medianprice = round(median(price, na.rm=TRUE)),
-                  upperprice = round(uppercoef * quantile(price, 0.75,
-                                                          names=FALSE, na.rm=TRUE)),
+        summarise(lowerprice = lowercoef * quantile(price, 0.25,
+                                                    names=FALSE, na.rm=TRUE),
+                  medianprice = median(price, na.rm=TRUE),
+                  upperprice = uppercoef * quantile(price, 0.75,
+                                                    names=FALSE, na.rm=TRUE),
                   # The average price often cannot be computed because there
                   # are infinite prices when quantity is = 0
-                  averageprice = round(mean(price, na.rm=TRUE)),
-                  weightedaverageprice = round(sum(tradevalue, na.rm=TRUE)/
-                                                   sum(quantity, na.rm=TRUE)) #,
+                  averageprice = mean(price, na.rm=TRUE),
+                  weightedaverageprice = sum(tradevalue, na.rm=TRUE)/
+                                                   sum(quantity, na.rm=TRUE) #,
                   # Price weighted by the quantity, same value as above
                   # weightedaverageprice1 = sum(price * quantity, na.rm=TRUE)/
                   #  sum(quantity, na.rm=TRUE),
