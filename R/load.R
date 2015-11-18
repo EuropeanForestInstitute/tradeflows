@@ -94,6 +94,7 @@ loadcomtradewithpause <- function(products, year="recent", path="",
     # pause 1 hour between each product to stay within the comtrade API limit
     for (productcode in products){
         loadcomtradeallreporters(productcode, year, path, writecsv, ...)
+        message("Waiting for ",pause," seconds, until Comtrade API download is allowed again.")
         Sys.sleep(pause)
     }
 }
