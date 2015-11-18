@@ -1,0 +1,34 @@
+---
+title: "List of Excel files containing prices and conversion factors"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+``` 
+
+
+```{r echo=FALSE, warning=FALSE}
+tfdb <- readdbtbl("validated_flow_yearly")
+codeunit <- tfdb %>% 
+    select(productcode,unit) %>% 
+    distinct() %>%
+    collect()
+jfsq <- classificationitto %>%
+    select(productcode = productcodecomtrade,
+           jfsq1name) %>% distinct()
+codeunit %>% 
+    left_join(jfsq) %>%
+    select(jfsq1name, unit, productcode) %>%
+    arrange(jfsq1name) %>%
+    mutate(excel = paste0(productcode,".xlsx")) %>%
+    kable()
+```

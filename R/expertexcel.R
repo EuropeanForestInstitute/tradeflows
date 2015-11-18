@@ -1,7 +1,8 @@
-#' Clean and export to Excel for the expert users
+#' Clean and export price and conversion factor to Excel
 #'
-#' Keep price, conversion factor andflow choice in a separate table
-#' for further analysis
+#' Save price, conversion factor and flow choice in a separate table
+#' for further analysis.
+#' Use the argument file to specify where the Excel file will be located.
 #' @param dtf data frame
 #' @param file a character string naming an Excel file, should end by ".xlsx"
 #' @param path a character string specifying where the excel file will be saved
@@ -126,21 +127,23 @@ extractflags <- function(dtf){
 }
 
 
-#' Clean from a database table to Excel, for expert analysis.
-#'
-#' Use the argument file to specify where the Excel file will be located.
+#' \code{cleandb2excel} cleans from a database table to Excel.
 #' @param productcode code of a product
 #' @param tableread names of the database table to read
 #' @rdname clean2excel
 #' @export
 cleandb2excel <-function(productcode, file = paste0(productcode, ".xlsx"),
                          tableread = "raw_flow_yearly" , ...){
-    readdbproduct(productcode, tableread) %>%
-        clean2excel(returnresults = FALSE, file = file,  ...)
+    dtf <- readdbproduct(productcode, tableread)
+    if(identical(nrow(dtf), 0L)){
+        stop("No data for product ", productcode, " in ", tableread)
+    }
+    clean2excel(dtf, returnresults = FALSE, file = file,  ...)
 }
 
 
-#' Clean from raw data file to Excel and a csv file
+#' \code{cleanrdata2excel} cleans from a raw data file to Excel and
+#' write the cleaned dataset to a csv file.
 #' @param rawfile name of a .RData file containing raw trade flows
 #' @rdname clean2excel
 #' @export
@@ -201,9 +204,11 @@ if (FALSE){ #### Clean from raw RDATA files ####
 if(FALSE){ ### Clean from the database ####
     library(tradeflows)
     cleandb2excel(440799)
-    # MDF > 9mm
+    # Would be nice to automate this file prefix with a function taking it from the JFSQ-2 code
     cleandb2excel(441114, "mdf441114.xlsx")
-    # Carton board > 225 g/m2
     cleandb2excel(480459, "carton480459.xlsx")
-    cleandb2excel(440110,file = "woodfuel440110.xlsx")
+    cleandb2excel(440110, "woodfuel440110.xlsx")
+    cleandb2excel(4707, "recoveredpaper4707.xlsx")
+    # TO different path
+    cleandb2excel(480459, path="/tmp")
 }

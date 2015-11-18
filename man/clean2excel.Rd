@@ -4,7 +4,7 @@
 \alias{clean2excel}
 \alias{cleandb2excel}
 \alias{cleanrdata2excel}
-\title{Clean and export to Excel for the expert users}
+\title{Clean and export price and conversion factor to Excel}
 \usage{
 clean2excel(dtf, file, path = "data-raw/excel", returnresults = FALSE, ...)
 
@@ -33,11 +33,13 @@ without extensions}
 \item{rawfile}{name of a .RData file containing raw trade flows}
 }
 \description{
-Keep price, conversion factor andflow choice in a separate table
-for further analysis
-
+Save price, conversion factor and flow choice in a separate table
+for further analysis.
 Use the argument file to specify where the Excel file will be located.
 
-Clean from raw data file to Excel and a csv file
+\code{cleandb2excel} cleans from a database table to Excel.
+
+\code{cleanrdata2excel} cleans from a raw data file to Excel and
+write the cleaned dataset to a csv file.
 }
 

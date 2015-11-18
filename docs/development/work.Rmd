@@ -89,8 +89,9 @@ visualise missing data
          git diff fd724fa080cc c3d92e77e330 # View changes introduced
          See the function addmissingmirrorflow()
 
-         
+     
 ## Project issues + requests
 * place the methodology report datasets and plots in an R script that can be called from the package
 * Product report on the number of countries under each flag.
 * Export prices and conversion factors to Excel files
+[Next version] Write conversion factors, prices and choice description to the database during the cleaning process
