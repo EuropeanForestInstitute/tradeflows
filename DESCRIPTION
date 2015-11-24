@@ -1,7 +1,10 @@
 Package: tradeflows
 Title: Process forest products trade flow data from COMTRADE and COMEXT
 Version: 0.1.1
-Authors@R: "Paul Rougieux<paul.rougieux@gmail.com> [aut, cre]"
+Authors@R:c(
+    person("Paul", "Rougieux", , "paul.rougieux@gmail.com", c("aut", "cre")),
+    person("European Forest Institute", role = "cph")
+    )
 Description: Grab data from the COMTRADE API and the COMEXT system,
     feed it through algorithms to compare and amend unit values
     and mirror export and import values.
