@@ -1,0 +1,37 @@
+---
+title: "Logs Trade Flows in Slovakia"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+``` 
+
+
+# Mail discussion November 2015
+[Suggestion to suppress RMySQL's lengthy warnings concerning data type changes](https://github.com/rstats-db/RMySQL/issues/37).
+
+```{r}
+logsr <- suppressWarnings(readdbproduct(440320, "raw_flow_yearly")) %>%
+    filterworldeu28()
+logsv <- suppressWarnings(readdbproduct(440320, "validated_flow_yearly"))
+
+quicksummary <- function(dtf, reporter_ ,minyear){
+    dtf %>% 
+        filter(year>=minyear & reporter == reporter_) %>% 
+        filter(flow %in% c("Import", "Export")) %>%
+        group_by(flow, year) %>% 
+        summarise(q = sum(quantity, na.rm=TRUE))
+}
+
+logsr %>% quicksummary("Slovakia", 2013)
+logsv %>% quicksummary("Slovakia", 2013)
+```
