@@ -181,8 +181,7 @@ ploterror <- function(e) {
 
 
 ```{r looponittoproducts, results='asis', fig.height=5, fig.width=12}
-message("Rerun the Comtrade Classification part of product_classification.R to add description for product starting with 47 and 48")
-message("Try to see if it's possible to have 2 plots sharing the same legend, check tile plot from erlier versions")
+# message("Try to see if it's possible to have 2 plots sharing the same legend, check tile plot from erlier versions")
 for (product_ in unique(tfdata$product)){
     cat("\n##",product_,"\n\n")
     tryCatch(productplot(product_),

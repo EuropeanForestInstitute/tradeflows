@@ -4,7 +4,7 @@
 \alias{shaveprice}
 \title{Change quantities when unit prices are too high or too low}
 \usage{
-shaveprice(dtf)
+shaveprice(dtf, verbose = getOption("tradeflows.verbose", TRUE))
 }
 \arguments{
 \item{dtf}{data frame}

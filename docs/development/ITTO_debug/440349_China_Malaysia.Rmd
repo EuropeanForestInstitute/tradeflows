@@ -1,0 +1,110 @@
+---
+title: "440349 China Malaysia"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+``` 
+
+
+# Mail discussion December 2015
+[Suggestion to suppress RMySQL's lengthy warnings concerning data type changes](https://github.com/rstats-db/RMySQL/issues/37).
+
+
+# 2005 China Malaysia 440349 trade discrepancy issue
+
+```{r}
+logs49r <- suppressWarnings(readdbproduct(440349, "raw_flow_yearly")) %>%
+    filterworldeu28()
+logs49v <- suppressWarnings(readdbproduct(440349, "validated_flow_yearly"))
+
+
+chimal <- c("China", "Malaysia")
+bilflows <- function(dtf, countries = c("China", "Malaysia"), minyear=0, maxyear=9999){
+    dtf %>% 
+        filter(year >= minyear & year <= maxyear) %>%
+        filter(reporter %in% countries & partner %in% countries) %>%
+        select(productcode, flow, year, reporter, partner, tradevalue, quantity, flag)
+}
+
+
+logs49v %>% bilflows(minyear=2005, maxyear=2005) 
+
+readdbtbl("raw_flow_yearly") %>%
+    filter(productcode == 440349) %>% select(year) %>% distinct() 
+```
+
+
+# Try to correct the issue on 2010 data
+Before the change, the 2 tables below illustrate discrepancies remaining in the cleaned data.
+```
+# Raw data
+productcode   flow year reporter  partner tradevalue quantity flag
+1      440349 Import 2010    China Malaysia   84356413   391076    0
+2      440349 Export 2010 Malaysia    China   28229869   185550    4
+
+# validated data EFI
+  productcode   flow year reporter  partner tradevalue quantity flag
+1      440349 Import 2010    China Malaysia   84356413   185550 4000
+2      440349 Export 2010 Malaysia    China   28229869    29223  304
+
+# Cleaned data on my system (slight difference due to change in price rounding)
+  productcode   flow year reporter  partner tradevalue  quantity flag
+1      440349 Import 2010    China Malaysia   84356413 185550.00 4000
+2      440349 Export 2010 Malaysia    China   28229869  29230.76  304
+
+# The difference is due to the fact that replacebypartnervalue() is 
+# called before shaveprice()
+# I changed the order in which those 2 functions are called.
+
+
+```
+
+
+```{r}
+cleaned <- logs49r %>% clean()
+
+logs49v %>% bilflows(minyear=2010, maxyear=2010)
+# Raw data
+logs49r %>% bilflows(minyear=2010, maxyear=2010)
+cleaned %>% bilflows(minyear=2010, maxyear=2010)
+
+logs49r %>% 
+    filter(year == 2010) %>%
+    filter(reporter %in% chimal & partner %in% chimal) %>%
+    addpartnerflow() %>%
+    addconversionfactorandprice() %>%
+    select(productcode, flow, year, reporter, partner, reportercode, partnercode, 
+           tradevalue, quantity, flag, quantitypartner)
+```
+
+
+# Illustrate price variation
+```{r}
+chimaldata <- logs49r %>%
+    filter(reporter %in% chimal & partner %in% chimal) %>%
+    addconversionfactorandprice() 
+
+ggplot(chimaldata, aes(x=year, y=price, color=reporter)) + geom_point() +
+    facet_wrap(~flow) + ggtitle("prices of 440349 in China and Malaysia") + ylim(0,NA)
+
+message("Variables that identify a unique flow")
+flowidvariables <- c("year", "reporter","partner", "flow","productcode")
+# chimaldata2 <- gather(chimaldata, key, value, -year, -reporter, -partner, -flow, -productcode),
+#        aes(x = year, y = value, 
+# ggplot()
+
+chimaldata %>% select(year, reporter, partner, flow, tradevalue, quantity, price) %>% kable()
+```
+

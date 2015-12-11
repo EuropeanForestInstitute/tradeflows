@@ -3,7 +3,7 @@
 swd <- tradeflows::sawnwoodexample
 require(dplyr, warn.conflicts = FALSE)
 
-context("Clean functions")
+context("Prepare data for cleaning: regions, prices.")
 
 test_that("Add region works",{
     dtf <- data_frame(reportercode = c(4,8,716),
@@ -42,9 +42,6 @@ test_that("Price extraction ", {
     message("Try to use a different geoaggregation level in clean")
 })
 
-
-
-
 test_that("Grouping works in priceextraction", {
     dtf <- data.frame(price = rnorm(3,10),
                       aggregationregion = c("a","a","b"))
@@ -52,7 +49,37 @@ test_that("Grouping works in priceextraction", {
 })
 
 
+context("Partner flows")
+options(tradeflows.verbose = FALSE)
+
+test_that("Replacebypartnerquantity leaves us with one quantity, even in the case of price shaving ", {
+    # Dummy data
+    dtf <- data_frame(productcode = c(440349, 440349), flow = c("Import", "Export"),
+                      period = c(2010L, 2010L), flag = c(0, 4),
+                      reporter = c("China", "Malaysia"), reportercode = c(156, 458),
+                      partner = c("Malaysia", "China"),  partnercode = c(458, 156),
+                      tradevalue = c(84356413, 28229869), quantity = c(391076, 185550),
+                      price = c(NA,NA),
+                      lowerprice = c(321, 229),
+                      medianprice = c(465, 965),
+                      upperprice = c(1139, 1939))
+    # fake the creation of the choice function
+    choice <- dtf %>% select(flow, reportercode, partnercode,
+                             reporter, partner) %>%
+        mutate(favorpartner = c(TRUE,FALSE))
+    # Clean the data partially
+    dtf <- dtf %>%
+        addpartnerflow() %>%
+        mutate(quantity_up = tradevalue / medianprice) %>%
+        shaveprice()
+    # Note: use devtools::load_all() or CTRL-SHIFT-L all to load unexported functions
+    dtf <- dtf %>% replacebypartnerquantity(choice)
+    expect_that(dtf$quantity[1], equals(dtf$quantity[2]))
+})
+
+
 context("Clean functions do not change total quantity")
+
 # Test that the total quantity before and after applying each
 # cleaning function remains the same. Or that at least the number of
 # rows stays the same

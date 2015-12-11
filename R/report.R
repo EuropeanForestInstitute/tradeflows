@@ -193,30 +193,27 @@ createoverviewreport <- function(reporter_,
         filter(reporter == reporter_&
                    year >= beginyear & year <= endyear) %>%
         select(year, period, reporter, reportercode, partner, partnercode,
-               flow, flag, unit, productcode, tradevalue, quantity)
+               flow, flag, unit, productcode, tradevalue, quantity) %>%
+        collect() %>%
+        # Remove 4 digit level products
+        filter(nchar(as.character(productcode)) == 6)
 
 
     # Load itto product names --------------------------------------------------------
-    message("Discuss with Simo and Janne to change column names in the product work table, rename them as such: (product = name_short, productcode = code) ")
+    message("Load local table from the package")
     productitto <- tbl(DBread, "product_work") %>%
-        filter(nomenclature == "HS12") %>%
-        select(product = name_short, productcode = code)
+        select(product = name_short, productcode = code) %>%
+        distinct()
 
-    # Join tfdata and itto product names --------------------------------------------------
-    # both are dplyr::tbl objects the statements will be converted to SQL
+    jfsqproductgroups <- classificationitto %>%
+        select(productcode = productcodecomtrade,
+               product = jfsq2name) %>%
+        distinct()
     tfdata <- tfdata %>%
-        left_join(productitto) %>%  # joining late in the pipe, after filter is faster
-        collect() %>%
-        # This conversion from utf-8 to utf-8 shouldn't be necessary but it
-        # appears to fix a display error with Côte d'Ivoire
-        mutate(reporter = iconv(reporter, "utf-8", "utf-8"),
-               partner = iconv(partner, "utf-8", "utf-8")) %>%
+        left_join(jfsqproductgroups, by="productcode") %>%
         # Cosmetic, shorten a few long itto product name
         mutate(product = gsub("OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ",
                               "", product))
-    # Change product to a factor, so that it keeps the same order
-    tfdata$product <- factor(tfdata$product, levels=unique(tfdata$product))
-
 
     # Replace product by jfsq1name if required by the jfsqlevel parameter
     if (jfsqlevel == 1){

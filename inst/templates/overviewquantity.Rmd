@@ -167,8 +167,7 @@ ploterror <- function(e) {
 
 
 ```{r looponittoproducts, results='asis', fig.height=5, fig.width=12}
-message("Rerun the Comtrade Classification part of product_classification.R to add description for product starting with 47 and 48")
-message("Try to see if it's possible to have 2 plots sharing the same legend, check tile plot from earlier versions")
+# message("Try to see if it's possible to have 2 plots sharing the same legend, check tile plot from earlier versions")
 
 #' @examples
 #' titleandplot("PAPER AND PAPERBOARD","Weight in kilograms")

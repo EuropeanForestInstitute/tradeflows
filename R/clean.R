@@ -446,10 +446,15 @@ choosereporterorpartner <- function(dtf,
 #'
 #' @param dtf data frame
 #' @param choice a data frame of choice between reporter and partner
-replacebypartnerquantity <- function(dtf, choice){
+replacebypartnerquantity <- function(dtf, choice, verbose = getOption("tradeflows.verbose",TRUE)){
     choice <- choice %>%
         select(reportercode, partnercode, favorpartner)
-    dtf <- merge(dtf, choice, all.x=TRUE)
+    dtf <- merge(dtf, choice, all.x=TRUE) %>%
+        # add again the partner data, because it can have been modified in between
+        # remove these columns, they will be recreated by addpartnerflow
+        select(-tradevaluepartner, -quantitypartner) %>%
+        addpartnerflow()
+
     # cut the dataframe between the lines which favor partner and the others
     dtffavor <- dtf %>% filter(favorpartner) %>%
         mutate(quantity = quantitypartner,
@@ -457,9 +462,11 @@ replacebypartnerquantity <- function(dtf, choice){
     dtfrest <- dtf %>% filter(!favorpartner | is.na(favorpartner))
     dtfresult <- rbind(dtffavor, dtfrest)
     stopifnot(nrow(dtf) == nrow(dtfresult))
-    message(nrow(dtffavor), " rows where quantity reporter was replaced by quantity partner")
-    message("Favouring the mirror flow ",
-            changeflowmessage(dtf,dtfresult))
+    if(verbose){
+        message(nrow(dtffavor), " rows where quantity reporter was replaced by quantity partner")
+        message("Favouring the mirror flow ",
+                changeflowmessage(dtf,dtfresult))
+    }
     return(dtfresult)
 }
 
@@ -481,7 +488,7 @@ replacebypartnerquantity <- function(dtf, choice){
 #' use the unit price to estimate the quantity
 #' @param dtf data frame
 #' @export
-shaveprice <- function(dtf){
+shaveprice <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE)){
     # Split flows which have prices out of bounds from those which don't
     dtf <- dtf %>% mutate(rawprice = price,
                           price = tradevalue / quantity)
@@ -498,9 +505,11 @@ shaveprice <- function(dtf){
                flag = flag + 300)
     dtfresult <- rbind(dtfinbound, dtfoutbound)
     stopifnot(nrow(dtf) == nrow(dtfresult))
-    message(nrow(dtfoutbound), " rows had a price too high or too low")
-    message("Readjusting quantities so that prices are within the lower and upper bounds",
-            changeflowmessage(dtf,dtfresult))
+    if (verbose){
+        message(nrow(dtfoutbound), " rows had a price too high or too low")
+        message("Readjusting quantities so that prices are within the lower and upper bounds",
+                changeflowmessage(dtf,dtfresult))
+    }
     return(dtfresult)
 }
 
@@ -583,14 +592,16 @@ clean <- function(dtf,
     dtf <- dtf %>%
         estimatequantity(price, conversionfactor) %>%
         addpartnerflow
-    if (replacebypartnerquantity){
-        choice <- choosereporterorpartner(dtf,sdratiolimit = 1 )
-        dtf <- dtf %>% replacebypartnerquantity(choice)
-    }
+    # Shave price has to be done before replacebypartnerquantity, if the flow is mirrored
+    # the trade value is not relevant anymore because it represents the and not the
     if (shaveprice){
         # based on upper and lower prices added above
         # by the estimatequantity() function
         dtf <- dtf %>% shaveprice()
+    }
+    if (replacebypartnerquantity){
+        choice <- choosereporterorpartner(dtf,sdratiolimit = 1 )
+        dtf <- dtf %>% replacebypartnerquantity(choice)
     }
     # Check if the number of rows has changed (it shouldn't)
     # It might change if there are duplicated flows

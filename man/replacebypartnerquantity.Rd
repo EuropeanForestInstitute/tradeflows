@@ -5,7 +5,8 @@
 \title{Replace quantity by quantity partner when the price variation in
 recent periods was greater than that of the partner country for the same flow}
 \usage{
-replacebypartnerquantity(dtf, choice)
+replacebypartnerquantity(dtf, choice,
+  verbose = getOption("tradeflows.verbose", TRUE))
 }
 \arguments{
 \item{dtf}{data frame}
