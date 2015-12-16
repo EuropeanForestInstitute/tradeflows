@@ -5,7 +5,7 @@
 \title{Compare reporter and partner flow}
 \usage{
 choosereporterorpartner(dtf, periodbegin = 2009, periodend = 2013,
-  sdratiolimit = 0.8)
+  sdratiolimit = 0.8, verbose = getOption("tradeflows.verbose", TRUE))
 }
 \arguments{
 \item{dtf}{data frame}

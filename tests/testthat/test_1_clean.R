@@ -1,13 +1,15 @@
-require(dplyr, warn.conflicts = FALSE)
+require(dplyr, warn.conflicts = FALSE, quietly = TRUE)
+options(tradeflows.verbose = FALSE)
+
+# Note:
+# When running this test suite with CTRL-SHIFT-T or devtools::test()
+# unexported functions will be available without the need to load them.
+# But to run this test suite on its own
+# use devtools::load_all() or CTRL-SHIFT-L all to load unexported functions.
 
 # This test suite assumes that
 # The package contains a test dataset called sawnwoodexample.
-#
-# Note: unexported functions will be available to testthat without the need to load them.
-# But to develop the tests.
-# use devtools::load_all() or CTRL-SHIFT-L all to load unexported functions.
 swd <- tradeflows::sawnwoodexample
-
 
 context("Preparatory functions: addregion, addprice, etc")
 
@@ -56,7 +58,6 @@ test_that("Grouping works in priceextraction", {
 
 
 context("Partner flows")
-options(tradeflows.verbose = FALSE)
 
 # According to Hadley Wickham's book on R development and testing.
 # Setup and teardown methods are not needed because of R's copy on modify principle
@@ -75,12 +76,13 @@ mockflows <- data_frame(productcode = c(440349, 440349, 440349, 440349),
                         medianprice = c(465, 965, 465, 965),
                         upperprice = c(1139, 1939, 1139, 1939))
 
+
 test_that("chosereporterorpartner keeps NA values in the standard deviation of prices",{
     # A standard deviation cannot be calculated with only one price sd() returns NA in this case.
     # This is not what I want to test. Therefore use more that 2 flows per direction
     dtf <- mockflows %>%
         # Add 4 more rows
-        mutate(period = c(2008,2008,2009,2009)) %>%
+        mutate(period = c(2012,2012,2013,2013)) %>%
         rbind(mockflows)
     # Introduce one NA
     dtf$quantity[1] <- NA
@@ -92,10 +94,19 @@ test_that("chosereporterorpartner keeps NA values in the standard deviation of p
 
 
 test_that("replacebypartnerquantity doesn't replace by a missing quantity",{
-    # This is needed because the choice is often made over a shorter period
-    # than the length of the actual data
-
-
+    # This test is needed and not redundant with the test above.
+    # Because the choice is often made over a shorter period
+    # than the length of the actual data favor partner can tell replacebypartnerquantity()
+    # to replace by a quantity that is not available.
+    # Simulate this by introducing an NA quantity.
+    dtf <-  mockflows %>% addpartnerflow()
+    choice <- dtf %>% choosereporterorpartner()
+    # Introduce an NA value in the partner quantity
+    dtf$quantity[dtf$period == 2010 & dtf$reporter == "Malaysia"] <- NA
+    dtf <- dtf %>% replacebypartnerquantity(choice)
+    dtf$quantity[dtf$period == 2010 & dtf$reporter == "China"]
+    expect_that(dtf$quantity[dtf$period == 2010 & dtf$reporter == "China"],
+                equals(mockflows$quantity[mockflows$period == 2010 & mockflows$reporter == "China"]))
 })
 
 

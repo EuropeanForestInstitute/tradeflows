@@ -426,9 +426,11 @@ estimatequantity <- function(dtf, price, conversionfactor){
 #' @param periodend change this to global parameter
 choosereporterorpartner <- function(dtf,
                                     periodbegin=2009, periodend=2013,
-                                    sdratiolimit = 0.8){
-    message(periodbegin, "and",periodend,
-            "used for the begining and end period")
+                                    sdratiolimit = 0.8,
+                                    verbose = getOption("tradeflows.verbose",TRUE)){
+    if(verbose){
+        message(periodbegin, "and", periodend, "used for the begining and end period")
+    }
     choice <- dtf %>%
         filter(periodbegin <= period & period<= periodend) %>%
         mutate(pricereporter = tradevalue / quantityreporter,
@@ -465,10 +467,11 @@ replacebypartnerquantity <- function(dtf, choice, verbose = getOption("tradeflow
         addpartnerflow()
 
     # cut the dataframe between the lines which favor partner and the others
-    dtffavor <- dtf %>% filter(favorpartner) %>%
+    dtffavor <- dtf %>%
+        filter(favorpartner & !is.na(quantitypartner)) %>%
         mutate(quantity = quantitypartner,
                flag = flag + 4000)
-    dtfrest <- dtf %>% filter(!favorpartner | is.na(favorpartner))
+    dtfrest <- dtf %>% filter(!favorpartner | is.na(favorpartner) | is.na(quantitypartner))
     dtfresult <- rbind(dtffavor, dtfrest)
     stopifnot(nrow(dtf) == nrow(dtfresult))
     if(verbose){
