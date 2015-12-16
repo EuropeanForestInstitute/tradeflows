@@ -70,14 +70,19 @@ mockflows <- data_frame(productcode = c(440349, 440349, 440349, 440349),
                         partnercode = c(458, 156, 458, 156),
                         tradevalue = c(84356413, 28229869, 95433402, 15376022),
                         quantity = c(391076, 185550, 278377, 89178),
-                        price = c(NA,NA, NA, NA),
+                        price = c(NA, NA, NA, NA),
                         lowerprice = c(321, 229, 321, 229),
                         medianprice = c(465, 965, 465, 965),
                         upperprice = c(1139, 1939, 1139, 1939))
 
 test_that("chosereporterorpartner keeps NA values in the standard deviation of prices",{
+    # A standard deviation cannot be calculated with only one price sd() returns NA in this case.
+    # This is not what I want to test. Therefore use more that 2 flows per direction
+    dtf <- mockflows %>%
+        # Add 4 more rows
+        mutate(period = c(2008,2008,2009,2009)) %>%
+        rbind(mockflows)
     # Introduce one NA
-    dtf <- mockflows
     dtf$quantity[1] <- NA
     dtf <- dtf %>%
         addpartnerflow %>%
