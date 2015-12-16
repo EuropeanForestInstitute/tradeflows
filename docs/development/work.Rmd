@@ -95,6 +95,18 @@ x <- package_coverage()
 shine(x)
 ```
 
+### Git 
+Git command to revert a file one revision back in the "develop" branch:
+```
+git checkout develop~1 R/clean.R
+# Experiment something
+# Then
+# Come back to the latest revision
+git checkout devlop R/clean.R
+```
+Use this to check that a test failed in the past for example. 
+And that it doesn't fail anymore.
+
 
 ### Data frame manipulation with dplyr
 dplyr uses non standard evaluation. See vignette("nse") 
