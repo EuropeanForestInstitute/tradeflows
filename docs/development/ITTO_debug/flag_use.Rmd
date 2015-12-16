@@ -1,0 +1,69 @@
+---
+title: "Flags in the validated dataset"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(fig.width=12)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+``` 
+
+
+# Warning!!!  number of flags are biaised if you don't remove products at the 4 digit 
+level from the database. Start with the last chunk and redo this flag extraction once and 
+for all. 
+
+# Flag use in number of flows
+
+```{r}
+flagn <- readdbtbl("validated_flow_yearly") %>%
+    group_by(flag) %>%
+    summarise(number_of_flows = n()) %>%
+    collect() %>%
+    mutate(flag = as.factor(flag))
+ggplot(flagn, aes(x = flag, y = number_of_flows)) + geom_bar(stat  = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+# Flag use in volume
+Some flows are expressed in cubic meters, others in kg and others in number of units.
+The graph below illustrates the distribution of flags for the various units.
+```{r}
+flagq <- readdbtbl("validated_flow_yearly") %>%
+    group_by(flag, unit) %>%
+    summarise(quantity = sum(quantity)) %>%
+    collect() %>% ungroup() %>%
+    mutate(flag = as.factor(flag))
+ggplot(flagq, aes(x = flag, y = quantity)) + geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_grid(unit~., scales="free_y")
+```
+
+
+# Number of flags by product 
+Simplify to the 2 digit level
+```{r}
+flagpn <- readdbtbl("validated_flow_yearly") %>%
+    group_by(flag, productcode) %>%
+    summarise(number_of_flows = n()) %>%
+    collect() %>% ungroup() %>%
+    mutate(flag = as.factor(flag),
+           digits = round(productcode/1e4)) %>%
+    filter(digits > 0)
+
+ggplot(flagpn, aes(x = flag, y = number_of_flows)) + geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_grid(digits~., scales="free_y")
+```

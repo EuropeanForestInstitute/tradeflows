@@ -412,6 +412,15 @@ estimatequantity <- function(dtf, price, conversionfactor){
 #' The data frame outcome of this function
 #' will be use by replacebypartnerquantity()
 #' to decide which of the reporter or partner flow to favor
+#'
+#' NA values should not be present in prices.
+#' If an NA value is present in one year,
+#' it should be probagated to all other years.
+#' That means do not use na.rm in the calculation of the
+#' standard deviation of prices.
+#'
+#' Because of missing values in more recent years, the presence of missing data towards the end
+#' can be dealt with by choosing periodend 2 or 3 years before the last year available.
 #' @param dtf data frame
 #' @param periodbegin change this to global parameter
 #' @param periodend change this to global parameter
@@ -430,10 +439,10 @@ choosereporterorpartner <- function(dtf,
             ### Reporter quantity q and price p
             meanqreporter = mean(quantityreporter, na.rm=TRUE),
             meanpreporter = mean(pricereporter, na.rm=TRUE),
-            sdpreporter = sd(pricereporter, na.rm=TRUE),
+            sdpreporter = sd(pricereporter),
             ### Partner price p
             meanppartner = mean(pricepartner, na.rm=TRUE),
-            sdppartner = sd(pricepartner, na.rm=TRUE),
+            sdppartner = sd(pricepartner),
             ### Ratio of the standard deviation on price
             sdratio = sdppartner / sdpreporter,
             favorpartner = sdratio < sdratiolimit)
@@ -448,7 +457,7 @@ choosereporterorpartner <- function(dtf,
 #' @param choice a data frame of choice between reporter and partner
 replacebypartnerquantity <- function(dtf, choice, verbose = getOption("tradeflows.verbose",TRUE)){
     choice <- choice %>%
-        select(reportercode, partnercode, favorpartner)
+        select(reportercode, partnercode, favorpartner, flow)
     dtf <- merge(dtf, choice, all.x=TRUE) %>%
         # add again the partner data, because it can have been modified in between
         # remove these columns, they will be recreated by addpartnerflow
@@ -608,13 +617,14 @@ clean <- function(dtf,
     stopifnot(nrow(dtf) == nrowbeforechange)
     # Now the numer of rows will change
     if(addmissingmirrorflow){
-        dt <- dtf %>% addmissingmirrorflow()
+        dtf <- dtf %>% addmissingmirrorflow()
     }
 
     ### Overwrite partner quantity with the new estimated quantity
     # so that reporterquantity and partnerquantity are consistent
     dtf <- dtf %>% select(-quantitypartner, -tradevaluepartner, -quantityreporter) %>%
-        addpartnerflow
+        # Create a function suppresspartnerflow that would be the complement of addpartnerflow
+        addpartnerflow()
 
     ### 2 different kinds of output
     # List output

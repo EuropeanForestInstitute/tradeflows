@@ -19,16 +19,25 @@ library(tidyr)
 
 
 # Mail discussion December 2015
-[Suggestion to suppress RMySQL's lengthy warnings concerning data type changes](https://github.com/rstats-db/RMySQL/issues/37).
 
+Here is the issue mentioned by Jean from ITTO in his December 2015 email :
+
+> 3) Querying the data: When I query 2005-China-volume
+> import-from Malaysia-code 440349, I get roughly 370 000 m3.
+> When I query the mirror stat I get something like 195 000 m3. 
+> My understanding of this project was somehow that
+> the system would give us
+> what it thinks it is the best estimate for this trade flow.
+
+[Suggestion to suppress RMySQL's lengthy warnings concerning data type changes](https://github.com/rstats-db/RMySQL/issues/37).
+    
 
 # 2005 China Malaysia 440349 trade discrepancy issue
-
 ```{r}
 logs49r <- suppressWarnings(readdbproduct(440349, "raw_flow_yearly")) %>%
     filterworldeu28()
 logs49v <- suppressWarnings(readdbproduct(440349, "validated_flow_yearly"))
-
+min(logs49r$year)
 
 chimal <- c("China", "Malaysia")
 bilflows <- function(dtf, countries = c("China", "Malaysia"), minyear=0, maxyear=9999){
@@ -37,16 +46,16 @@ bilflows <- function(dtf, countries = c("China", "Malaysia"), minyear=0, maxyear
         filter(reporter %in% countries & partner %in% countries) %>%
         select(productcode, flow, year, reporter, partner, tradevalue, quantity, flag)
 }
-
-
+logs49r %>% bilflows(minyear=2005, maxyear=2005) 
 logs49v %>% bilflows(minyear=2005, maxyear=2005) 
 
-readdbtbl("raw_flow_yearly") %>%
-    filter(productcode == 440349) %>% select(year) %>% distinct() 
+logs49rcleaned <- logs49r %>% clean()
+logs49rcleaned %>% bilflows(minyear=2005, maxyear=2005)
 ```
 
 
 # Try to correct the issue on 2010 data
+Update 14 December: the issue has also been fixed on 2005 data now.
 Before the change, the 2 tables below illustrate discrepancies remaining in the cleaned data.
 ```
 # Raw data
@@ -67,8 +76,6 @@ productcode   flow year reporter  partner tradevalue quantity flag
 # The difference is due to the fact that replacebypartnervalue() is 
 # called before shaveprice()
 # I changed the order in which those 2 functions are called.
-
-
 ```
 
 
@@ -108,3 +115,72 @@ flowidvariables <- c("year", "reporter","partner", "flow","productcode")
 chimaldata %>% select(year, reporter, partner, flow, tradevalue, quantity, price) %>% kable()
 ```
 
+
+# 440320 issues with NA quantity
+```{r}
+devtools::load_all() # Load unexported function replacebypartnerquantity()
+log20r <- readdbproduct(440320,"raw_flow_yearly") 
+log20v <- readdbproduct(440320,"validated_flow_yearly")
+log20vna <- log20v %>% filter(is.na(quantity))
+chnrus <- c("China","Russian Federation")
+log20r %>% bilflows(chnrus, minyear = 2014, maxyear = 2014)
+log20v %>% bilflows(chnrus, minyear = 2014, maxyear = 2014)
+log20vna %>% bilflows(chnrus)
+fraswe <- c("France", "Sweden")
+log20r %>% bilflows(fraswe, minyear = 2012, maxyear = 2012)
+log20v %>% bilflows(fraswe, minyear = 2012, maxyear = 2012)
+# Raw data has quantity for both flows, validated data has a missing quantity
+# Add a breakpoint in the replacebypartnerquantity() function
+
+# This data frame contains data for France and Sweden, and I want to mirror it
+fs <- log20r %>% 
+    filter(reporter %in% fraswe & partner %in% fraswe & year ==2012) %>%
+    mutate(tradevaluepartner = NA, quantitypartner = NA)
+choicefs <- fs %>% select(flow, reportercode, partnercode) %>% 
+    mutate(favorpartner = c(FALSE, FALSE, TRUE, FALSE)) 
+# A NA value should not appear under quantitypartner
+# There is an issue with the merge
+# The merge should be done at some point
+fs %>%  replacebypartnerquantity(choicefs)
+fs %>% findduplicatedflows()
+```
+
+# Flag 5000 missing?
+```{r}
+dtf <- readdbtbl("validated_flow_yearly")
+dtf %>% group_by(flag) %>%
+    summarise(number = n(),
+              quantity = sum(quantity)) %>% kable()
+
+prodcode <- dtf %>% select(productcode) %>% distinct() %>% collect()
+prodcode$productcode
+
+dtfr <- readdbtbl("raw_flow_yearly") %>%
+    select(productcode) %>% distinct() %>% collect()
+dtfr <- dtfr %>% mutate(digit = round(productcode/1e2)) 
+unique(dtfr$digit)
+
+# Clean a dataset to see
+swd99r <- readdbproduct(440799, "raw_flow_yearly")
+swd99v <- clean(swd99r)
+unique(swd99v$flag)
+```
+
+# Flag 9000 shouldn't appear
+```
+swd99r %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+ productcode   flow year reporter  partner tradevalue quantity flag
+1      440799 Import 2009  Denmark Bulgaria       1511        5    2
+
+swd99v %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+  productcode   flow year reporter  partner tradevalue quantity flag
+1      440799 Export 2009 Bulgaria  Denmark       1511       NA 9302
+2      440799 Import 2009  Denmark Bulgaria       1511       NA 4302
+```
+
+```{r}
+# BUlgaria Denmark 2009 440799
+bulden <- c("Bulgaria", "Denmark")
+swd99r %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+swd99v %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+```

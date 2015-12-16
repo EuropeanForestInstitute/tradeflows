@@ -1,0 +1,79 @@
+---
+title: "Flag 9000 shouldn't exist"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+#' Bilateral trade flows for the selected countries
+#' @param dtf data frame of bilateral trade flows
+#' @param countries a vector of country names
+#' @param minyear start year
+#' @param maxyear end year
+bilflows <- function(dtf, countries, minyear=0, maxyear=9999){
+    dtf %>% 
+        filter(year >= minyear & year <= maxyear) %>%
+        filter(reporter %in% countries & partner %in% countries) %>%
+        select(productcode, flow, year, reporter, partner, tradevalue, quantity, flag)
+}
+``` 
+
+
+# Mail discussion December 2015
+Flag 5000 was missing from the database because of a typo. 
+I corrected this to realise that flag 9000 now appears.
+This shouldn't happen as flag 4000 should mean that that there is a partner flow. 
+It appears to be due to the fact that 
+
+# Flag 5000 missing?
+```{r}
+dtf <- readdbtbl("validated_flow_yearly")
+dtf %>% group_by(flag) %>%
+    summarise(number = n(),
+              quantity = sum(quantity)) %>% kable()
+
+prodcode <- dtf %>% select(productcode) %>% distinct() %>% collect()
+prodcode$productcode
+
+dtfr <- readdbtbl("raw_flow_yearly") %>%
+    select(productcode) %>% distinct() %>% collect()
+dtfr <- dtfr %>% mutate(digit = round(productcode/1e2)) 
+unique(dtfr$digit)
+```
+
+
+# Flag 9000 shouldn't appear
+```{r}
+# Clean a dataset to see
+swd99r <- readdbproduct(440799, "raw_flow_yearly")
+swd99v <- clean(swd99r)
+unique(swd99v$flag)
+```
+
+```
+swd99r %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+ productcode   flow year reporter  partner tradevalue quantity flag
+1      440799 Import 2009  Denmark Bulgaria       1511        5    2
+
+swd99v %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+  productcode   flow year reporter  partner tradevalue quantity flag
+1      440799 Export 2009 Bulgaria  Denmark       1511       NA 9302
+2      440799 Import 2009  Denmark Bulgaria       1511       NA 4302
+```
+
+```{r}
+bulden <- c("Bulgaria", "Denmark")
+swd99r %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+swd99v %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
+```

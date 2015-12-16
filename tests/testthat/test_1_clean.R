@@ -1,9 +1,11 @@
+require(dplyr, warn.conflicts = FALSE)
+
 # This test suite assumes that
 # The package contains a test dataset called sawnwoodexample.
 swd <- tradeflows::sawnwoodexample
-require(dplyr, warn.conflicts = FALSE)
 
-context("Prepare data for cleaning: regions, prices.")
+
+context("Preparatory functions: addregion, addprice, etc")
 
 test_that("Add region works",{
     dtf <- data_frame(reportercode = c(4,8,716),
@@ -38,21 +40,26 @@ test_that("Price extraction ", {
                       year = 2013) %>%
         mutate(price = tradevalue / quantity)
     dtf2 <- dtf %>% extractprices()
-
-    message("Try to use a different geoaggregation level in clean")
+    # message("Try to use a different geoaggregation level in clean")
 })
+
 
 test_that("Grouping works in priceextraction", {
     dtf <- data.frame(price = rnorm(3,10),
                       aggregationregion = c("a","a","b"))
-    message("Use a different geoaggregation level in clean")
+    # message("Use a different geoaggregation level in clean")
 })
 
 
 context("Partner flows")
 options(tradeflows.verbose = FALSE)
 
-test_that("Replacebypartnerquantity leaves us with one quantity, even in the case of price shaving ", {
+test_that("replacebypartnerquantity doesn't replace by a missing flow",{
+
+})
+
+
+test_that("Replacebypartnerquantity leaves us with one quantity for both mirror flows, even in the case of price shaving ", {
     # Dummy data
     dtf <- data_frame(productcode = c(440349, 440349), flow = c("Import", "Export"),
                       period = c(2010L, 2010L), flag = c(0, 4),
@@ -79,7 +86,6 @@ test_that("Replacebypartnerquantity leaves us with one quantity, even in the cas
 
 
 context("Clean functions do not change total quantity")
-
 # Test that the total quantity before and after applying each
 # cleaning function remains the same. Or that at least the number of
 # rows stays the same
@@ -93,11 +99,13 @@ test_that("addregion() doesn't change total quantity", {
                 equals(sum(swd2$weight, na.rm=TRUE)))
 })
 
+
 test_that("addconversionfactorandprice() doesn't change total quantity",{
     swd2 <- addconversionfactorandprice(swd)
     expect_that(sum(swd$quantity, na.rm=TRUE),
                 equals(sum(swd2$quantity, na.rm=TRUE)))
 })
+
 
 # message("Currently using sawnwoodexample, but
 # estimatequantity() would require a full dataset with all
