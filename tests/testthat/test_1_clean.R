@@ -2,6 +2,10 @@ require(dplyr, warn.conflicts = FALSE)
 
 # This test suite assumes that
 # The package contains a test dataset called sawnwoodexample.
+#
+# Note: unexported functions will be available to testthat without the need to load them.
+# But to develop the tests.
+# use devtools::load_all() or CTRL-SHIFT-L all to load unexported functions.
 swd <- tradeflows::sawnwoodexample
 
 
@@ -54,34 +58,59 @@ test_that("Grouping works in priceextraction", {
 context("Partner flows")
 options(tradeflows.verbose = FALSE)
 
-test_that("replacebypartnerquantity doesn't replace by a missing flow",{
+# According to Hadley Wickham's book on R development and testing.
+# Setup and teardown methods are not needed because of R's copy on modify principle
+mockflows <- data_frame(productcode = c(440349, 440349, 440349, 440349),
+                        flow = c("Import", "Export","Import", "Export"),
+                        period = c(2010L, 2010L, 2011L, 2011L),
+                        flag = c(0, 4, 0, 4),
+                        reporter = c("China", "Malaysia","China", "Malaysia"),
+                        reportercode = c(156, 458, 156, 458),
+                        partner = c("Malaysia", "China", "Malaysia", "China"),
+                        partnercode = c(458, 156, 458, 156),
+                        tradevalue = c(84356413, 28229869, 95433402, 15376022),
+                        quantity = c(391076, 185550, 278377, 89178),
+                        price = c(NA,NA, NA, NA),
+                        lowerprice = c(321, 229, 321, 229),
+                        medianprice = c(465, 965, 465, 965),
+                        upperprice = c(1139, 1939, 1139, 1939))
+
+test_that("chosereporterorpartner keeps NA values in the standard deviation of prices",{
+    # Introduce one NA
+    dtf <- mockflows
+    dtf$quantity[1] <- NA
+    dtf <- dtf %>%
+        addpartnerflow %>%
+        choosereporterorpartner()
+    expect_that(dtf$favorpartner, equals(c(NA,NA)))
+})
+
+
+test_that("replacebypartnerquantity doesn't replace by a missing quantity",{
+    # This is needed because the choice is often made over a shorter period
+    # than the length of the actual data
+
 
 })
 
 
 test_that("Replacebypartnerquantity leaves us with one quantity for both mirror flows, even in the case of price shaving ", {
-    # Dummy data
-    dtf <- data_frame(productcode = c(440349, 440349), flow = c("Import", "Export"),
-                      period = c(2010L, 2010L), flag = c(0, 4),
-                      reporter = c("China", "Malaysia"), reportercode = c(156, 458),
-                      partner = c("Malaysia", "China"),  partnercode = c(458, 156),
-                      tradevalue = c(84356413, 28229869), quantity = c(391076, 185550),
-                      price = c(NA,NA),
-                      lowerprice = c(321, 229),
-                      medianprice = c(465, 965),
-                      upperprice = c(1139, 1939))
-    # fake the creation of the choice function
-    choice <- dtf %>% select(flow, reportercode, partnercode,
+    # fake the creation of the choice data frame
+    choice <- mockflows %>%
+        slice(1:2) %>%
+        select(flow, reportercode, partnercode,
                              reporter, partner) %>%
         mutate(favorpartner = c(TRUE,FALSE))
     # Clean the data partially
-    dtf <- dtf %>%
+    dtf <- mockflows %>%
         addpartnerflow() %>%
         mutate(quantity_up = tradevalue / medianprice) %>%
         shaveprice()
-    # Note: use devtools::load_all() or CTRL-SHIFT-L all to load unexported functions
+    # dtf$quantity contains differing quantities for mirror flows
     dtf <- dtf %>% replacebypartnerquantity(choice)
-    expect_that(dtf$quantity[1], equals(dtf$quantity[2]))
+    # dtf$quantity contains similar quantities for mirror flows
+    dtf2010 <- dtf %>% filter(period ==2010)
+    expect_that(dtf2010$quantity[1], equals(dtf2010$quantity[2]))
 })
 
 

@@ -19,4 +19,14 @@ The data frame outcome of this function
 will be use by replacebypartnerquantity()
 to decide which of the reporter or partner flow to favor
 }
+\details{
+NA values should not be present in prices.
+If an NA value is present in one year,
+it should be probagated to all other years.
+That means do not use na.rm in the calculation of the
+standard deviation of prices.
+
+Because of missing values in more recent years, the presence of missing data towards the end
+can be dealt with by choosing periodend 2 or 3 years before the last year available.
+}
 
