@@ -1,0 +1,48 @@
+---
+title: "Null quantities for flag 10 and 14"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+#' Bilateral trade flows for the selected countries
+#' @param dtf data frame of bilateral trade flows
+#' @param countries a vector of country names
+#' @param minyear start year
+#' @param maxyear end year
+bilflows <- function(dtf, countries, minyear=0, maxyear=9999){
+    dtf %>% 
+        filter(year >= minyear & year <= maxyear) %>%
+        filter(reporter %in% countries & partner %in% countries) %>%
+        select(productcode, flow, year, reporter, partner, 
+               tradevalue, weight, quantity, 
+               medianconversion, medianprice, flag)
+}
+``` 
+
+
+# NULL (NA) quantities
+Jo reported this under redmine/issues/153
+
+```{r}
+# logs10r <- readdbproduct(440310, "raw_flow_yearly")
+# Issue: missing data
+
+logs41r <- readdbproduct(440341, "raw_flow_yearly")
+logs41v <- clean(logs41r)
+logs41vna <- logs41v %>% filter(is.na(quantity))
+chncog <- c("China", "Congo")
+logs41vna %>% bilflows(chncog) %>% kable()
+```
+

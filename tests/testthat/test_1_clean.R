@@ -98,7 +98,6 @@ test_that("replacebypartnerquantity doesn't replace by a missing quantity",{
     # Because the choice is often made over a shorter period
     # than the length of the actual data favor partner can tell replacebypartnerquantity()
     # to replace by a quantity that is not available.
-    # Simulate this by introducing an NA quantity.
     dtf <-  mockflows %>% addpartnerflow()
     choice <- dtf %>% choosereporterorpartner()
     # Introduce an NA value in the partner quantity

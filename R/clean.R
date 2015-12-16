@@ -384,8 +384,12 @@ estimatequantity <- function(dtf, price, conversionfactor){
 
     # Split flows which have a quantity from those which don't
     dtfq <- dtf %>% filter(!is.na(quantity))
-    dtfnoqw <- dtf %>% filter(is.na(quantity) & !is.na(weight))
-    dtfnoqnow <- dtf %>% filter(is.na(quantity) & is.na(weight))
+    dtfnoqw <- dtf %>% filter(is.na(quantity) & !is.na(weight) &
+    # If median conversion factor is NA,
+    # then estimate quantity based on price
+                                  !is.na(medianconversion))
+    dtfnoqnow <- dtf %>% filter(is.na(quantity) &
+                                    (is.na(weight) | is.na(medianconversion)))
     # Replace quantity by quantity_cf or by quantity_up
     dtfnoqw <- dtfnoqw %>% mutate(quantity = quantity_cf,
                                   flag = flag + 10)

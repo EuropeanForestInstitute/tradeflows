@@ -59,7 +59,11 @@ unique(dtfr$digit)
 swd99r <- readdbproduct(440799, "raw_flow_yearly")
 swd99v <- clean(swd99r)
 unique(swd99v$flag)
+swd99vna <- swd99v %>% filter(is.na(quantity))
+
+
 ```
+
 
 ```
 swd99r %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
@@ -77,3 +81,4 @@ bulden <- c("Bulgaria", "Denmark")
 swd99r %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
 swd99v %>% bilflows(bulden, minyear = 2009, maxyear = 2009)
 ```
+
