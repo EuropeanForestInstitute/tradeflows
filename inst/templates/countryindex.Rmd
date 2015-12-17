@@ -1,0 +1,32 @@
+---
+title: 'List of overview reports'
+author: "European Forest Institute based on validated UN COMTRADE data"
+date: "Reports produced on `r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document: 
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+# I tried placing the yaml block after the chunks but for some reason it doesn't always generate the pdf and generates a html file instead.
+# pdf is generated when the yaml block is at the top, 
+
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+```{r}
+getwd()
+countries %>% 
+    mutate(quantity = paste0("<a href='overviewquantity",reporter,"jfsq1.pdf'>",
+                               "overviewquantity",reporter,"</a>"),
+           tradevalue = paste0("<a href='overviewtradevalue",reporter,"jfsq1.pdf'>",
+                               "overviewtradevalue",reporter,"</a>")) %>%
+    kable(col.names = c("Reporter", "Overview quantity", "Overview trade value"))
+```

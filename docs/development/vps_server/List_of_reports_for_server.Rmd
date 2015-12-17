@@ -1,0 +1,119 @@
+---
+title: "List of reports for the Virtual Private Server"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+``` 
+
+
+# What should be in the list of reports?
+Reports are made on all years available in the DB.
+This could be change to concern only the last 5 years (or last 10 years) for which the most data is available.
+
+Report specific:
+
+* Overview report should be based on jfsq level 1
+
+# Create a list of overview reports for the server
+This list could itself be a report generated in html form?
+Is it possible to create html reports with createreport() ?
+Current version of createreport() is rendering in pdf format only:
+```
+rmarkdown::render(output_format = rmarkdown::pdf_document())
+```
+Considering that many options in createreport() will not be needed, 
+a new function can generate the list of reports as an html file. 
+A data frame called "flowavailable" can summarise available information for all possible report types.
+A list of all available products by country in all years
+
+|reporter |productcode | period | rawdata | validateddata |
+|:--------|:-----------|:-------|:--------|:-------------:|
+| France  | 440710     | 2010   | TRUE    | TRUE          |
+
+
+From this data frame we can extract:
+
+* a list of countries to create links to the overview reports
+* a list of products to create links to the completeness reports
+* a table of product and country to create links to discrepancy reports
+
+## Summarise flows available
+```{r eval=FALSE}
+#' Generate a list of distinct reporter and productcode available by year
+#' It's rather a lengthy (few seconds) process
+#' The output can be used to generate lists of reports
+findavailableflows <- function(){
+    rawflow <- readdbtbl("raw_flow_yearly") %>%
+        select(reporter, productcode, period) %>%
+        distinct() %>% 
+        collect() %>%
+        mutate(rawdata = TRUE)
+    validatedflow <- readdbtbl("validated_flow_yearly") %>%
+        select(reporter, productcode, period) %>%
+        distinct() %>%
+        collect() %>%
+        mutate(validateddata = TRUE) 
+    flowavailable <- full_join(rawflow, validatedflow, by = c("reporter", "productcode", "period"))
+    # replace NA value by false
+    flowavailable[is.na(flowavailable)] <- FALSE
+    return(flowavailable)
+}
+# system.time(findavailableflows())
+#   user  system elapsed 
+# 24.308   0.008  42.463 
+
+# Select country only
+# system.time(flowavailable <- readdbtbl("validated_flow_yearly") %>%
+#         select(reporter) %>%
+#         distinct() %>%
+#         collect())
+#    user  system elapsed 
+#   0.024   0.000   7.042 
+```
+
+
+## Generate a list of countries with links to overview reports
+```{r eval=FALSE}
+# countries <- flowavailable %>% 
+#     select(reporter) %>%
+#     distinct() %>%
+#     mutate(report = paste("<a href='google.com'>search</a>"))
+```
+
+A function 
+
+
+```{r}
+
+```
+
+```{r}
+path <- "../../../reports/overview/"
+
+# Simulate country table
+countries <- data_frame(reporter = c("Finland", "France")) 
+createcountryindex(countries)
+
+# Experiment
+# countries %>% 
+#     mutate(quantity = paste0("<a href='",path,"overviewquantity",reporter,"jfsq1.pdf'>",
+#                                "quantity",reporter,"</a>"),
+#            tradevalue = paste0("<a href='",path,"overviewtradevalue",reporter,"jfsq1.pdf'>",
+#                                "tradevalue",reporter,"</a>")) %>%
+#     kable()
+
+```
+

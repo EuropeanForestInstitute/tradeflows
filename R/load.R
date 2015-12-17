@@ -10,7 +10,8 @@
 #'@param px Trade data classification scheme
 #'@param max maximum records returned
 #'@return a dataframe
-#'@examples library(tradeflows)
+#'@examples
+#'library(tradeflows)
 #'# Load "other sawnwood" in France for the last 5 years available in comtrade
 #'loadcomtradebycode(440799, 251, "recent")
 #'@export

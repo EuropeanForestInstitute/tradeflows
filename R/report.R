@@ -379,6 +379,75 @@ description <- function(productcodes){
     }
 }
 
+
+#' Fault tolerant report creation for the server
+#'
+#' Can be used with lapply to generate reports for a list of countries.
+#' @param reporter character containing one reporter name
+#' @examples
+#'\dontrun{
+#' countries <- c("Finland","France")
+#' lapply(countries, trytocreateoverviewreports)
+#' }
+#' @export
+trytocreateoverviewreports <- function(reporter,
+                                       tableread = "validated_flow_yearly",
+                                       outputpath = "reports/overview"){
+    try(createoverviewreport(reporter, jfsqlevel = 1, template = "overviewquantity.Rmd",
+                             tableread = tableread, outputdir = outputpath))
+    try(createoverviewreport(reporter, jfsqlevel = 1, template = "overviewtradevalue.Rmd",
+                             tableread = tableread, outputdir = outputpath))
+}
+
+
+#' Generate a list of reports
+#' @param inputpath path of the template, defaults to package internal path
+#' @param template name of the template file, including .Rmd extension
+#' @param outputdir name of the output directory relative to getwd()
+#' @param filename name of the output file
+#' @param encoding, encoding of the template file
+#' #' @examples
+#' \dontrun{
+#' countries <- data_frame(reporter = c("Finland", "France"))
+#' createcountryindex(countries)
+#' }
+#' @export
+createcountryindex <- function(countries,
+                               template = "countryindex.Rmd",
+                               inputpath = system.file("templates",
+                                                       package="tradeflows"),
+                               outputdir = "reports/overview",
+                               filename = "countryindex.html",
+                               encoding = "UTF-8"){
+    rmarkdown::render(input = file.path(inputpath, template),
+                      output_format = rmarkdown::html_document(),
+                      output_dir = outputdir,
+                      output_file = filename,
+                      encoding = encoding)
+}
+
+
+#' Create overview reports for all countries available
+#'
+#' @param tableread character name of a database table
+#' @param path where reports will be located
+#' @examples
+#' \dontrun{
+#' createalloverviewreports("validated_flow_yearly", "/tmp")
+#' }
+#' @export
+createalloverviewreports <- function(tableread = "validated_flow_yearly",
+                                     outputpath = "reports/overview"){
+    flowavailable <- readdbtbl(tableread) %>%
+        select(reporter) %>%
+        distinct() %>%
+        collect()
+    lapply(flowavailable$reporter, trytocreateoverviewreports,
+           tableread = tableread, outputpath = outputpath)
+    createcountryindex(flowavailable)
+}
+
+
 if (FALSE){
     library(tradeflows)
     ###################### #
