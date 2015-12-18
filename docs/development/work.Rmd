@@ -190,6 +190,22 @@ If the session was not detached properly, it might be necessary to detach it and
        screen -d -r sessionname
 
 ## Notes to EFI developpers
+### Notification of version changes
+I will try to change the package's version number 
+each time I commit a change that impacts the cleaning procedure. 
+I will also try to tag those versions in git.
+
+
+### Code refactoring
+It would be nice to clarify the interface:
+What R functions are used by the PHP code and bash scripts?
+This would enable code refactoring. For example 
+the parameter called outputdir is not consistent with inputpath. 
+It would be preferable to call it outputpath.
+But this might break some other code.
+
+
+### Installation and configuration
 See the vignette/installation.Rmd on installation and configuration steps.
 
 Which directories I want to read at
@@ -204,6 +220,7 @@ The configuration table columnnames located in config/column_names.csv
 now contains 2 column specifying which columns names
 are used in the trade flows database:
 "raw_flow" and "validated_flow"
+
 
 ### Database configuration
 Database configuration file and column names are located under:
