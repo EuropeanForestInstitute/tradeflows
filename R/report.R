@@ -108,7 +108,8 @@ createreport <- function(tfdata,
     #     }
     # Create the report file name
     filename <- paste0(fileprefix, productcodeinreport,
-                       reporterinreport, filesuffix, ".pdf")
+                       gsub(" ", "", reporterinreport),
+                       filesuffix, ".pdf")
     tryCatch(rmarkdown::render(input = file.path(inputpath, template),
                                output_format = rmarkdown::pdf_document(keep_tex = keep_tex,
                                                                        toc = toc),
@@ -419,6 +420,7 @@ createcountryindex <- function(countries,
                                outputdir = "reports/overview",
                                filename = "countryindex.html",
                                encoding = "UTF-8"){
+    # This doesn't check if files realy exist
     rmarkdown::render(input = file.path(inputpath, template),
                       output_format = rmarkdown::html_document(),
                       output_dir = outputdir,

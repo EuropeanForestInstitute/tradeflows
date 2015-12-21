@@ -22,11 +22,12 @@ library(reshape2)
 
 
 ```{r}
-getwd()
 countries %>% 
-    mutate(quantity = paste0("<a href='overviewquantity",reporter,"jfsq1.pdf'>",
-                               "overviewquantity",reporter,"</a>"),
-           tradevalue = paste0("<a href='overviewtradevalue",reporter,"jfsq1.pdf'>",
-                               "overviewtradevalue",reporter,"</a>")) %>%
+    mutate(reporter2 = gsub(" ", "", reporter),
+           quantity = paste0("<a href='overviewquantity",reporter2,"jfsq1.pdf'>",
+                             "overviewquantity",reporter2,"</a>"),
+           tradevalue = paste0("<a href='overviewtradevalue",reporter2,"jfsq1.pdf'>",
+                               "overviewtradevalue",reporter2,"</a>")) %>%
+    select(-reporter2) %>%
     kable(col.names = c("Reporter", "Overview quantity", "Overview trade value"))
 ```

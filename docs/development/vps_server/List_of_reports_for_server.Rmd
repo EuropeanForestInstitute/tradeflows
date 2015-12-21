@@ -87,10 +87,9 @@ findavailableflows <- function(){
 
 ## Generate a list of countries with links to overview reports
 ```{r eval=FALSE}
-# countries <- flowavailable %>% 
-#     select(reporter) %>%
-#     distinct() %>%
-#     mutate(report = paste("<a href='google.com'>search</a>"))
+countries <- flowavailable %>% 
+    select(reporter) %>%
+    distinct() 
 ```
 
 A function 
@@ -114,6 +113,21 @@ createcountryindex(countries)
 #            tradevalue = paste0("<a href='",path,"overviewtradevalue",reporter,"jfsq1.pdf'>",
 #                                "tradevalue",reporter,"</a>")) %>%
 #     kable()
+
+```
+
+# Regenerate a few reports which had spaces in their names
+```{r eval=FALSE}
+countries <- readdbtbl("validated_flow_yearly") %>%
+        select(reporter) %>%
+        distinct() %>%
+        collect()
+createcountryindex(countries)
+
+countriesspace <- countries %>% filter(grepl(" ",reporter))
+lapply(countriesspace$reporter,trytocreateoverviewreports,
+       outputpath = "/tmp/overview/reports/overview")
+
 
 ```
 
