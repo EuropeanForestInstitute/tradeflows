@@ -118,16 +118,20 @@ createcountryindex(countries)
 
 # Regenerate a few reports which had spaces in their names
 ```{r eval=FALSE}
+
+# Generate a lot of reports in the /tmp directory
+curdir <- getwd()
+setwd("/tmp")
+
+# Things to paste in an R session
 countries <- readdbtbl("validated_flow_yearly") %>%
         select(reporter) %>%
         distinct() %>%
         collect()
-# Generate a lot of reports in the /tmp directory
-curdir <- getwd()
-setwd("/tmp")
 createcountryindex(countries)
 countriesspace <- countries %>% filter(grepl(" ",reporter))
 lapply(countriesspace$reporter,trytocreateoverviewreports)
+
 setwd(curdir)
 getwd()
 ```
