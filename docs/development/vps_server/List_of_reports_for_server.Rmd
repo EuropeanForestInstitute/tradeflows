@@ -122,12 +122,13 @@ countries <- readdbtbl("validated_flow_yearly") %>%
         select(reporter) %>%
         distinct() %>%
         collect()
+# Generate a lot of reports in the /tmp directory
+curdir <- getwd()
+setwd("/tmp")
 createcountryindex(countries)
-
 countriesspace <- countries %>% filter(grepl(" ",reporter))
-lapply(countriesspace$reporter,trytocreateoverviewreports,
-       outputpath = "/tmp/overview/reports/overview")
-
-
+lapply(countriesspace$reporter,trytocreateoverviewreports)
+setwd(curdir)
+getwd()
 ```
 

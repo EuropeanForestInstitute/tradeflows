@@ -131,7 +131,7 @@ productplot <- function(product_, unit_){
     combined <- rbind(import, export)
     # test if there are more than one unit, give a warning
     p <- ggplot(NULL,
-                aes(x = year, y = tradevalue,
+                aes(x = year, y = quantity,
                     fill = productcode)) +
         # geom_bar(stat="identity") +
         ylab(paste(unique(combined$unit))) +
