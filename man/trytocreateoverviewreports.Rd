@@ -5,7 +5,7 @@
 \title{Fault tolerant report creation for the server}
 \usage{
 trytocreateoverviewreports(reporter, tableread = "validated_flow_yearly",
-  outputpath = "reports/overview")
+  outputdir = "reports/overview")
 }
 \arguments{
 \item{reporter}{character containing one reporter name}

@@ -393,11 +393,11 @@ description <- function(productcodes){
 #' @export
 trytocreateoverviewreports <- function(reporter,
                                        tableread = "validated_flow_yearly",
-                                       outputpath = "reports/overview"){
+                                       outputdir = "reports/overview"){
     try(createoverviewreport(reporter, jfsqlevel = 1, template = "overviewquantity.Rmd",
-                             tableread = tableread, outputdir = outputpath))
+                             tableread = tableread, outputdir = outputdir))
     try(createoverviewreport(reporter, jfsqlevel = 1, template = "overviewtradevalue.Rmd",
-                             tableread = tableread, outputdir = outputpath))
+                             tableread = tableread, outputdir = outputdir))
 }
 
 
@@ -439,14 +439,14 @@ createcountryindex <- function(countries,
 #' }
 #' @export
 createalloverviewreports <- function(tableread = "validated_flow_yearly",
-                                     outputpath = "reports/overview"){
+                                     outputdir = "reports/overview"){
     flowavailable <- readdbtbl(tableread) %>%
         select(reporter) %>%
         distinct() %>%
         collect()
     lapply(flowavailable$reporter, trytocreateoverviewreports,
-           tableread = tableread, outputpath = outputpath)
-    createcountryindex(flowavailable)
+           tableread = tableread, outputdir = outputdir)
+    createcountryindex(flowavailable, outputdir = outputdir)
 }
 
 

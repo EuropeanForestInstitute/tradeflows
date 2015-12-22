@@ -201,9 +201,10 @@ It would be nice to clarify the interface:
 What R functions are used by the PHP code and bash scripts?
 This would enable code refactoring. For example 
 the parameter called outputdir is not consistent with inputpath. 
-It would be preferable to call it outputpath.
-But this might break some other code.
-
+It would be preferable to call tehm both "dir" or "path".
+Outputdir is named after the 
+rmarkdown::render() parameter output_dir.
+What is inputpath named after?
 
 ### Installation and configuration
 See the vignette/installation.Rmd on installation and configuration steps.

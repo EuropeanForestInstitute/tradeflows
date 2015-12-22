@@ -92,46 +92,31 @@ countries <- flowavailable %>%
     distinct() 
 ```
 
-A function 
-
-
-```{r}
-
-```
-
 ```{r}
 path <- "../../../reports/overview/"
-
 # Simulate country table
 countries <- data_frame(reporter = c("Finland", "France")) 
 createcountryindex(countries)
-
-# Experiment
-# countries %>% 
-#     mutate(quantity = paste0("<a href='",path,"overviewquantity",reporter,"jfsq1.pdf'>",
-#                                "quantity",reporter,"</a>"),
-#            tradevalue = paste0("<a href='",path,"overviewtradevalue",reporter,"jfsq1.pdf'>",
-#                                "tradevalue",reporter,"</a>")) %>%
-#     kable()
-
 ```
 
 # Regenerate a few reports which had spaces in their names
 ```{r eval=FALSE}
-
-# Generate a lot of reports in the /tmp directory
-curdir <- getwd()
-setwd("/tmp")
-
-# Things to paste in an R session
 countries <- readdbtbl("validated_flow_yearly") %>%
         select(reporter) %>%
         distinct() %>%
         collect()
-createcountryindex(countries)
-countriesspace <- countries %>% filter(grepl(" ",reporter))
-lapply(countriesspace$reporter,trytocreateoverviewreports)
 
+# countriesspace <- countries %>% filter(grepl(" ",reporter))
+# lapply(countriesspace$reporter,trytocreateoverviewreports)
+```
+
+# Create all overview reports
+```{r}
+# Generate a lot of reports in the /tmp directory
+curdir <- getwd()
+setwd("/tmp")
+createcountryindex(countries)
+createalloverviewreports()
 setwd(curdir)
 getwd()
 ```

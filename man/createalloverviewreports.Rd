@@ -5,7 +5,7 @@
 \title{Create overview reports for all countries available}
 \usage{
 createalloverviewreports(tableread = "validated_flow_yearly",
-  outputpath = "reports/overview")
+  outputdir = "reports/overview")
 }
 \arguments{
 \item{tableread}{character name of a database table}
