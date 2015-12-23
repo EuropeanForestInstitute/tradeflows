@@ -1,5 +1,5 @@
 ---
-title: "Learning to save data into SQLite"
+title: "Learning to read and write data into SQLite"
 output:
   html_document:
     toc: yes
@@ -16,6 +16,55 @@ library(dplyr)
 ``` 
 
 
+# Using a MySQL to SQLite conversion script
+[conversion scirpt](https://gist.github.com/esperlu/943776#file-mysql2sqlite-sh) found on a [Stackoverflow answer](http://stackoverflow.com/a/9933603/2641825).
+
+Convert from MySQL to SQLite with the script
+```
+./mysql2sqlite.sh -u R -p tradeflows | sqlite3 tradeflows.sqlite
+```
+The raw database was copied but there was an issue with the validated database: `Error: near line 5217030: no such table: validated_flow_yearly`.
+Browse the newly created SQLite database 
+```
+# Bash command to start sqlite
+sqlite3 tradeflows.sqlite3
+# Commands within sqlite
+.tables
+.schema raw_flow_yearly
+select * from raw_flow_yearly limit 5;
+
+```
+
+# Using dplyr to read from SQLite
+
+```{r}
+tf_sqlite <- src_sqlite("/tmp/tradeflows.sqlite3")
+tf <- tbl(tf_sqlite, "raw_flow_yearly")
+
+system.time(repprod <- tf %>% select(reporter, productcode, period) %>%
+    distinct() %>% collect())
+#  user  system elapsed 
+#   3.908   0.660   4.566 
+```
+
+
+# Compare with the same operation on MySQL
+```{r}
+tf2 <- readdbtbl("raw_flow_yearly")
+system.time(repprod2 <- tf2  %>% 
+                select(reporter, productcode, period) %>%
+                distinct() %>% collect())
+#  user  system elapsed 
+#   0.072   0.004  13.408 
+
+# Compare the output
+repprod <- repprod %>% arrange(reporter, productcode, period)
+repprod2 <- repprod2 %>% arrange(reporter, productcode, period)
+summary(repprod$productcode - repprod2$productcode)
+```
+
+
+# Using dplyr to write into SQLite 
 ```{r}
 tfdb <- readdbtbl("validated_flow_yearly")
 swd99 <- readdbproduct(440799, "validated_flow_yearly")
@@ -24,6 +73,5 @@ tfdblite <- src_sqlite("/tmp/tradeflows.sqlite3", create = T)
 
 tf_lite <- copy_to(tfdblite, swd99, temporary = FALSE, 
                    indexes = list("year", "flowcode","reportercode","partnercode","productcode"))
-
 ```
 

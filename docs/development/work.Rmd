@@ -356,3 +356,8 @@ visualise missing data
 [Next version] Write conversion factors, prices and choice description to the database during the cleaning process
 * Change loadcomtradeallreporters() output format from RDATA to RDS
  Object serialisation makes sense when there is only one object.
+* Convert MySQL database to SQLite, using a script such as 
+https://gist.github.com/esperlu/943776#file-mysql2sqlite-sh
+See also http://stackoverflow.com/questions/3890518/convert-mysql-to-sqlite
+* Make database connectors to SQLite. 
+
