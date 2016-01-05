@@ -1,0 +1,39 @@
+---
+title: "Flags in the validated dataset"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(fig.width=12)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+``` 
+
+
+# Warning!!!  number of flags are biaised if you don't remove products at the 4 digit 
+level from the database. Start with the last chunk and redo this flag extraction once and 
+for all. 
+
+# Flag use in number of flows
+
+```{r}
+
+rawflow <- readdbtbl("raw_flow_yearly") %>% 
+    select(productcode) %>% distinct() %>%
+    arrange(productcode) %>% collect()
+
+valid <- readdbtbl("validated_flow_yearly") %>%
+    group_by(flow, flag, unit) %>% 
+    summarise(quantity = sum(quantity)) %>% collect()
+
+```

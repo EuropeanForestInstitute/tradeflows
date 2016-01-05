@@ -67,8 +67,10 @@ mockflows <- data_frame(productcode = c(440349, 440349, 440349, 440349),
                         flag = c(0, 4, 0, 4),
                         reporter = c("China", "Malaysia","China", "Malaysia"),
                         reportercode = c(156, 458, 156, 458),
+                        reporteriso = c("CHN", "MYS", "CHN","MYS"),
                         partner = c("Malaysia", "China", "Malaysia", "China"),
                         partnercode = c(458, 156, 458, 156),
+                        partneriso = c("MYS", "CHN","MYS","CHN"),
                         tradevalue = c(84356413, 28229869, 95433402, 15376022),
                         quantity = c(391076, 185550, 278377, 89178),
                         price = c(NA, NA, NA, NA),
@@ -126,6 +128,16 @@ test_that("Replacebypartnerquantity leaves us with one quantity for both mirror 
     # dtf$quantity contains similar quantities for mirror flows
     dtf2010 <- dtf %>% filter(period ==2010)
     expect_that(dtf2010$quantity[1], equals(dtf2010$quantity[2]))
+})
+
+
+test_that("ISO code is correct after mirror flow copying", {
+    # We should actually check that iso code matches countrycode and country name
+    dtf <- mockflows %>%
+        filter(reporter == "China") %>%
+        addmissingmirrorflow()
+    expect_that(dtf$reporteriso, equals(c("CHN","CHN","MYS","MYS")))
+    expect_that(dtf$partneriso, equals(c("MYS","MYS","CHN","CHN")))
 })
 
 

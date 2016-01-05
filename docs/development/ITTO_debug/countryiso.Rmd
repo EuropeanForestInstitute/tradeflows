@@ -1,0 +1,35 @@
+---
+title: "Country ISO issue"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(fig.width=12)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+``` 
+
+# Country iso doesn't match coutry code and name in the validated flow table
+
+
+```{r}
+
+rawflow <- readdbtbl("raw_flow_yearly") %>% 
+    filter(productcode == 440799) %>% collect()
+
+valid <- readdbtbl("validated_flow_yearly")  %>%
+    filter(productcode == 440799) %>% collect()
+
+valid2 <- rawflow %>% clean()
+
+```
