@@ -1,0 +1,96 @@
+---
+title: "Import Export mismatch"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(fig.width=12)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+``` 
+
+
+# Description of the issue
+> To take one example, according to export flow data, 4 largest exporters of hardwood logs (all products with codes 44034% or 44039%) in 2014 are: Myanmar (3.26m m3, $1230b), USA (1.33m m3, $652b), Malaysia (2.61m m3, $612b), NZ (0.98m m3, $245b). Note NZ entry is obviously wrong as NZ exports are known to be almost exclusively of softwood not hardwood – the kind of error that can’t be picked up by the algorithm.
+
+> This contrasts with import data flow data which indicates 4 largest hardwood log supply countries are: Malaysia (2.02m m3, $833b), PNG (3.09m m3, $812b), Laos (3.18m m3, $782b), USA (1.51m m3, $619b)
+
+> Data for USA and Malaysia and are reasonably comparable, but data for Myanmar, NZ, Laos and PNG are not at all comparable. The failure of the algorithm to pick up the Myanmar data is particularly troubling. China and India import data shows zero trade in hardwood logs with Myanmar in all years except 2010 – whereas Myanmar export data shows these were by far largest markets for Myanmar logs. So, why wasn’t Myanmar mirror export data added to China and India import flows
+
+
+# Largest hardwood exporters and importers 
+```{r warning=FALSE}
+rfl <- readdbtbl("raw_flow_yearly")
+vfl <- readdbtbl("validated_flow_yearly")
+productcodes <- vfl %>% select(productcode) %>% distinct() %>% collect()
+productcodes <- productcodes %>%
+    filter(nchar(productcode) == 6) %>%
+    mutate(digit5 = substring(productcode,1,5))
+hrdwdlogcodes <- productcodes %>% filter(digit5 %in% c(44034, 44039))
+hrdwdlog <- vfl %>%
+    filter(productcode %in% hrdwdlogcodes$productcode) %>% 
+    collect()
+
+hrdwdlog %>% filter(year == 2014 & flow == "Export") %>%
+    group_by(reporter) %>%
+    summarise(quantity = sum(quantity),
+              tradevalue = sum(tradevalue),
+              flags = paste(unique(flag), collapse=", ")) %>%
+    arrange(desc(tradevalue)) %>% head(4) %>% kable()
+
+hrdwdlog %>% filter(year == 2014 & flow == "Import") %>%
+    group_by(partner) %>%
+    summarise(quantity = sum(quantity),
+              tradevalue = sum(tradevalue),
+              flags = paste(unique(flag), collapse=", ")) %>%
+    arrange(desc(tradevalue)) %>% head(4) %>% kable()
+```
+
+
+# Largest hardwood trade partners of Myanmar
+```{r warning=FALSE}
+hrdwdmmr <- vfl %>% 
+    filter(productcode %in% hrdwdlogcodes$productcode & 
+                   (reporter == "Myanmar" | partner =="Myanmar")) %>%
+    collect()
+# Largest export partners
+mmrexp <- hrdwdmmr %>% 
+    filter(year == 2014 & flow == "Export" & reporter == "Myanmar") %>%
+    arrange(desc(quantity))
+# Those which reported an import
+mmrpartner <- hrdwdmmr %>%
+    filter(year == 2014 & flow == "Import" & partner == "Myanmar") %>%
+    arrange(desc(quantity))
+
+# All years
+mmrpartner <- hrdwdmmr %>%
+    filter( flow == "Import" & partner == "Myanmar") %>%
+    arrange(desc(quantity))
+
+# What about the raw data?
+hrdwdmmrr <- rfl %>%
+    filter(productcode %in% hrdwdlogcodes$productcode & 
+               (reporter == "Myanmar" | partner =="Myanmar")) %>%
+    collect()
+
+# Largest export partners in the raw data
+mmrexpr <- hrdwdmmrr %>% 
+    filter(year == 2014 & flow == "Export" & reporter == "Myanmar") %>%
+    arrange(desc(quantity))
+
+# Those which reported an import
+mmrpartnerr <- hrdwdmmrr %>%
+    filter(year == 2014 & flow == "Import" & partner == "Myanmar") %>%
+    arrange(desc(quantity))
+
+```
+

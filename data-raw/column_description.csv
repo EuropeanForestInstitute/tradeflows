@@ -1,0 +1,7 @@
+sheet,column,description
+Conversion factors,medianconversion,The conversion factor of one flow is equal to weight / quantity. This column contains the median of all conversion factors in a given region for a given year.
+Unit prices,lowerprice,
+Unit prices,medianprice,The unit price of a flow is equal to tradevalue / quantity. This column contains the median of all unit prices in a given region for a given year.
+Unit prices,upperprice,
+Unit prices,averageprice,
+Unit prices,weightedaverageprice,

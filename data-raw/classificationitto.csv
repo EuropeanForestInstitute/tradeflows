@@ -1,0 +1,782 @@
+Names of products,Exceptions,Tropical,Product code,Nomenclature,Code,Description,unit,calculateAggregate?
+WOODFUEL,,,1.1,HS96,440110,Name: Fuel wood,000 m3,
+WOODFUEL,,,1.1,HS02,440110,"Name: Fuel wood, in logs/billets/twigs/faggots/sim. forms",000 m3,
+WOODFUEL,,,1.1,HS07,440110,"Name: Fuel wood, in logs/billets/twigs/faggots/similar forms",000 m3,
+WOODFUEL,,,1.1,HS12,440110,"Wood and articles of wood; wood charcoal // Fuel wood, in logs, in billets, in twigs, in faggots or in similar forms; wood in chips or particles; sawdust and wood waste and scrap, whether or not agglomerated in logs, briquettes, pellets or similar forms. ",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS96,440121,"Name: Wood in chips, coniferous",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS02,440121,"Name: Wood, in chips/particles, coniferous",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS07,440121,"Name: Wood, in chips/particles, coniferous",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS12,440121,"Name: Wood and articles of wood; wood charcoal // Fuel wood, in logs, in billets, in twigs, in faggots or in similar forms; wood in chips or particles; sawdust and wood waste and scrap, whether or not agglomerated in logs, briquettes, pellets or similar f",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS96,440122,"Name: Wood in chips, non-coniferous",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS02,440122,"Name: Wood, in chips/particles, non-coniferous",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS07,440122,"Name: Wood, in chips/particles, non-coniferous",000 m3,
+WOOD CHIPS AND PARTICLES,,,3.1,HS12,440122,"Name: Wood and articles of wood; wood charcoal // Fuel wood, in logs, in billets, in twigs, in faggots or in similar forms; wood in chips or particles; sawdust and wood waste and scrap, whether or not agglomerated in logs, briquettes, pellets or similar f",000 m3,
+WOOD RESIDUES,,,4.1,HS96,440130,"Name: Sawdust, wood waste or scrap",000 kg,
+WOOD RESIDUES,,,4.1,HS02,440130,"Name: Sawdust, wood waste or scrap",000 kg,
+WOOD RESIDUES,,,4.1,HS07,440130,"Name: Sawdust, wood waste or scrap",000 kg,
+WOOD RESIDUES (INCLUDING WOOD FOR AGGLOMERATES),,,3.2,HS12,440131,"Name: Wood and articles of wood; wood charcoal // Fuel wood, in logs, in billets, in twigs, in faggots or in similar forms; wood in chips or particles; sawdust and wood waste and scrap, whether or not agglomerated in logs, briquettes, pellets or similar f",000 m3,
+WOOD PELLETS ,,,4.1,HS12,440131,"Name: Wood and articles of wood; wood charcoal // Fuel wood, in logs, in billets, in twigs, in faggots or in similar forms; wood in chips or particles; sawdust and wood waste and scrap, whether or not agglomerated in logs, briquettes, pellets or similar f",000 kg,
+WOOD RESIDUES (INCLUDING WOOD FOR AGGLOMERATES),,,3.2,HS12,440139,"Name: Wood and articles of wood; wood charcoal // Fuel wood, in logs, in billets, in twigs, in faggots or in similar forms; wood in chips or particles; sawdust and wood waste and scrap, whether or not agglomerated in logs, briquettes, pellets or similar f",000 m3,
+WOOD CHARCOAL,,,2,HS96,440200,Name: Wood charcoal (including shell or nut charcoal),000 kg,
+WOOD CHARCOAL,,,2,HS02,440200,"Name: Wood charcoal (incl. shell/nut charcoal), whether or not agglom.",000 kg,
+WOOD CHARCOAL,,,2,HS07,440290,"Name: Wood charcoal (including shell/nut charcoal, excl. of 440210)",000 kg,
+WOOD CHARCOAL,,,2,HS12,440290,"Name: Wood and articles of wood; wood charcoal // Wood charcoal (including shell or nut charcoal), whether or not agglomerated. // -Other
+Description: -Other",000 kg,
+LOGS,,,1.2.C,HS96,440320,"Name: Logs, poles, coniferous not treated or painted Description: Other, coniferous",000 m3,
+LOGS,,,1.2.C,HS02,440320,"Name: Wood, in the rough, whether or not stripped of bark/sapwood/roughly squared ... Description: Wood, in the rough, whether or not stripped of bark/sapwood/roughly squared (excl. of 4403.10), coniferous",000 m3,
+LOGS,,,1.2.C,HS07,440320,"Name: Wood, in the rough, whether/not stripped of bark/sapwood/roughly squared (excl. of 4403.10), coniferous Description: - Other, coniferous",000 m3,
+LOGS,,,1.2.C,HS12,440320,"Name: Wood and articles of wood; wood charcoal // Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared. // -Other, coniferous
+Description: -Other, coniferous",000 m3,
+LOGS,,,1.2.C,HS92,440320,"Name: Logs, poles, coniferous not treated or painted
+Description: Other, coniferous",000 m3,
+LOGS,,X,1.2.NC,HS92,440331,"Name: Logs, Meranti (light or dark red), Bakau
+Description: Logs, Meranti (light or dark red), Bakau",000 m3,
+LOGS,,X,1.2.NC,HS92,440332,"Name: Logs, white Lauan/Meranti/Seraya/yellow Meranti/Alan
+Description: Logs, white Lauan/Meranti/Seraya/yellow Meranti/Alan",000 m3,
+LOGS,,X,1.2.NC,HS92,440333,"Name: Logs, Keruing/Ramin/Kapur/Teak/Jongkong/Merbau/etc
+Description: Logs, Keruing/Ramin/Kapur/Teak/Jongkong/Merbau/etc",000 m3,
+LOGS,,X,1.2.NC,HS92,440334,"Name: Logs, Okoume/Obeche/Sapelli/Sipo/Acajou d'Afrique/etc
+Description: Logs, Okoume/Obeche/Sapelli/Sipo/Acajou d'Afrique/etc",000 m3,
+LOGS,,X,1.2.NC,HS92,440335,"Name: Logs, Tiama, Mansonia, Ilomba, Dibetou, Limba, Azobe
+Description: Logs, Tiama, Mansonia, Ilomba, Dibetou, Limba, Azobe",000 m3,
+LOGS,,X,1.2.NC,HS96,440341,"Name: Logs, Meranti red(dark,l",000 m3,
+LOGS,,X,1.2.NC,HS02,440341,"Name: Dark Red Meranti, Light Red Meranti & Meranti Bakau, in the rough, whether ...",000 m3,
+LOGS,,X,1.2.NC,HS07,440341,"Name: Dark Red Meranti, Light Red Meranti & Meranti Bakau, in the rough, whether/not stripped of bark/sapwood/roughly squared",000 m3,
+LOGS,,X,1.2.NC,HS12,440341,"Name: Wood and articles of wood; wood charcoal // Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared. // - Other, of tropical wood specified in Subheading Note 2 to this Chapter : // -- Dark Red Meranti, Light Red Meranti an",000 m3,
+LOGS,,X,1.2.NC,HS96,440349,"Name: Logs, tropical woods nes",000 m3,
+LOGS,,X,1.2.NC,HS02,440349,"Name: Topical wood spec. in SH Note 1 to Ch.44 (excl. of 4403.41), in the rough, ...",000 m3,
+LOGS,,X,1.2.NC,HS07,440349,"Name: Topical wood spec. in SH Note 1 to Ch.44 (excl. of 4403.41), in the rough, whether/not stripped of bark/sapwood/roughly squared",000 m3,
+LOGS,,X,1.2.NC,HS12,440349,"Name: Wood and articles of wood; wood charcoal // Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared. // - Other, of tropical wood specified in Subheading Note 2 to this Chapter : // -- Other
+Description: -- Other",000 m3,
+LOGS,,,1.2.NC,HS07,440391,"Name: Oak (Quercus spp.), in the rough, whether/not stripped of bark/sapwood/roughly squared",000 m3,
+LOGS,,,1.2.NC,HS96,440391,"Name: Logs, Oak (Quercus spp)",000 m3,
+LOGS,,,1.2.NC,HS02,440391,"Name: Oak (Quercus spp.), in the rough, whether or not stripped of bark/sapwood/r ...",000 m3,
+LOGS,,,1.2.NC,HS12,440391,"Name: Wood and articles of wood; wood charcoal // Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared. // - Other : // -- Of oak (Quercus spp.)
+Description: -- Of oak (Quercus spp.)",000 m3,
+LOGS,,,1.2.NC,HS92,440391,"  Name: Logs, Oak (Quercus spp)
+Description: Other :-- Of oak (Quercus spp.)",000 m3,
+LOGS,,,1.2.NC,HS96,440392,"Name: Logs, Beech (Fagus spp)",000 m3,
+LOGS,,,1.2.NC,HS02,440392,"Name: Beech (Fagus spp.), in the rough, whether or not stripped of bark/sapwood/r ...",000 m3,
+LOGS,,,1.2.NC,HS07,440392,"Name: Beech (Fagus spp.), in the rough, whether/not stripped of bark/sapwood/roughly squared",000 m3,
+LOGS,,,1.2.NC,HS12,440392,"Name: Wood and articles of wood; wood charcoal // Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared. // - Other : // -- Of beech (Fagus spp.)
+Description: -- Of beech (Fagus spp.)",000 m3,
+LOGS,,,1.2.NC,HS92,440392,"Name: Logs, Beech (Fagus spp)
+Description: Other :-- Of beech (Fagus spp.)",000 m3,
+LOGS,"TROP from TROP, NC FROM NON TROP",,1.2.NC,HS96,440399,"Name: Logs, non-coniferous nes",000 m3,
+LOGS,"TROP from TROP, NC FROM NON TROP",,1.2.NC,HS02,440399,"Name: Wood, in the rough (excl. of 4403.10-4403.92), whether or not stripped of b ...",000 m3,
+LOGS,"TROP from TROP, NC FROM NON TROP",,1.2.NC,HS07,440399,"Name: Wood, in the rough (excl. of 4403.10-4403.92), whether/not stripped of bark/sapwood/roughly squared",000 m3,
+LOGS,"TROP from TROP, NC FROM NON TROP",,1.2.NC,HS12,440399,"Name: Wood and articles of wood; wood charcoal // Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared. // - Other : // -- Other
+Description: -- Other",000 m3,
+LOGS,"TROP from TROP, NC FROM NON TROP",,1.2.NC,HS92,440399,"Name: Logs, non-coniferous nes
+Description: Other",000 m3,
+SAWNWOOD,,,5.C,HS02,440710,"Name: Wood sawn/chipped length wise, sliced/peeled, whether or not planed, sanded ...",000 m3,
+SAWNWOOD,,,5.C,HS07,440710,"Name: Wood sawn/chipped length wise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, coniferous",000 m3,
+SAWNWOOD,,,5.C,HS96,440710,"Name: Lumber, coniferous (softwood) thickness < 6 mm",000 m3,
+SAWNWOOD,,,5.C,HS12,440710,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // -Coniferous
+Description: -Coniferous",000 m3,
+SAWNWOOD,,,5.C,HS92,440710,"Name: Lumber, coniferous (softwood) thickness < 6 mm
+Description: Coniferous",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440721,"Name: Wood sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of Mahogany (Swietenia spp.)",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440721,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,X,5.NC,HS92,440721,"Name: Lumber, Meranti red, Meranti Bakau, White Lauan etc
+Description: Lumber, Meranti red, Meranti Bakau, White Lauan etc",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440722,"Name: Wood sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of Virola, Imbuia&Balsa",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440722,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,X,5.NC,HS92,440722,"Name: Lumber, Okoume, Obeche, Sapelli/Sipo/Acajou/Makore/et
+Description: Lumber, Okoume, Obeche, Sapelli/Sipo/Acajou/Makore/et",000 m3,
+SAWNWOOD,,X,5.NC,HS92,440723,"Name: Lumber, Baboen, Mahogany, Imbuia, Balsa
+Description: Lumber, Baboen, Mahogany, Imbuia, Balsa",000 m3,
+SAWNWOOD,,X,5.NC,HS02,440724,"Name: Wood sawn/chipped length wise, sliced/peeled, whether or not planed, sanded ...",000 m3,
+SAWNWOOD,,X,5.NC,HS96,440724,"Name: Lumber, Virola, Mahogany",000 m3,
+SAWNWOOD,,X,5.NC,HS02,440725,"Name: Wood sawn/chipped length wise, sliced/peeled, whether or not planed, sanded ...",000 m3,
+SAWNWOOD,,X,5.NC,HS96,440725,"Name: Lumber, Meranti Red
+Description: Of tropical wood specified in Subheading Note 1 to this Chapter :-- Dark Red Meranti, Light Red Meranti and Meranti Bakau",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440725,"Name: Wood sawn/chipped length wise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of Dark Red Meranti, Light Red Meranti & Meranti Bakau",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440725,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,X,5.NC,HS02,440726,"Name: Wood sawn/chipped length wise, sliced/peeled, whether or not planed, sanded ...",000 m3,
+SAWNWOOD,,X,5.NC,HS96,440726,"Name: Lumber, White Lauan
+Description: Of tropical wood specified in Subheading Note 1 to this Chapter :-- White Lauan, White Meranti, White Seraya, Yellow Meranti and Alan",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440726,"Name: Wood sawn/chipped length wise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of White Lauan, White Meranti, White Seraya, Yellow Meranti & Alan",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440726,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440727,"Name: Wood sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of Sapelli",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440727,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440728,"Name: Wood sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of Iroko",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440728,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,X,5.NC,HS96,440729,"Name: Lumber, tropical wood ne",000 m3,
+SAWNWOOD,,X,5.NC,HS02,440729,"Name: Wood sawn/chipped length wise, sliced/peeled, whether or not planed, sanded ...",000 m3,
+SAWNWOOD,,X,5.NC,HS07,440729,"Name: Wood sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm, of tropical wood specified in Subheading Note 1 to this Ch. (excl. of 4407.21-4407.28)",000 m3,
+SAWNWOOD,,X,5.NC,HS12,440729,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Of tropical wood specified in Subheading Note 2 to this Chapter : // -- ",000 m3,
+SAWNWOOD,,,5.NC,HS96,440791,"Name: Lumber, Oak (Quercus spp)",000 m3,
+SAWNWOOD,,,5.NC,HS02,440791,"Name: Oak (Quercus spp.), sawn/chipped length wise, sliced/peeled, whether or not ...",000 m3,
+SAWNWOOD,,,5.NC,HS07,440791,"Name: Oak (Quercus spp.), sawn/chipped length wise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm",000 m3,
+SAWNWOOD,,,5.NC,HS12,440791,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Other : // -- Of oak (Quercus spp.)
+Description: -- Of oak (Quercus spp.",000 m3,
+SAWNWOOD,,,5.NC,HS92,440791,"Name: Lumber, Oak (Quercus spp)
+Description: Other :-- Of oak (Quercus spp.)",000 m3,
+SAWNWOOD,,,5.NC,HS96,440792,"Name: Lumber, Beech (Fagus spp)",000 m3,
+SAWNWOOD,,,5.NC,HS02,440792,"Name: Beech (Fagus spp.), sawn/chipped length wise, sliced/peeled, whether or not ...",000 m3,
+SAWNWOOD,,,5.NC,HS07,440792,"Name: Beech (Fagus spp.), sawn/chipped length wise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm",000 m3,
+SAWNWOOD,,,5.NC,HS12,440792,"  Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Other : // -- Of beech (Fagus spp.)
+Description: -- Of beech (Fagus sp",000 m3,
+SAWNWOOD,,,5.NC,HS92,440792,"Name: Lumber, Beech (Fagus spp)
+Description: Other :-- Of beech (Fagus spp.)",000 m3,
+SAWNWOOD,,,5.NC,HS07,440793,"Name: Maple (Acer spp.), sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm",000 m3,
+SAWNWOOD,,,5.NC,HS12,440793,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Other : // -- Of maple (Acer spp.)
+Description: -- Of maple (Acer spp.)",000 m3,
+SAWNWOOD,,,5.NC,HS07,440794,"Name: Cherry (Prunus spp.), sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm",000 m3,
+SAWNWOOD,,,5.NC,HS12,440794,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Other : // -- Of cherry (Prunus spp.)
+Description: -- Of cherry (Prunus ",000 m3,
+SAWNWOOD,,,5.NC,HS07,440795,"Name: Ash(Fraxinus spp.), sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm",000 m3,
+SAWNWOOD,,,5.NC,HS12,440795,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Other : // -- Of ash (Fraxinus spp.)
+Description: -- Of ash (Fraxinus sp",000 m3,
+SAWNWOOD,"TROP from TROP, NC FROM NON TROP",,5.NC,HS96,440799,"Name: Lumber, non-coniferous nes",000 m3,
+SAWNWOOD,"TROP from TROP, NC FROM NON TROP",,5.NC,HS02,440799,"Name: Wood (excl. of 4407.10-4407.92), sawn/chipped length wise, sliced/peeled, w ...",000 m3,
+SAWNWOOD,"TROP from TROP, NC FROM NON TROP",,5.NC,HS07,440799,"Name: Wood(excl. of 4407.10-4407.95), sawn/chipped lengthwise, sliced/peeled, whether/not planed, sanded/end-jointed, of a thickness >6mm",000 m3,
+SAWNWOOD,"TROP from TROP, NC FROM NON TROP",,5.NC,HS12,440799,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. // - Other : // -- Other
+Description: -- Other",000 m3,
+SAWNWOOD,"TROP from TROP, NC FROM NON TROP",,5.NC,HS92,440799,"Name: Lumber, non-coniferous nes
+Description: Other",000 m3,
+VENEER,,,6.1.C,HS96,440810,"Name: Veneer or ply sheet, coniferous (softwood) <6 mm thick",000 m3,
+VENEER,,,6.1.C,HS02,440810,"Name: Sheets for veneering, incl. those obt. by slicing laminated wood, for plywo ...",000 m3,
+VENEER,,,6.1.C,HS07,440810,"Name: Sheets for veneering (including those obtained by slicing laminated wood), for plywood/for similar laminated wood & other wood, sawn lengthwise, sliced/peeled, whether/not planed, sanded, spliced/end-jointed, of a thickness not> 6 mm,coniferous",000 m3,
+VENEER,,,6.1.C,HS12,440810,"Name: Wood and articles of wood; wood charcoal // Sheets for veneering (including those obtained by slicing laminated wood), for plywood or for similar laminated wood and other wood, sawn lengthwise, sliced or peeled, whether or not planed, sanded, splice",000 m3,
+VENEER,,,6.1.C,HS92,440810,"Name: Veneer or ply sheet, coniferous (softwood) <6 mm thic
+Description: Coniferous",000 m3,
+VENEER,,X,6.1.NC,HS92,440820,"Name: Veneer or ply sheet, tropical woods, <6 mm thick
+Description: Veneer or ply sheet, tropical woods, <6 mm thick",000 m3,
+VENEER,,X,6.1.NC,HS96,440831,"Name: Veneer, Meranti Red(dark",000 m3,
+VENEER,,X,6.1.NC,HS02,440831,"Name: Sheets for veneering, incl. those obt. by slicing laminated wood, for plywo ...",000 m3,
+VENEER,,X,6.1.NC,HS07,440831,"Name: Sheets for veneering (including those obtained by slicing laminated wood), for plywood/for similar laminated wood & other wood, sawn lengthwise, sliced/peeled, whether/not planed, sanded, spliced/end-jointed, of a thickness not> 6 mm, of Dark Red Me",000 m3,
+VENEER,,X,6.1.NC,HS12,440831,"Name: Wood and articles of wood; wood charcoal // Sheets for veneering (including those obtained by slicing laminated wood), for plywood or for similar laminated wood and other wood, sawn lengthwise, sliced or peeled, whether or not planed, sanded, splice",000 m3,
+VENEER,,X,6.1.NC,HS96,440839,"Name: Veneer, tropical woods,",000 m3,
+VENEER,,X,6.1.NC,HS02,440839,"Name: Sheets for veneering, incl. those obt. by slicing laminated wood, for plywo ...",000 m3,
+VENEER,,X,6.1.NC,HS07,440839,"Name: Sheets for veneering (including those obtained by slicing laminated wood), for plywood/for similar laminated wood & other wood, sawn lengthwise, sliced/peeled, whether/not planed, sanded, spliced/end-jointed, of a thickness not> 6 mm, of tropical wo",000 m3,
+VENEER,,X,6.1.NC,HS12,440839,"Name: Wood and articles of wood; wood charcoal // Sheets for veneering (including those obtained by slicing laminated wood), for plywood or for similar laminated wood and other wood, sawn lengthwise, sliced or peeled, whether or not planed, sanded, splice",000 m3,
+VENEER,"TROP from TROP, NC FROM NON TROP",,6.1.NC,HS96,440890,"Name: Veneer,ply sheet, not conifer or tropical, <6 mm thick",000 m3,
+VENEER,"TROP from TROP, NC FROM NON TROP",,6.1.NC,HS02,440890,"Name: Sheets for veneering, incl. those obt. by slicing laminated wood, for plywo ...",000 m3,
+VENEER,"TROP from TROP, NC FROM NON TROP",,6.1.NC,HS07,440890,"Name: Sheets for veneering (including those obtained by slicing laminated wood), for plywood/for similar laminated wood & other wood, sawn lengthwise, sliced/peeled, whether/not planed, sanded, spliced/end-jointed, of a thickness not> 6 mm (excl. of 4408.",000 m3,
+VENEER,"TROP from TROP, NC FROM NON TROP",,6.1.NC,HS12,440890,"Name: Wood and articles of wood; wood charcoal // Sheets for veneering (including those obtained by slicing laminated wood), for plywood or for similar laminated wood and other wood, sawn lengthwise, sliced or peeled, whether or not planed, sanded, splice",000 m3,
+VENEER,"TROP from TROP, NC FROM NON TROP",,6.1.NC,HS92,440890,"Name: Veneer,ply sheet, not conifer or tropical, <6 mm thic
+Description: Other",000 m3,
+PARTICLEBOARD,,,6.3,HS96,4410,"Name: Particle board, similar board, wood, ligneous material Description: Particle board and similar board of wood or other ligneous materials, whether or not agglomerated with resins or other organic binding substances.",000 m3,
+PARTICLEBOARD,,,6.3,HS02,4410,"Name: Particle board and similar board Description: Particle board and similar board (for example, oriented strand board and waferboard) of wood or other ligneous materials, whether or not agglomerated with resins or other organic binding substances.",000 m3,
+PARTICLEBOARD,,,6.3,HS07,4410," Name: Particle board, oriented strand board (OSB) and similar board (for example, waferboard) of wood or other ligneous materials, whether or not agglomerated with resins or other organic binding substances. Description: Particle board, oriented strand b",000 m3,
+"PARTICLEBOARD, OSB and SIMILAR BOARD",,,6.3,HS12,4410,"Name: Wood and articles of wood; wood charcoal // Particle board, oriented strand board (OSB) and similar board (for example, waferboard) of wood or other ligneous materials, whether or not agglomerated with resins or other organic binding substances.
+Des",000 m3,
+OSB,,,6.3.1,HS96,441011,"Name: Waferboard, incl strand Description: Of wood :-- Waferboard, including oriented strand board",000 m3,
+OSB,IF <441011> IN HS07 THEN DELETE.,,6.3.1,HS07,441011,,000 m3,
+FIBERBOARD,IF <441011> IN HS12 THEN DELETE.,,6.3.1,HS12,441011,,000 m3,
+OSB,,,6.3.1,HS07,441012,"Name: Oriented strand board (OSB) of wood, whether/not agglomerated with resins/other organic binding substances Description: -- Oriented strand board (OSB)",000 m3,
+OSB,,,6.3.1,HS12,441012,"Name: Wood and articles of wood; wood charcoal // Particle board, oriented strand board (OSB) and similar board (for example, waferboard) of wood or other ligneous materials, whether or not agglomerated with resins or other organic binding substances. // ",000 m3,
+OSB,,,6.3.1,HS02,441021,"Name: Oriented strand board & waferboard, of wood, unwkd./not further worked than ... Description: Oriented strand board & waferboard, of wood, unwkd./not further worked than sanded",000 m3,
+OSB,,,6.3.1,HS02,441029,"Name: Oriented strand board & waferboard, of wood (excl. of 4410.21) Description: Oriented strand board & waferboard, of wood (excl. of 4410.21)",000 m3,
+HARDBOARD,,,6.4.1,HS96,441111,Name: Fibreboard >0.8 g/cm2 not worked or surface covered Description: Fibreboard of a density exceeding 0.8 g/cm3 :-- Not mechanically worked or surface covered,000 m3,
+HARDBOARD,,,6.4.1,HS02,441111,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs., of a density >0.8g/cm3, not mechanically wkd./surface covered",000 m3,
+MDF,,,6.4.2,HS07,441112,"Name: Medium density of fibreboard of wood/other ligneous materials, whether/not bonded with resins/other organic substances, of a thkns not >5mm Description: -- Of a thickness not exceeding 5 mm",000 m3,
+MDF,,,6.4.2,HS12,441112,"Name: Wood and articles of wood; wood charcoal // Fibreboard of wood or other ligneous materials, whether or not bonded with resins or other organic substances. // - Medium density fibreboard (MDF) : // -- Of a thickness not exceeding 5 mm
+Description: --",000 m3,
+MDF,,,6.4.2,HS07,441113,"Name: Medium density of fibreboard of wood/other ligneous materials, whether/not bonded with resins/other organic substances, of a thkns >5mm but not >9mm Description: -- Of a thickness exceeding 5 mm but not exceeding 9 mm",000 m3,
+MDF,,,6.4.2,HS12,441113,"Name: Wood and articles of wood; wood charcoal // Fibreboard of wood or other ligneous materials, whether or not bonded with resins or other organic substances. // - Medium density fibreboard (MDF) : // -- Of a thickness exceeding 5 mm but not exceeding 9",000 m3,
+MDF,,,6.4.2,HS07,441114,"Name: Medium density of fibreboard of wood/other ligneous materials, whether/not bonded with resins/other organic substances, of a thkns >9mm Description: -- Of a thickness exceeding 9 mm",000 m3,
+MDF,,,6.4.2,HS12,441114,"Name: Wood and articles of wood; wood charcoal // Fibreboard of wood or other ligneous materials, whether or not bonded with resins or other organic substances. // - Medium density fibreboard (MDF) : // -- Of a thickness exceeding 9 mm
+Description: -- Of ",000 m3,
+HARDBOARD,,,6.4.1,HS96,441119,Name: Fibreboard >0.8 g/cm2 worked/surface covered Description: Fibreboard of a density exceeding 0.8 g/cm3 :-- Other,000 m3,
+HARDBOARD,,,6.4.1,HS02,441119,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ...Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs., of a density >0.8g/cm3, mechanically wkd./surface covered",000 m3,
+MDF,,,6.4.2,HS96,441121,Name: Fibreboard 0.5 - 0.8 g/cm2 not worked/surface covered Description: Fibreboard of a density exceeding 0.5 g/cm3 but not exceeding 0.8 g/cm3 :-- Not mechanically worked or surface covered,000 m3,
+MDF,,,6.4.2,HS02,441121,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs., of a density >0.5g/cm3 but not >0.8g/cm3, not mechanically wkd",000 m3,
+MDF,,,6.4.2,HS96,441129,Name: Fibreboard 0.5 - 0.8 g/cm2 worked/surface covered Description: Fibreboard of a density exceeding 0.5 g/cm3 but not exceeding 0.8 g/cm3 :-- Other,000 m3,
+MDF,,,6.4.2,HS02,441129,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs., of a density >0.5g/cm3 but not >0.8g/cm3, mechanically wkd./su",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS96,441131,Name: Fibreboard 0.35- 0.5 g/cm2 not worked/surface covered Description: Fibreboard of a density exceeding 0.35 g/cm3 but not exceeding 0.5 g/cm3 :-- Not mechanically worked or surface covered,000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS02,441131,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs., of a density >0.35g/cm3 but not >0.5g/cm3, not mechanically wk",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS96,441139,Name: Fibreboard 0.35- 0.5 g/cm2 worked/surface covered Description: Fibreboard of a density exceeding 0.35 g/cm3 but not exceeding 0.5 g/cm3 :-- Other,000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS02,441139,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs., of a density >0.35g/cm3 but not >0.5g/cm3, mechanically wkd./s",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS96,441191,Name: Fibreboard nes not worked or surface covered nes Description: Other :-- Not mechanically worked or surface covered,000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS02,441191,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs. (excl. of 4411.11-4411.39), not mechanically wkd./surface cover",000 m3,
+HARDBOARD,,,6.4.1,HS07,441192,"Name: Fibreboard of wood/other ligneous materials, whether/not bonded with resins/other organic substances, of a density > 0.8 g/cm³ Description: -- Of a density exceeding 0.8 g/cm³",000 m3,
+HARDBOARD,,,6.4.1,HS12,441192,"Name: Wood and articles of wood; wood charcoal // Fibreboard of wood or other ligneous materials, whether or not bonded with resins or other organic substances. // - Other : // -- Of a density exceeding 0.8 g/cm³
+Description: -- Of a density exceeding 0.8",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS07,441193,"Name: Fibreboard of wood/other ligneous materials, whether/not bonded with resins/other organic substances, of a density >0.5g/cm³ but not >0.8 g/cm³ Description: -- Of a density exceeding 0.5 g/cm³ but not exceeding 0.8 g/cm³",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS12,441193,"Name: Wood and articles of wood; wood charcoal // Fibreboard of wood or other ligneous materials, whether or not bonded with resins or other organic substances. // - Other : // -- Of a density exceeding 0.5 g/cm³ but not exceeding 0.8 g/cm³
+Description: -",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS07,441194,"Name: Fibreboard of wood/other ligneous materials, whether/not bonded with resins/other organic substances, of a density not >0.5g/cm³ Description: -- Of a density not exceeding 0.5 g/cm³",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS12,441194,"Name: Wood and articles of wood; wood charcoal // Fibreboard of wood or other ligneous materials, whether or not bonded with resins or other organic substances. // - Other : // -- Of a density not exceeding 0.5 g/cm³
+Description: -- Of a density not excee",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS96,441199,"Name: Fibreboard nes, worked or surface covered Description: Other",000 m3,
+OTHER FIBERBOARD,,,6.4.3,HS02,441199,"Name: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/o ... Description: Fibreboard of wood/oth. ligneous mats., whether or not bonded with resins/oth. organic subs. (excl. of 4411.11-4411.39), mechanically wkd./surface covered",000 m3,
+PLYWOOD,,X,6.2.NC,HS92,441211,"Name: Plywood 1 or 2 outer ply tropical hardwood (ply <6 mm
+Description: Plywood 1 or 2 outer ply tropical hardwood (ply <6 mm",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS92,441212,"Name: Plywood, 1 or 2 outer ply non-conifer nes (ply <6 mm)
+Description: Plywood, 1 or 2 outer ply non-conifer nes (ply <6 mm)",000 m3,
+PLYWOOD,,X,6.2.NC,HS96,441213,"Name: Plywood, outer ply of tr Description: Plywood consisting solely of sheets of wood, each ply not exceeding 6 mm thickness :-- With at least one outer ply of tropical wood specified in Subheading Note 1 to this Chapter",000 m3,
+PLYWOOD,,X,6.2.NC,HS02,441213,"Name: Plywood consisting solely of sheets of wood, each ply not >6mm thkns., with ...Description: Plywood consisting solely of sheets of wood, each ply not >6mm thkns., with at least one outer ply of tropical wood spec. in SH Note 1 to Ch.44",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS96,441214,"Name: Plywood, outer ply of no Description: Plywood consisting solely of sheets of wood, each ply not exceeding 6 mm thickness :-- Other, with at least one outer ply of non-coniferous wood",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS02,441214,"Name: Plywood consisting solely of sheets of wood, each ply not >6mm thkns., with ...Description: Plywood consisting solely of sheets of wood, each ply not >6mm thkns., with at least one outer ply of non-coniferous wood",000 m3,
+PLYWOOD,,,6.2.C,HS96,441219,"Name: Plywood, all softwood, each ply < 6mm thick Description: Plywood consisting solely of sheets of wood, each ply not exceeding 6 mm thickness :-- Other",000 m3,
+PLYWOOD,,,6.2.C,HS02,441219,"Name: Plywood consisting solely of sheets of wood, each ply not >6mm thkns. (excl ...Description: Plywood consisting solely of sheets of wood, each ply not >6mm thkns. (excl. of 4412.13 & 4412.14)",000 m3,
+PLYWOOD,,,6.2.C,HS92,441219,"Name: Plywood, all softwood, each ply < 6mm thick
+Description: Plywood consisting solely of sheets of wood, each ply not exceeding 6 mm thickness :-- Other",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS92,441221,"Name: Panels, 1 outer ply non-conifer & 1 ply particle boar
+Description: Panels, 1 outer ply non-conifer & 1 ply particle boar",000 m3,
+PLYWOOD,,X,6.2.NC,HS96,441222,"Name: Panels, outer ply of tro Description: Other, with at least one outer ply of non-coniferous wood :-- With at least one ply of tropical wood specified in Subheading Note 1 to this Chapter",000 m3,
+PLYWOOD,,X,6.2.NC,HS02,441222,"Name: Plywood, veneered panels & sim. laminated wood, with at least one outer ply ...Description: Plywood, veneered panels & sim. laminated wood, with at least one outer ply of non-coniferous wood & at least one ply of tropical wood spec. in SH Note 1 to ",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS96,441223,"Name: Panels, 1 layer of parti Description: Other, with at least one outer ply of non-coniferous wood :-- Other, containing at least one layer of particle board",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS02,441223,"Name: Plywood, veneered panels & sim. laminated wood, with at least one outer ply ...Description: Plywood, veneered panels & sim. laminated wood, with at least one outer ply of non-coniferous wood, cont. at least one layer of particle board",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS96,441229,"Name: Panels, 1 outer ply non-coniferous wood nes Description: Other, with at least one outer ply of non-coniferous wood :-- Other",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS02,441229,"Name: Plywood, veneered panels & sim. laminated wood, with at least one outer ply ...Description: Plywood, veneered panels & sim. laminated wood, with at least one outer ply of non-coniferous wood (excl. of 4412.13-4412.23)",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS92,441229,"Name: Panels, 1 outer ply non-coniferous wood nes
+Description: Other, with at least one outer ply of non-coniferous wood :-- Other",000 m3,
+PLYWOOD,,X,6.2.NC,HS07,441231,"Name: Plywood, consisting solely of sheets of wood (other than bamboo), each ply not> 6 mm thkns, with at least one outer ply of tropical wood specified in Subheading Note 1 to this Ch.",000 m3,
+PLYWOOD,,X,6.2.NC,HS12,441231,"Name: Wood and articles of wood; wood charcoal // Plywood, veneered panels and similar laminated wood. // - Other plywood, consisting solely of sheets of wood (other than bamboo), each ply not exceeding 6 mm thickness : // -- With at least one outer ply o",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS07,441232,"Name: Plywood, consisting solely of sheets of wood (other than bamboo), each ply not> 6 mm thkns, with at least one outer ply of non-coniferous wood",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS12,441232,"Name: Wood and articles of wood; wood charcoal // Plywood, veneered panels and similar laminated wood. // - Other plywood, consisting solely of sheets of wood (other than bamboo), each ply not exceeding 6 mm thickness : // -- Other, with at least one oute",000 m3,
+PLYWOOD,,,6.2.C,HS07,441239,"Name: Plywood, consisting solely of sheets of wood (other than bamboo,excl. of 4412.31 &4412.32), each ply not> 6 mm thkns",000 m3,
+PLYWOOD,,,6.2.C,HS12,441239,"Name: Wood and articles of wood; wood charcoal // Plywood, veneered panels and similar laminated wood. // - Other plywood, consisting solely of sheets of wood (other than bamboo), each ply not exceeding 6 mm thickness : // -- Other
+Description: -- Other",000 m3,
+PLYWOOD,,,6.2.C,HS92,441291,"Name: Panels, 1 outer ply conifer wood,1 ply particle board
+Description: Panels, 1 outer ply conifer wood,1 ply particle board",000 m3,
+PLYWOOD,,X,6.2.NC,HS96,441292,"Name: Panels nes, 1 ply tropic Description: Other :-- With at least one ply of tropical wood specified in Subheading Note 1 to this Chapter",000 m3,
+PLYWOOD,,X,6.2.NC,HS02,441292,"Name: Plywood, veneered panels & sim. laminated wood, with at least one ply of tr ...Description: Plywood, veneered panels & sim. laminated wood, with at least one ply of tropical wood spec. in SH Note 1 to Ch.44 (excl. of 4412.22)",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS96,441293,"Name: Panels nes, 1 layer part Description: Other, containing at least one layer of particle board",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS02,441293,"Name: Plywood, veneered panels & sim. laminated wood, cont. at least one layer of ...Description: Plywood, veneered panels & sim. laminated wood, cont. at least one layer of particle board",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS07,441294,"Name: Plywood, veneered panels&similar laminated wood, of blockboard, laminboard&battenboard",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS12,441294,"Name: Wood and articles of wood; wood charcoal // Plywood, veneered panels and similar laminated wood. // - Other : // -- Blockboard, laminboard and battenboard
+Description: -- Blockboard, laminboard and battenboard",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS96,441299,"Name: Panels, laminated wood, nes Description: Other",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS02,441299,"Name: Plywood, veneered panels & sim. laminated wood, n.e.s. (excl. of 4412.13-44 ...Description: Plywood, veneered panels & sim. laminated wood, n.e.s. (excl. of 4412.13-4412.93)",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS07,441299,"Name: Plywood, veneered panels&similar laminated wood, n.e.s.(excl. of 4412.10-4412.94) Description: -- Other",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS12,441299,"Name: Wood and articles of wood; wood charcoal // Plywood, veneered panels and similar laminated wood. // - Other : // -- Other
+Description: -- Other",000 m3,
+PLYWOOD,"TROP from TROP, NC FROM NON TROP",,6.2.NC,HS92,441299,"Name: Panels, laminated wood, nes
+Description: Other",000 m3,
+WOOD PULP MECHANICAL,,,7.1,HS96,4701,"Name: Wood sawn, chipped lengthwise, sliced or peeled Description: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or finger-jointed, of a thickness exceeding 6 mm.",000 kg,
+WOOD PULP MECHANICAL,,,7.1,HS02,4701,"Name: Wood sawn or chipped lengthwise, sliced or peeled Description: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm.",000 kg,
+WOOD PULP MECHANICAL,,,7.1,HS07,4701,"Name: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm. Description: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickn",000 kg,
+WOOD PULP MECHANICAL,,,7.1,HS12,4701,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Mechanical wood pulp.
+Description: Mechanical wood pulp.",000 kg,
+DISSOLVING GRADES,,,7.4,HS96,4702,"Name: Chemical wood pulp, dissolving grades Description: Chemical wood pulp, dissolving grades.",000 kg,
+DISSOLVING GRADES,,,7.4,HS02,4702,"Name: Chemical wood pulp, dissolving grades. Description: Chemical wood pulp, dissolving grades.",000 kg,
+DISSOLVING GRADES,,,7.4,HS07,4702,"Name: Chemical wood pulp, dissolving grades. Description: Chemical wood pulp, dissolving grades.",000 kg,
+DISSOLVING GRADES,,,7.4,HS12,4702,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, dissolving grades.
+Description: Chemical wood pulp, dissolving grades.",000 kg,
+CHEMICAL SULPHATE UNBLEACHED,,,7.3.1,HS96,470311,"Name: Chem wood pulp, soda or sulphate, conifer, unbleached Description: Unbleached :-- Coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED,,,7.3.1,HS02,470311,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, unbleached ... Description: Chemical wood pulp, soda/sulphate, other than dissolving grades, unbleached, coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED,,,7.3.1,HS07,470311,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, unbleached, coniferous Description: -- Coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED PULP,,,7.3.1,HS12,470311,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, soda or sulphate, other than dissolving grades. // - Unbleached : // -- Coniferous
+Description: -- Coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED,,,7.3.1,HS96,470319,"Name: Chem wood pulp, soda/sulphate, non-conifer, unbleached Description: Unbleached :-- Non-coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED,,,7.3.1,HS02,470319,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, unbleached ... Description: Chemical wood pulp, soda/sulphate, other than dissolving grades, unbleached, non-coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED,,,7.3.1,HS07,470319,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, unbleached, non-coniferous Description: -- Non-coniferous",000 kg,
+CHEMICAL SULPHATE UNBLEACHED PULP,,,7.3.1,HS12,470319,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, soda or sulphate, other than dissolving grades. // - Unbleached : // -- Non-coniferous
+Description: -- Non-coniferous",000 kg,
+CHEMICAL SULPHATE bleached,,,7.3.2,HS96,470321,"Name: Chem wood pulp, soda or sulphate, conifer, bleached Description: Semi-bleached or bleached :-- Coniferous",000 kg,
+CHEMICAL SULPHATE bleached,,,7.3.2,HS02,470321,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, semi-bleac ... Description: Chemical wood pulp, soda/sulphate, other than dissolving grades, semi-bleached/bleached, coniferous",000 kg,
+CHEMICAL SULPHATE bleached,,,7.3.2,HS07,470321,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, semi-bleached/bleached, coniferous Description: -- Coniferous",000 kg,
+CHEMICAL SULPHATE BLEACHED PULP,,,7.3.2,HS12,470321,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, soda or sulphate, other than dissolving grades. // - Semi-bleached or bleached : // -- Coniferous
+Description: -- Coniferous",000 kg,
+CHEMICAL SULPHATE bleached,,,7.3.2,HS96,470329,"Name: Chem wood pulp, soda/sulphate, non-conifer, bleached Description: Semi-bleached or bleached :-- Non-coniferous",000 kg,
+CHEMICAL SULPHATE bleached,,,7.3.2,HS02,470329,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, semi-bleac ... Description: Chemical wood pulp, soda/sulphate, other than dissolving grades, semi-bleached/bleached, non-coniferous",000 kg,
+CHEMICAL SULPHATE bleached,,,7.3.2,HS07,470329,"Name: Chemical wood pulp, soda/sulphate, other than dissolving grades, semi-bleached/bleached, non-coniferous Description: -- Non-coniferous",000 kg,
+CHEMICAL SULPHATE BLEACHED PULP,,,7.3.2,HS12,470329,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, soda or sulphate, other than dissolving grades. // - Semi-bleached or bleached : // -- Non-coniferous
+Description: -- Non-co",000 kg,
+CHEMICAL SULPHITE UNBLEACHED,,,7.3.3,HS96,470411,"Name: Chem wood pulp, sulphite, coniferous unbleached Description: Unbleached :-- Coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED,,,7.3.3,HS02,470411,"Name: Chemical wood pulp, sulphite, other than dissolving grades, unbleached, con ...Description: Chemical wood pulp, sulphite, other than dissolving grades, unbleached, coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED,,,7.3.3,HS07,470411,"Name: Chemical wood pulp, sulphite, other than dissolving grades, unbleached, coniferous Description: -- Coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED PULP,,,7.3.3,HS12,470411,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, sulphite, other than dissolving grades. // - Unbleached : // -- Coniferous
+Description: -- Coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED,,,7.3.3,HS96,470419,"Name: Chem wood pulp, sulphite, non-coniferous, unbleached Description: Unbleached :-- Non-coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED,,,7.3.3,HS02,470419,"Name: Chemical wood pulp, sulphite, other than dissolving grades, unbleached, non ...Description: Chemical wood pulp, sulphite, other than dissolving grades, unbleached, non-coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED,,,7.3.3,HS07,470419,"Name: Chemical wood pulp, sulphite, other than dissolving grades, unbleached, non-coniferous Description: -- Non-coniferous",000 kg,
+CHEMICAL SULPHITE UNBLEACHED PULP,,,7.3.3,HS12,470419,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, sulphite, other than dissolving grades. // - Unbleached : // -- Non-coniferous
+Description: -- Non-coniferous",000 kg,
+7.3.4 CHEMICAL SULPHITE BLEACHED,,,7.3.4,HS96,470421,"Name: Chem wood pulp, sulphite, coniferous bleached Description: Semi-bleached or bleached :-- Coniferous",000 kg,
+7.3.4 CHEMICAL SULPHITE BLEACHED,,,7.3.4,HS02,470421,"Name: Chemical wood pulp, sulphite, other than dissolving grades, semi-bleached/b ... Description: Chemical wood pulp, sulphite, other than dissolving grades, semi-bleached/bleached, coniferous",000 kg,
+7.3.4 CHEMICAL SULPHITE BLEACHED,,,7.3.4,HS07,470421,"Name: Chemical wood pulp, sulphite, other than dissolving grades, semi-bleached/bleached, coniferous Description: -- Coniferous",000 kg,
+CHEMICAL SULPHITE BLEACHED PULP,,,7.3.4,HS12,470421,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, sulphite, other than dissolving grades. // - Semi-bleached or bleached : // -- Coniferous
+Description: -- Coniferous",000 kg,
+7.3.4 CHEMICAL SULPHITE BLEACHED,,,7.3.4,HS96,470429,"Name: Chem wood pulp, sulphite, non-coniferous, bleached Description: Semi-bleached or bleached :-- Non-coniferous",000 kg,
+7.3.4 CHEMICAL SULPHITE BLEACHED,,,7.3.4,HS02,470429,"Name: Chemical wood pulp, sulphite, other than dissolving grades, semi-bleached/b ... Description: Chemical wood pulp, sulphite, other than dissolving grades, semi-bleached/bleached, non-coniferous",000 kg,
+7.3.4 CHEMICAL SULPHITE BLEACHED,,,7.3.4,HS07,470429,"Name: Chemical wood pulp, sulphite, other than dissolving grades, semi-bleached/bleached, non-coniferous Description: -- Non-coniferous",000 kg,
+CHEMICAL SULPHITE BLEACHED PULP,,,7.3.4,HS12,470429,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Chemical wood pulp, sulphite, other than dissolving grades. // - Semi-bleached or bleached : // -- Non-coniferous
+Description: -- Non-coniferous",000 kg,
+SEMI CHEMICAL,,,7.2,HS96,4705,"Name: Wood wool, wood flour Description: Wood wool; wood flour",000 kg,
+SEMI CHEMICAL,,,7.2,HS02,4705,"Name: Wood wool, wood flour Description: Wood wool; wood flour",000 kg,
+SEMI CHEMICAL,,,7.2,HS07,4705,"Name: Wood wool, wood flour Description: Wood wool; wood flour",000 kg,
+SEMI CHEMICAL WOOD PULP,,,7.2,HS12,4705,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Wood pulp obtained by a combination of mechanical and chemical pulping processes.
+Description: Wood pulp obtained by a combination of mechanical",000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS96,470610,Name: Cotton linters pulp Description: Cotton linters pulp,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS02,470610,Name: Cotton linters pulpDescription: Cotton linters pulp,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS07,470610,Name: Cotton linters pulpDescription: - Cotton linters pulp,000 kg,
+OTHER PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS12,470610,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Pulps of fibres derived from recovered (waste and scrap) paper or paperboard or of other fibrous cellulosic material. // -Cotton linters pulp
+De",000 kg,
+RECOVERED PULP PAPER,,,8.2,HS96,470620,Name: Pulps of fibers derived Description: Pulps of fibres derived from recovered (waste and scrap) paper or paperboard,000 kg,
+RECOVERED PULP PAPER,,,8.2,HS02,470620,Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard Description: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard,000 kg,
+RECOVERED PULP PAPER,,,8.2,HS07,470620,Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard Description: - Pulps of fibres derived from recovered (waste and scrap) paper or paperboard,000 kg,
+RECOVERED FIBRE PULP,,,8.2,HS12,470620,Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Pulps of fibres derived from recovered (waste and scrap) paper or paperboard or of other fibrous cellulosic material. // -Pulps of fibres derive,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS07,470630,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of other cellulosic material, of bamboo Description: - Other, of bamboo",000 kg,
+OTHER PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS12,470630,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Pulps of fibres derived from recovered (waste and scrap) paper or paperboard or of other fibrous cellulosic material. // -Other, of bamboo
+Descr",000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS96,470691,Name: Mechanical pulps of other fibrous material Description: Other :-- Mechanical,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS02,470691,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of ... Description: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of fibrous cellulosic mat. (excl. of 4706.10 & 4706.20), mech.",000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS07,470691,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of fibrous cellulosic material (excl. of 4706.10-4706.30), mechanical Description: -- Mechanical",000 kg,
+OTHER PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS12,470691,Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Pulps of fibres derived from recovered (waste and scrap) paper or paperboard or of other fibrous cellulosic material. // - Other : // -- Mechani,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS96,470692,Name: Chemical pulps of other fibrous material Description: Other :-- Chemical,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS02,470692,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of ... Description: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of fibrous cellulosic mat. (excl. of 4706.10 & 4706.20), chem.",000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS07,470692,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of fibrous cellulosic material (excl. of 4706.10-4706.30), chemical Description: -- Chemical",000 kg,
+OTHER PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS12,470692,Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Pulps of fibres derived from recovered (waste and scrap) paper or paperboard or of other fibrous cellulosic material. // - Other : // -- Chemica,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS96,470693,Name: Semi-chemical pulps of other fibrous material Description: Other :-- Semi-chemical,000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS02,470693,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of ... Description: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of fibrous cellulosic mat. (excl. of 4706.10 & 4706.20), semi-chem.",000 kg,
+PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS07,470693,"Name: Pulps of fibres derived from recovered (waste & scrap) paper/paperboard/of fibrous cellulosic material (excl. of 4706.10-4706.30), semi-chemical Description: -- Semi-chemical",000 kg,
+OTHER PULP FROM FIBRES OTHER THAN WOOD,,,8.1,HS12,470693,Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Pulps of fibres derived from recovered (waste and scrap) paper or paperboard or of other fibrous cellulosic material. // - Other : // -- Obtaine,000 kg,
+RECOVERED PAPER,,,9,HS96,4707,Name: Waste or scrap of paper or paperboard Description: Recovered (waste and scrap) paper or paperboard.,000 kg,
+RECOVERED PAPER,,,9,HS02,4707,Name: Recovered (waste and scrap) paper or paperboard. Description: Recovered (waste and scrap) paper or paperboard.,000 kg,
+RECOVERED PAPER,,,9,HS07,4707,Name: Recovered (waste and scrap) paper or paperboard. Description: Recovered (waste and scrap) paper or paperboard.,000 kg,
+RECOVERED PAPER,,,9,HS12,4707,"Name: Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard // Recovered (waste and scrap) paper or paperboard.
+Description: Recovered (waste and scrap) paper or paperboard.",000 kg,
+NEWSPRINT,,,10.1.1,HS96,4801,"Name: Newsprint Description: Newsprint, in rolls or sheets.",000 kg,
+NEWSPRINT,,,10.1.1,HS02,4801,"Name: Newsprint, in rolls or sheets. Description: Newsprint, in rolls or sheets.",000 kg,
+NEWSPRINT,,,10.1.1,HS07,4801,"Name: Newsprint, in rolls or sheets. Description: Newsprint, in rolls or sheets.",000 kg,
+NEWSPRINT,,,10.1.1,HS12,4801,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Newsprint, in rolls or sheets.
+Description: Newsprint, in rolls or sheets.",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS96,480210,"Name: Paper, hand-made, uncoated Description: Hand-made paper and paperboard",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480210,"Name: Hand-made paper & paperboard, uncoated, of a kind used for writing/printing ... Description: Hand-made paper & paperboard, uncoated, of a kind used for writing/printing/oth. graphic purps.",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480210,"Name: Hand-made paper & paperboard, uncoated, of a kind used for writing/printing/other graphic purposes Description: - Hand-made paper and paperboard",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480210,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS96,480220,"Name: Paper, sensitising base stock Description: Paper and paperboard of a kind used as a base for photo-sensitive, heat-sensitive or electro-sensitive paper or paperboard",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480220,"Name: Paper & paperboard, uncoated, of a kind used as a base for photo-sensitive/ ... Description: Paper & paperboard, uncoated, of a kind used as a base for photo-sensitive/heat-sensitive/electro-sensitive paper/paperboard",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480220,"Name: Paper & paperboard, uncoated, of a kind used as a base for photo-sensitive/heat-sensitive/electro-sensitive paper/paperboard Description: - Paper and paperboard of a kind used as a base for photo-sensitive, heat-sensitive or electro-sensitive paper ",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480220,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS96,480230,"Name: Paper, carbonising base, uncoated Description: Carbonising base paper",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480230,Name: Carbonising base paper Description: Carbonising base paper,000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480240,"Name: Paper, wallpaper base, uncoated Description: Wallpaper base",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,480240,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,480240,Name: Wallpaper base Description: Wallpaper base,000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,480240,Name: Wallpaper base Description: - Wallpaper base,000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS96,480251,"Name: Paper, fine, woodfree, <40 g/m2, uncoated, nes Description: Other paper and paperboard, not containing fibres obtained by a mechanical process or of which not more than 10 % by weight of the total fibre content consists of such fibres :-- Weighing l",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS96,480252,"Name: Paper, fine, woodfree, 40 - 150 g/m2, uncoated Description: Other paper and paperboard, not containing fibres obtained by a mechanical process or of which not more than 10 % by weight of the total fibre content consists of such fibres :-- Weighing 4",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS96,480253,"Name: Paper, fine, woodfree, >150 g/m2, uncoated, nes Description: Other paper and paperboard, not containing fibres obtained by a mechanical process or of which not more than 10 % by weight of the total fibre content consists of such fibres :-- Weighing ",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480254,"Name: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process/of ... Description: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process/of which not >10% by wt. of the total fibre content consists of such fibres, weighi",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480254,"Name: Paper&paperboard, not containing fibres obtained by a mechanical/chemi-mechanical process/of which not > 10% by weight of the total fibre content consists of such fibres, weighing < 40 g/m² Description: -- Weighing less than 40 g/m²",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480254,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480255,"Name: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process... ... Description: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process...in rolls [see complete text #58]",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480255,"Name: Paper&paperboard, not containing fibres obtained by a mechanical/chemi-mechanical process/of which not > 10% by weight of the total fibre content consists of such fibres, weighing >40 g/m² but not >150 g/m², in rolls Description: -- Weighing 40 g/m²",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480255,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480256,"Name: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process... ... Description: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process...in sheets with one side not >435mm... [see complete text #59]",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480256,"Name: Paper&paperboard, not containing fibres obtained by a mechanical/chemi-mechanical process/of which not > 10% by weight of the total fibre content consists of such fibres, weighing > 40 g/m² but not > 150 g/m², in sheets with one side not > 435 mm&th",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480256,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480257,"Name: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process... ... Description: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process...weighing <40g/m2/more but not >150g/m2 [see complete text #60]",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480257,"Name: Paper&paperboard, not containing fibres obtained by a mechanical/chemi-mechanical process/of which not > 10% by weight of the total fibre content consists of such fibres, weighing > 40 g/m² but not > 150 g/m²(excl. of 4802.54-4802.56) Description: -",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480257,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS02,480258,"Name: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process/of ... Description: Paper & paperboard, not cont. fibres obt. by a mech./chemi-mech. process/of which not >10% by wt. of the total fibre content consists of such fibres, weighn",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS07,480258,"Name: Paper&paperboard, not containing fibres obtained by a mechanical/chemi-mechanical process/of which not > 10% by weight of the total fibre content consists of such fibres, weighing > 150 g/m² Description: -- Weighing more than 150 g/m²",000 kg,
+UNCOATED WOODFREE,,,10.1.3,HS12,480258,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS96,480260,"Name: Paper, fine, wood-containing, uncoated, nes Description: Other paper and paperboard, of which more than 10 % by weight of the total fibre content consists of fibres obtained by a mechanical process",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS02      ,480261,"Name: Paper & paperboard, of which >10% by wt. of the total fibre content consist ... Description: Paper & paperboard, of which >10% by wt. of the total fibre content consists of fibres obt. by a mech./chemi-mech. process, in rolls",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS07,480261,"Name: Paper&paperboard, of which >10 % by weight of the total fibre content consists of fibres obtained by a mechanical/chemi-mechanical process, in rolls Description: -- In rolls",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS12,480261,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS02      ,480262,"Name: Paper & paperboard, of which >10% by wt. of the total fibre content consist ... Description: Paper & paperboard, of which >10% by wt. of the total fibre content consists of fibres obt. by a mech...process, in sheets...1 side not >435mm [see complete",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS07,480262,"Name: Paper&paperboard, of which >10 % by weight of the total fibre content consists of fibres obtained by a mechanical/chemi-mechanical process, in sheets with one side not>435mm&the other side not>297mm in the unfolded state Description: -- In sheets wi",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS12,480262,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS02      ,480269,"Name: Uncoated paper & paperboard...& non-perforated punch-cards & punch tape pap ... Description: Uncoated paper & paperboard...& non-perforated punch-cards & punch tape paper...; hand-made paper & paperboard, n.e.s. in Ch.48 [see complete text #63]",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS07,480269,"Name: Paper&paperboard, of which >10 % by weight of the total fibre content consists of fibres obtained by a mechanical/chemi-mechanical process (excl. of 4802.61& 4802.62), n.e.s. Description: -- Other",000 kg,
+UNCOATED MECHANICAL,,,10.1.2,HS12,480269,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (i",000 kg,
+SANITARY AND HOUSELHOLD PAPER,,,10.2,HS12,4803,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Toilet or facial tissue stock, towel or napkin stock and similar paper of a kind used for household or sanitary purposes, cellulose wadding and webs of cellulose fibres, whet",000 kg,
+SANITARY AND HOUSELHOLD PAPER,,,10.2,HS96,4803,"Name: Paper, household, sanitary, width > 36 centimetres Description: Toilet or facial tissue stock, towel or napkin stock and similar paper of a kind used for household or saniary purposes, cellulose wadding and webs of cellulose fibres, whether or not c",000 kg,
+SANITARY AND HOUSELHOLD PAPER,,,10.2,HS02,4803,"Name: Toilet or facial tissue stock, towel or napkin stock Description: Toilet or facial tissue stock, towel or napkin stock and similar paper of a kind used for household or sanitary purposes, cellulose wadding and webs of cellulose fibres, whether or no",000 kg,
+SANITARY AND HOUSELHOLD PAPER,,,10.2,HS07,4803,"Name: Toilet or facial tissue stock, towel or napkin stock and similar paper of a kind used for household or sanitary purposes, cellulose wadding and webs of cellulose fibres, whether or not creped, crinkled, embossed, perforated, surface-coloured, surfac",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480411,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Kraftliner : // -- Unbleached
+Description: -- Unbleached",000 kg,
+CASE MATERIALS,,,10.3.1,HS96,480411,"Name: Paper, Kraftliner, unbleached, uncoated Description: Kraftliner :-- Unbleached",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480411,"Name: Kraftliner, uncoated, unbleached, in rolls/sheets (excl. of 48.02/48.03) Description: Kraftliner, uncoated, unbleached, in rolls/sheets (excl. of 48.02/48.03)",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480411,"Name: Kraftliner, uncoated, unbleached, in rolls/sheets (excl. of 48.02/48.03) Description: -- Unbleached",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480419,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Kraftliner : // -- Other
+Description: -- Other",000 kg,
+CASE MATERIALS,,,10.3.1,HS96,480419,"Name: Paper, Kraftliner, other than unbleached, uncoated Description: Kraftliner :-- Other",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480419,"Name: Kraftliner, uncoated, other than unbleached, in rolls/sheets (excl. of 48.0 ... Description: Kraftliner, uncoated, other than unbleached, in rolls/sheets (excl. of 48.02/48.03)",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480419,"Name: Kraftliner, uncoated, other than unbleached, in rolls/sheets (excl. of 48.02/48.03) Description: -- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480421,"Name: Sack kraft paper, uncoated, unbleached, in rolls/sheets (excl. of 48.02/48. ... Description: Sack kraft paper, uncoated, unbleached, in rolls/sheets (excl. of 48.02/48.03)",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480421,"Name: Sack kraft paper, uncoated, unbleached, in rolls/sheets (excl. of 48.02/48.03) Description: -- Unbleached",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480421,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Sack kraft paper : // -- Unbleached
+Description: -- Unbleached",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480421,"Name: Paper, sack kraft, unbleached, uncoated Description: Sack kraft paper :-- Unbleached",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480429,"Name: Paper, sack kraft, other than unbleached, uncoated Description: Sack kraft paper :-- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480429,"Name: Sack kraft paper, uncoated, other than unbleached, in rolls/sheets (excl. o ... Description: Sack kraft paper, uncoated, other than unbleached, in rolls/sheets (excl. of 48.02/48.03)",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480429,"Name: Sack kraft paper, uncoated, other than unbleached, in rolls/sheets (excl. of 48.02/48.03) Description: -- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480429,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Sack kraft paper : // -- Other
+Description: -- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480431,"Name: Paper, kraft, <150g/m2, unbleached, uncoated, nes Description: Other kraft paper and paperboard weighing 150 g/m2 or less :-- Unbleached",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480431,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, u ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, unbleached, in rolls/sheets, weighing 150g/m2/less",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480431,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, unbleached, in rolls/sheets, weighing 150g/m2/less Description: -- Unbleached",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480431,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing 150 g/m² or less : // -- Un",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480439,"Name: Paper, kraft, <150g/m2, uncoated, nes Description: Other kraft paper and paperboard weighing 150 g/m2 or less :-- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480439,"Name: Kraft paper (excl. kraftliner & sack craft paper) & paperboard, uncoated, i ... Description: Kraft paper (excl. kraftliner & sack craft paper) & paperboard, uncoated, in rolls/sheets, weighing 150g/m2/less",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480439,"Name: Kraft paper (excl. kraftliner & sack craft paper) & paperboard, uncoated, in rolls/sheets, weighing 150g/m2/less Description: -- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480439,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing 150 g/m² or less : // -- Ot",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480441,"Name: Paper, kraft, 150-225 g/m2, unbleached,uncoated nes Description: Other kraft paper and paperboard weighing more than 150 g/m2 but less than 225 g/m2 :-- Unbleached",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,480441,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, unbleached, in rolls/sheets, weighing >150g/m2 but <225g/m2 Description: -- Unbleached",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,480441,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing more than 150 g/m² but less",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,480441,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, u ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, unbleached, in rolls/sheets, weighing >150g/m2 but <225g/m2",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480442,"Name: Paper, kraft, 150-225 g/m2, chem pulp not bleach/coat Description: Other kraft paper and paperboard weighing more than 150 g/m2 but less than 225 g/m2 :-- Bleached uniformly throughout the mass and of which more than 95 % by weight of the total fibr",000 kg,
+CARTONBOARD,,,10.3.2,HS02,480442,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, b ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, bleached uniformly..., in rolls/sheets...weighing >150g/m2 but <225g/m2 [see compl",000 kg,
+CARTONBOARD,,,10.3.2,HS07,480442,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard weighing more than 150 g/m² but less than 225 g/m² ,bleached uniformly throughout the mass & of which more than 95% by weight of the total fibre content consists of wood obtained by a ch",000 kg,
+CARTONBOARD,,,10.3.2,HS12,480442,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing more than 150 g/m² but less",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480449,"Name: Paper, kraft, 150-225 g/m2, uncoated, nes Description: Other kraft paper and paperboard weighing more than 150 g/m2 but less than 225 g/m2 :-- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS02,480449,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, i ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, in rolls/sheets, weighing >150g/m2 but <225g/m2",000 kg,
+CARTONBOARD,,,10.3.2,HS07,480449,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, in rolls/sheets, weighing >150g/m2 but <225g/m2 Description: -- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS12,480449,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing more than 150 g/m² but less",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480451,"Name: Paper, kraft, >225g/m2, unbleached, uncoated, nes Description: Other kraft paper and paperboard weighing 225 g/m2 or more :-- Unbleached",000 kg,
+CARTONBOARD,,,10.3.2,HS02,480451,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, u ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, unbleached, in rolls/sheets, weighing 225g/m2/more",000 kg,
+CARTONBOARD,,,10.3.2,HS07,480451,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, unbleached, in rolls/sheets, weighing 225g/m2/more Description: -- Unbleached",000 kg,
+CARTONBOARD,,,10.3.2,HS12,480451,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing 225 g/m² or more : // -- Un",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480452,"Name: Paper, kraft, >225g/m2,chemical pulp,bleached,uncoated Description: Other kraft paper and paperboard weighing 225 g/m2 or more :-- Bleached uniformly throughout the mass and of which more than 95 % by weight of the total fibre content consists of wo",000 kg,
+CARTONBOARD,,,10.3.2,HS02,480452,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, b ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, bleached uniformly throughout the mass...in rolls/sheets, weighing 225g/m2/more [s",000 kg,
+CARTONBOARD,,,10.3.2,HS07,480452,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard weighing more than 225 g/m² ,bleached uniformly throughout the mass & of which more than 95% by weight of the total fibre content consists of wood obtained by a chemical process, in roll",000 kg,
+CARTONBOARD,,,10.3.2,HS12,480452,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing 225 g/m² or more : // -- Bl",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480459,"Name: Paper, kraft, >225g/m2, uncoated, nes Description: Other kraft paper and paperboard weighing 225 g/m2 or more :-- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS02,480459,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, i ... Description: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, in rolls/sheets, weighing 225g/m2/more (excl. of 4804.51 & 4805.52)",000 kg,
+CARTONBOARD,,,10.3.2,HS07,480459,"Name: Kraft paper (excl. kraftliner & sack kraft paper) & paperboard, uncoated, in rolls/sheets, weighing 225g/m2/more (excl. of 4804.51 & 4805.52) Description: -- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS12,480459,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Uncoated kraft paper and paperboard, in rolls or sheets, other than that of heading 48.02 or 48.03. // - Other kraft paper and paperboard weighing 225 g/m² or more : // -- Ot",000 kg,
+CASE MATERIALS,,,10.3.1,HS96,480510,"Name: Paper, fluting, in rolls, semi-chemical, uncoated Description: Semi-chemical fluting paper (corrugating medium)",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480511,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Fluting paper : // -- Semi-chemical",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480511,"Name: Semi-chem.fluting paper,uncoated, in rolls/sheets, not further worked than/ ... Description: Semi-chem.fluting paper,uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480511,"Name: Semi-chemicalfluting paper,uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48 Description: -- Semi-chemical fluting paper",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480512,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Fluting paper : // -- Straw fluting",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480512,"Name: Straw fluting paper, uncoated, in rolls/sheets, not further worked than/fur ... Description: Straw fluting paper, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480512,"Name: Straw fluting paper, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48 Description: -- Straw fluting paper",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480519,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Fluting paper : // -- Other
+Descrip",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480519,"Name: Fluting paper (excl. semi-chem./straw fluting paper), uncoated, in rolls/sh ... Description: Fluting paper (excl. semi-chem./straw fluting paper), uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480519,"Name: Fluting paper (excl. semi-chemical/straw fluting paper), uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48 Description: -- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480521,"Name: Paper, multi-ply, each layer bleached, uncoated, nes Description: Multi-ply paper and paperboard :-- Each layer bleached",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480522,"Name: Paper, multi-ply, one layer bleached, uncoated Description: Multi-ply paper and paperboard :-- With only one outer layer bleached",000 kg,
+CARTONBOARD,,,10.3.2,HS96,480523,"Name: Paper, multi-ply, <4 layers, outer bleached, uncoated Description: Multi-ply paper and paperboard :-- Having three or more layers, of which only the two outer layers are bleached",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480524,"Name: Testliner (recycled liner board), uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighing 150g/m2/less Description: -- Weighing 150 g/m² or less",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480524,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Testliner (recycled liner board) : ",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480524,"Name: Testliner (recycled liner board), uncoated, in rolls/sheets, not further wo ... Description: Testliner (recycled liner board), uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighing 150g/m2/le",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480525,"Name: Testliner (recycled liner board), uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighing >150g/m2 Description: -- Weighing more than 150 g/m²",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480525,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Testliner (recycled liner board) : ",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480525,"Name: Testliner (recycled liner board), uncoated, in rolls/sheets, not further wo ... Description: Testliner (recycled liner board), uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighing >150g/m2",000 kg,
+PAPERS MAINLY FOR A PACKAGING,,,10.3.4,HS96,480529,"Name: Paper, multi-ply, uncoated, nes Description: Multi-ply paper and paperboard :-- Other",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480530,"Name: Paper, sulphite wrapping, uncoated Description: Sulphite wrapping paper",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480530,"Name: Paper, sulphite wrapping, uncoated Description: Sulphite wrapping paper",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480530,"Name: Sulphite wrapping paper, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48 Description: - Sulphite wrapping paper     ",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480530,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // -Sulphite wrapping paper
+Description:",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480540,"Name: Paper, filter, uncoated Description: Filter paper and paperboard",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,480540,"Name: Filter paper & paperboard, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48 Description: - Filter paper and paperboard",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,480540,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // -Filter paper and paperboard
+Descript",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,480540,"Name: Filter paper & paperboard, uncoated, in rolls/sheets, not further worked th ... Description: Filter paper & paperboard, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480550,"Name: Paper, felt, uncoated Description: Felt paper and paperboard",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,480550,"Name: Felt paper & paperboard, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48 Description: - Felt paper and paperboard",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,480550,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // -Felt paper and paperboard
+Descriptio",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,480550,"Name: Felt paper & paperboard, uncoated, in rolls/sheets, not further worked than ... mDescription: Felt paper & paperboard, uncoated, in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48",000 kg,
+CASE MATERIALS,,,10.3.1,HS96,480560,"Name: Paper, weighing 150 g/m2 or less, uncoated, nes Description: Other paper and paperboard, weighing 150 g/m2 or less",000 kg,
+CASE MATERIALS,,,10.3.1,HS96,480570,"Name: Paper, weighing 150 - 225 g/m2, uncoated, nes Description: Other paper and paperboard, weighing more than 150 g/m2 but less than 225 g/m2",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480580,"Name: Paper, weighing 225 g/m2 or more, uncoated, nes Description: Other paper and paperboard, weighing 225 g/m2 or more ",000 kg,
+CASE MATERIALS,,,10.3.1,HS07,480591,"Name: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighing 150g/m2 Description: -- Weighing 150 g/m² or less",000 kg,
+CASE MATERIALS,,,10.3.1,HS12,480591,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Other : // -- Weighing 150 g/m² or ",000 kg,
+CASE MATERIALS,,,10.3.1,HS02,480591,"Name: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, no ... Description: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighin",000 kg,
+CARTONBOARD,,,10.3.2,HS02,480592,"Name: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, no ... Description: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighin",000 kg,
+CARTONBOARD,,,10.3.2,HS07,480592,"Name: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, no ... Description: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighin",000 kg,
+CARTONBOARD,,,10.3.2,HS12,480592,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Other : // -- Weighing more than 15",000 kg,
+PAPERS MAINLY FOR A PACKAGING,,,10.3.4,HS02,480593,"Name: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, no ... Description: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighin",000 kg,
+PAPERS MAINLY FOR A PACKAGING,,,10.3.4,HS07,480593,"Name: Uncoated paper & paperboard (excl. of 4801.00-4805.50), in rolls/sheets, not further worked than/further processed than as spec. in Note 3 to Ch.48, weighing 225g/m2/more Description: -- Weighing 225 g/m² or more",000 kg,
+PAPERS MAINLY FOR A PACKAGING,,,10.3.4,HS12,480593,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other uncoated paper and paperboard, in rolls or sheets, not further worked or processed than as specified in Note 3 to this Chapter. // - Other : // -- Weighing 225 g/m² or ",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480610,"Name: Paper, vegetable parchment Description: Vegetable parchment",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480610,"Name: Vegetable parchment, in rolls/sheets Description: Vegetable parchment, in rolls/sheets",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480610,"Name: Vegetable parchment, in rolls/sheets Description: - Vegetable parchment",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480610,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Vegetable parchment, greaseproof papers, tracing papers and glassine and other glazed transparent or translucent papers, in rolls or sheets. // -Vegetable parchment
+Descripti",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,480620,"Name: Paper, greaseproof Description: Greaseproof papers",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480620,"Name: Greaseproof papers, in rolls/sheets Description: Greaseproof papers, in rolls/sheets",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480620,"Name: Greaseproof papers, in rolls/sheets Description: - Greaseproof papers",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480620,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Vegetable parchment, greaseproof papers, tracing papers and glassine and other glazed transparent or translucent papers, in rolls or sheets. // -Greaseproof papers
+Descriptio",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,480630,"Name: Tracing papers, in rolls/sheets Description: - Tracing papers",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,480630,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Vegetable parchment, greaseproof papers, tracing papers and glassine and other glazed transparent or translucent papers, in rolls or sheets. // -Tracing papers
+Description: -",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480630,"Name: Paper, tracingDescription: Tracing papers",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,480630,"Name: Tracing papers, in rolls/sheets Description: Tracing papers, in rolls/sheets",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,480640,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Vegetable parchment, greaseproof papers, tracing papers and glassine and other glazed transparent or translucent papers, in rolls or sheets. // -Glassine and other glazed tra",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,480640,"Name: Glassine & other glazed transparent/translucent papers, in rolls/sheets
+Description: - Glassine and other glazed transparent or translucent papers",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,480640,"Name: Glassine & oth. glazed transparent/translucent papers, in rolls/sheets
+Description: Glassine & oth. glazed transparent/translucent papers, in rolls/sheets",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,4808,"Name: Paper, board corrugated creped embossed perforated nes Description: Paper and paperboard, corrugated (with or without glued flat surface sheets), creped, crinkled, embossed or perforated, in rolls or sheets, other than paper of the kind described in",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,4808,"Name: Paper and paperboard, corrugated Description: Paper and paperboard, corrugated (with or without glued flat surface sheets), creped, crinkled, embossed or perforated, in rolls or sheets, other than paper of the kind described in heading 48.03.",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,4808,"Name: Paper and paperboard, corrugated (with or without glued flat surface sheets), creped, crinkled, embossed or perforated, in rolls or sheets, other than paper of the kind described in heading 48.03. Description: Paper and paperboard, corrugated (with ",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,4808,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, corrugated (with or without glued flat surface sheets), creped, crinkled, embossed or perforated, in rolls or sheets, other than paper of the kind descr",000 kg,
+COATED PAPERS,,,10.1.4,HS02,480910,"Name: Paper, carbon or similar width >36 cm Description: Carbon or similar copying papers",000 kg,
+COATED PAPERS,,,10.1.4,HS96,480910,"Name: Carbon/sim. copying papers, whether or not printed, in rolls >36cm. side/sh ... Description: Carbon/sim. copying papers, whether or not printed, in rolls >36cm. side/sheets of >36cm x >15cm",000 kg,
+COATED PAPERS,,,10.1.4,HS02,480920,"Name: Paper, self-copy, width > 36 cm Description: Self-copy paper",000 kg,
+COATED PAPERS,,,10.1.4,HS12,480920,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Carbon paper, self-copy paper and other copying or transfer papers (including coated or impregnated paper for duplicator stencils or offset plates), whether or not printed, i",000 kg,
+COATED PAPERS,,,10.1.4,HS96,480920,"Name: Self-copy paper, whether or not printed, in rolls/sheets Description: Self-copy paper, whether or not printed, in rolls/sheets",000 kg,
+COATED PAPERS,,,10.1.4,HS07,480920," Name: Self-copy paper, whether/not printed, in rolls/sheets Description: - Self-copy paper",000 kg,
+COATED PAPERS,"IF <480990> IN HS92, HS96 and HS02 THEN BECOMES 10.4 ELSE 10.1.4",,10.1.4,HS12,480990,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Carbon paper, self-copy paper and other copying or transfer papers (including coated or impregnated paper for duplicator stencils or offset plates), whether or not printed, i",000 kg,
+COATED PAPERS,"IF <480990> IN HS92, HS96 and HS02 THEN BECOMES 10.4 ELSE 10.1.4",,10.1.4,HS07,480990,"Name: Carbon paper, other copying/transfer papers (including coated/impregnated paper for duplicator stencils/offset plates), whether/not printed, in rolls/sheets.
+Description: - Other",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,480990,"Name: Paper, copying or transfer, width >36 cm Description: Other",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,480990,"Name: Copying/transfer papers (incl. coated/impregnated paper for duplicator sten ... Description: Copying/transfer papers (incl. coated/impregnated paper for duplicator stencils/offset plates), whether or not printed, in rolls/sheets (excl. of 4809.10 & ",000 kg,
+COATED PAPERS,,,10.1.4,HS02,481011,"Name: Paper, fine, woodfree, <150 g/m2, clay coated Description: Paper and paperboard of a kind used for writing, printing or other graphic purposes, not containing fibres obtained by a mechanical process or of which not more than 10% by weight of the tot",000 kg,
+COATED PAPERS,,,10.1.4,HS02,481012,"Name: Paper, fine, woodfree, >150 g/m2, clay coated Description: Paper and paperboard of a kind used for writing, printing or other graphic purposes, not containing fibres obtained by a mechanical process or of which not more than 10% by weight of the tot",000 kg,
+COATED PAPERS,,,10.1.4,HS12,481013,"  Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or no",000 kg,
+COATED PAPERS,,,10.1.4,HS96,481013,"Name: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., ... Description: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., coated..., in rolls [see complete text #69]",000 kg,
+COATED PAPERS,,,10.1.4,HS07,481013,"Name: Paper & paperboard of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decora",000 kg,
+COATED PAPERS,,,10.1.4,HS12,481014,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+COATED PAPERS,,,10.1.4,HS96,481014,"Name: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., ... Description: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., coated..., in sheets with one side not >435mm & the oth. side not >297mm [see co",000 kg,
+COATED PAPERS,,,10.1.4,HS07,481014,"Name: Paper & paperboard of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decora",000 kg,
+COATED PAPERS,,,10.1.4,HS12,481019,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+COATED PAPERS,,,10.1.4,HS96,481019,"Name: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., ... Description: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., coated...(excl. of 4810.13 & 4810.14) [see complete text #71]",000 kg,
+COATED PAPERS,,,10.1.4,HS07,481019,"Name: Paper & paperboard of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decora",000 kg,
+COATED PAPERS,,,10.1.4,HS02,481021,"Name: Paper, fine, light weight coated Description: Paper and paperboard of a kind used for writing, printing or other graphic purposes, of which more than 10% by weight of the total fibre content consists of fibres obtained by a mechanical process:--Ligh",000 kg,
+COATED PAPERS,,,10.1.4,HS12,481022,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+COATED PAPERS,,,10.1.4,HS96,481022,"Name: Light-wt. coated paper, coated on one/both sides with kaolin (China clay).. ... Description: Light-wt. coated paper, coated on one/both sides with kaolin (China clay)... [see complete text #72]",000 kg,
+COATED PAPERS,,,10.1.4,HS07,481022,"Name: Paper & paperboard of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decora",000 kg,
+COATED PAPERS,,,10.1.4,HS12,481029,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+COATED PAPERS,,,10.1.4,HS02,481029,"Name: Paper, fine, wood containing clay coated, except light Description: Paper and paperboard of a kind used for writing, printing or other graphic purposes, of which more than 10% by weight of the total fibre content consists of fibres obtained by a mec",000 kg,
+COATED PAPERS,,,10.1.4,HS96,481029,"Name: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., ... Description: Paper & paperboard of a kind used for writing/printing/oth. graphic purps., coated on one/both sides with kaolin...(excl. of 4810.22) [see complete text #73",000 kg,
+COATED PAPERS,,,10.1.4,HS07,481029,"Name: Paper & paperboard of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decora",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS96,481031,"Name: Paper, kraft,>95% chem pulp,<150 g,bleached,clay coat Description: Kraft paper and paperboard...:-- Bleached uniformly throughout the mass and of which more than 95% by weight of the total fibre content consists of wood fibres obtained by a chemical",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,481031,"Name: Kraft paper & paperboard, other than that of a kind used for writing/printi ... Description: Kraft paper & paperboard, other than that of a kind used for writing/printing/oth. graphic purps., coated...bleached...and weighing 150gm/m2/less [see compl",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,481031,"Name: Kraft paper & paperboard, other than that of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-c",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,481031,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+CARTONBOARD,,,10.3.2,HS96,481032,"Name: Paper, kraft,>95% chem pulp,>150 g,bleached,clay coat Description: Kraft paper and paperboard...:-- Bleached uniformly throughout the mass and of which more than 95% by weight of the total fibre content consists of wood fibres obtained by a chemical",000 kg,
+CARTONBOARD,,,10.3.2,HS02,481032,"Name: Kraft paper & paperboard, other than that of a kind used for writing/printi ... Description: Kraft paper & paperboard, other than that of a kind used for writing/printing/oth. graphic purps., coated...bleached...and weighing >150gm/m2 [see complete ",000 kg,
+CARTONBOARD,,,10.3.2,HS07,481032,"Name: Kraft paper & paperboard, other than that of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-c",000 kg,
+CARTONBOARD,,,10.3.2,HS12,481032,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+CARTONBOARD,,,10.3.2,HS96,481039,"Name: Paper, kraft, clay coated, nes Description: Kraft paper and paperboard, other than that of a kind used for writing, printing or other graphic purposes :-- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS02,481039,"Name: Kraft paper & paperboard other than that of a kind used for writing/printin ... Description: Kraft paper & paperboard other than that of a kind used for writing/printing/oth. graphic purps., coated...whether or not surface-coloured/decorated/printed",000 kg,
+CARTONBOARD,,,10.3.2,HS07,481039,"Name: Kraft paper & paperboard, other than that of a kind used for writing/printing/other graphic purposes, coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-c",000 kg,
+CARTONBOARD,,,10.3.2,HS12,481039,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+CARTONBOARD,,,10.3.2,HS96,481091,"Name: Paper, multi-ply, clay coated, nes Description: Other paper and paperboard :-- Multi-ply",000 kg,
+CARTONBOARD,,,10.3.2,HS02,481092,"Name: Multiply paper & paperboard, coated on one/both sides with kaolin...whether ... Description: Multiply paper & paperboard, coated on one/both sides with kaolin...whether or not surface-coloured/surface-decorated/printed, n.e.s. in Ch.48 [see complete",000 kg,
+CARTONBOARD,,,10.3.2,HS07,481092,"Name: Paper & paperboard(excl. of 4810.13-4810.39), coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decorated/printed, in rolls/rectangular",000 kg,
+CARTONBOARD,,,10.3.2,HS12,481092,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS12,481099,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS07,481099,"Name: Paper & paperboard, coated on one/both sides with kaolin...whether or not s ...
+Description: Paper & paperboard, coated on one/both sides with kaolin...whether or not surface-coloured/surface-decorated/printed, n.e.s. in Ch.48 [see complete text #78",000 kg,
+WRAPPING PAPERS,,,10.3.3,HS02,481099,"Name: Paper & paperboard(excl. of 4810.13-4810.92), coated on one/both sides with kaolin (China clay)/other inorganic substances, with/without a binder, & with no other coating, whether/not surface-coloured, surface-decorated/printed, in rolls/rectangular",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,481110,"Name: Paper, tarred, bituminised or asphalted, nes Description: Tarred, bituminised or asphalted paper and paperboard",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,481110,"Name: Tarred/bituminised/asphalted paper, paperboard...in rolls/rect. (incl. squa ... Description: Tarred/bituminised/asphalted paper, paperboard...in rolls/rect. (incl. square) sheets, of any size, other than gds. of the kind desc. in 48.03/48.09/48.10 [",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,481121,"Name: Paper, self-adhesive except labels Description: Gummed or adhesive paper and paperboard :-- Self-adhesive",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,481129,"Name: Paper, gummed or adhesive except self-adhesive, labels Description: Gummed or adhesive paper and paperboard :-- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS96,481131,"Name: Paper, >150g/m2, bleached, plastic coated/impregnated Description: Paper and paperboard coated, impregnated or covered with plastics (excluding adhesives) :-- Bleached, weighing more than 150 g/m2",000 kg,
+CARTONBOARD,,,10.3.2,HS96,481139,"Name: Paper, coated, impregnated, covered with plastics, nes Description: Paper and paperboard coated, impregnated or covered with plastics (excluding adhesives) :-- Other",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,481140,"Name: Paper, coat/impregnated with wax/stearin/glycerol, nes Description: Paper and paperboard, coated, impregnated or covered with wax, paraffin wax, stearin, oil or glycerol",000 kg,
+CARTONBOARD,,,10.3.2,HS02,481151,"Name: Paper & paperboard, coated/impregnated/covered with plastics (excl. adhesiv ... Description: Paper & paperboard, coated/impregnated/covered with plastics (excl. adhesives), bleached, weighing >150g/m2, in rolls/rect. (incl. square) sheets... [see co",000 kg,
+CARTONBOARD,,,10.3.2,HS07,481151,"Name: Paper&paperboard coated/impregnated/ covered with plastics (excluding adhesives), bleached, weighing > 150 g/m², in rolls/rectangular (including square) sheets, of any size, other than goods of the kind described in heading 48.03,48.09/48.10 Descrip",000 kg,
+CARTONBOARD,,,10.3.2,HS12,481151,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (incl",000 kg,
+CARTONBOARD,,,10.3.2,HS02,481159,"Name: Paper & paperboard, coated/impregnated/covered with plastics (excl. adhesiv ... Description: Paper & paperboard, coated/impregnated/covered with plastics (excl. adhesives), in rolls/rect. (incl. square) sheets... [see complete text #81]",000 kg,
+CARTONBOARD,,,10.3.2,HS07,481159,"Name: Paper&paperboard coated/impregnated/ covered with plastics (excl. adhesives&of 4811.51), in rolls/rectangular (including square) sheets, of any size, other than goods of the kind described in heading 48.03,48.09/48.10 Description: -- Other",000 kg,
+CARTONBOARD,,,10.3.2,HS12,481159,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (incl",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,481190,"Name: Paper, coated/impregnated/covered/coloured/printed ne Description: Other paper, paperboard, cellulose wadding and webs of cellulose fibres",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,4812,"Name: Filter blocks, slabs and plates, of paper pulp. Description: Filter blocks, slabs and plates, of paper pulp.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,4812,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Filter blocks, slabs and plates, of paper pulp.
+Description: Filter blocks, slabs and plates, of paper pulp.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,4812,"Name: Filter blocks, slabs and plates, of paper pulp Description: Filter blocks, slabs and plates, of paper pulp.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,4812,"Name: Filter blocks, slabs and plates, of paper pulp. Description: Filter blocks, slabs and plates, of paper pulp.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS07,4813,"Name: Cigarette paper, whether or not cut to size or in the form of booklets or tubes. Description: Cigarette paper, whether or not cut to size or in the form of booklets or tubes.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS12,4813,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Cigarette paper, whether or not cut to size or in the form of booklets or tubes.
+Description: Cigarette paper, whether or not cut to size or in the form of booklets or tubes.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS96,4813,"Name: Cigarette paper Description: Cigarette paper, whether or not cut to size or in the form of booklets or tubes.",000 kg,
+OTHER PAPER AND PAPERBOARD N.E.S ,CALCULATION DONE BY HS CODE,,10.4,HS02,4813,"Name: Cigarette paper, whether or not cut to size or in the form of booklets or t ... Description: Cigarette paper, whether or not cut to size or in the form of booklets or tubes.",000 kg,
+CONIFEROUS FURTHER PROCESSED SAWNOOD,,,11.1.C,HS02,440910,"Name: Wood (incl. strips & friezes for parquet flooring, not assembled) continuou ...
+Description: Wood (incl. strips & friezes for parquet flooring, not assembled) continuously shaped...whether or not planed/sanded/end-jointed, coniferous [see complete t",,
+CONIFEROUS FURTHER PROCESSED SAWNOOD,,,11.1.C,HS07,440910,"Name: Wood (including strips & friezes for parquet flooring, not assembled) continuously shaped (tongued, grooved, rebated, chamfered, V-jointed, beaded, moulded, rounded/the like) along any of its edges, ends/faces, whether/not planed, sanded/end-jointed",,
+CONIFEROUS FURTHER PROCESSED SAWNOOD,,,11.1.C,HS12,440910,"Name: Wood and articles of wood; wood charcoal // Wood (including strips and friezes for parquet flooring, not assembled) continuously shaped (tongued, grooved, rebated, chamfered, V-jointed, beaded, moulded, rounded or the like) along any of its edges, e",,
+NON-CONIFEROUS FURTHER PROCESSED SAWNOOD,,,11.1.NC,HS02,440920,"Name: Wood (incl. strips & friezes for parquet flooring, not assembled) continuou ...
+Description: Wood (incl. strips & friezes for parquet flooring, not assembled) continuously shaped...whether or not planed/sanded/end-jointed, non-coniferous [see comple",,
+NON-CONIFEROUS FURTHER PROCESSED SAWNOOD,"TROP from TROP, NC FROM NON TROP",,11.1.NC,HS07,440929,"Name: Wood (including strips&friezes for parquet flooring, not assembled) continuously shaped (tongued, grooved, rebated, chamfered, V-jointed, beaded, moulded, rounded/the like) along any of its edges, ends/faces, whether/not planed/sanded/end-jointed, n",,
+NON-CONIFEROUS FURTHER PROCESSED SAWNOOD,"TROP from TROP, NC FROM NON TROP",,11.1.NC,HS12,440929,"Name: Wood and articles of wood; wood charcoal // Wood (including strips and friezes for parquet flooring, not assembled) continuously shaped (tongued, grooved, rebated, chamfered, V-jointed, beaded, moulded, rounded or the like) along any of its edges, e",,
+NON-CONIFEROUS FURTHER PROCESSED SAWNOOD,"TROP from TROP, NC FROM NON TROP",,11.1.NC,HS02,440920,"Name: Wood (incl. strips & friezes for parquet flooring, not assembled) continuou ...
+Description: Wood (incl. strips & friezes for parquet flooring, not assembled) continuously shaped...whether or not planed/sanded/end-jointed, non-coniferous [see comple",,
+WOODEN WRAPPING AND PACKAGING MATERIAL,,,11.2,HS02,4415,"Name: Packing cases, boxes, crates, drums and similar packings, of wood
+Description: Packing cases, boxes, crates, drums and similar packings, of wood; cable-drums of wood; pallets, box pallets and other load boards, of wood; pallet collars of wood",,
+WOODEN WRAPPING AND PACKAGING MATERIAL,,,11.2,HS02,4416," 	Name: Casks, barrels, vats, tubs and other coopers' products
+Description: Casks, barrels, vats, tubs and other coopers' products and parts thereof, of wood, including staves.",,
+WOODEN WRAPPING AND PACKAGING MATERIAL,,,11.2,HS07,4415,"Name: Packing cases, boxes, crates, drums and similar packings, of wood; cable-drums of wood; pallets, box pallets and other load boards, of wood; pallet collars of wood.
+Description: Packing cases, boxes, crates, drums and similar packings, of wood; cabl",,
+WOODEN WRAPPING AND PACKAGING MATERIAL,,,11.2,HS07,4416," 	Name: Casks, barrels, vats, tubs and other coopers' products and parts thereof, of wood, including staves.
+Description: Casks, barrels, vats, tubs and other coopers' products and parts thereof, of wood, including staves.",,
+WOODEN WRAPPING AND PACKAGING MATERIAL,,,11.2,HS12,4415,"Name: Wood and articles of wood; wood charcoal // Packing cases, boxes, crates, drums and similar packings, of wood; cable-drums of wood; pallets, box pallets and other load boards, of wood; pallet collars of wood.
+Description: Packing cases, boxes, crate",,
+WOODEN WRAPPING AND PACKAGING MATERIAL,,,11.2,HS12,4416,"Name: Wood and articles of wood; wood charcoal // Casks, barrels, vats, tubs and other coopers' products and parts thereof, of wood, including staves.
+Description: Casks, barrels, vats, tubs and other coopers' products and parts thereof, of wood, includin",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS02,4414,"Name: Wooden frames for paintings, photographs, mirrors or similar objects.
+Description: Wooden frames for paintings, photographs, mirrors or similar objects",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS02,4419," 	Name: Tableware and kitchenware, of wood.
+Description: Tableware and kitchenware, of wood.",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS02,4420,"Name: Wood marquetry and inlaid wood
+Description: Wood marquetry and inlaid wood; caskets and cases for jewellery or cutlery, and similar articles, of wood; statuettes and other ornaments, of wood; wooden articles of furniture not falling in Chapter 94.",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS07,4414,"Name: Wooden frames for paintings, photographs, mirrors or similar objects.
+Description: Wooden frames for paintings, photographs, mirrors or similar objects.",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS07,4419," 	Name: Tableware and kitchenware, of wood.
+Description: Tableware and kitchenware, of wood.",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS07,4420," 	Name: Wood marquetry and inlaid wood; caskets and cases for jewellery or cutlery, and similar articles, of wood; statuettes and other ornaments, of wood; wooden articles of furniture not falling in Chapter 94.
+Description: Wood marquetry and inlaid wood",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS12,4414,"Name: Wood and articles of wood; wood charcoal // Wooden frames for paintings, photographs, mirrors or similar objects.
+Description: Wooden frames for paintings, photographs, mirrors or similar objects.",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS12,4419,"Name: Wood and articles of wood; wood charcoal // Tableware and kitchenware, of wood.
+Description: Tableware and kitchenware, of wood.",,
+WOOD PRODUCTS FOR DOMESTIC/DECORATIVE USE,,,11.3,HS12,4420,"Name: Wood and articles of wood; wood charcoal // Wood marquetry and inlaid wood; caskets and cases for jewellery or cutlery, and similar articles, of wood; statuettes and other ornaments, of wood; wooden articles of furniture not falling in Chapter 94.
+D",,
+OTHER MANUFACTURED WOOD PRODUCTS,,,11.4,HS02,4417,"Name: Tools, tool bodies, tool handles, broom or brush bodies and handles, of woo ...
+Description: Tools, tool bodies, tool handles, broom or brush bodies and handles, of wood; boot or shoe lasts and trees, of wood.",,
+OTHER MANUFACTURED WOOD PRODUCTS,,,11.4,HS07,4417,"Name: Tools, tool bodies, tool handles, broom or brush bodies and handles, of wood; boot or shoe lasts and trees, of wood.
+Description: Tools, tool bodies, tool handles, broom or brush bodies and handles, of wood; boot or shoe lasts and trees, of wood",,
+OTHER MANUFACTURED WOOD PRODUCTS,,,11.4,HS12,4417,"Name: Wood and articles of wood; wood charcoal // Tools, tool bodies, tool handles, broom or brush bodies and handles, of wood; boot or shoe lasts and trees, of wood.
+Description: Tools, tool bodies, tool handles, broom or brush bodies and handles, of woo",,
+OTHER MANUFACTURED WOOD PRODUCTS,,,11.4,HS02,4421,"Name: Other articles of wood.
+Description: Other articles of wood.",,
+OTHER MANUFACTURED WOOD PRODUCTS,,,11.4,HS07,4421,"Name: Other articles of wood.
+Description: Other articles of wood.",,
+OTHER MANUFACTURED WOOD PRODUCTS,,,11.4,HS12,4421," 	Name: Wood and articles of wood; wood charcoal // Other articles of wood.
+Description: Other articles of wood.",,
+BUILDER’S JOINERY AND CARPENTRY OF WOOD,,,11.5,HS02,4418,"Name: Builders' joinery and carpentry of wood
+Description: Builders' joinery and carpentry of wood, including cellular wood panels, assembled parquet panels, shingles and shakes.",,
+BUILDER’S JOINERY AND CARPENTRY OF WOOD,,,11.5,HS07,4418," 	Name: Builders' joinery and carpentry of wood, including cellular wood panels, assembled flooring panels, shingles and shakes.
+Description: Builders' joinery and carpentry of wood, including cellular wood panels, assembled flooring panels, shingles and ",,
+BUILDER’S JOINERY AND CARPENTRY OF WOOD,,,11.5,HS12,4418," 	Name: Wood and articles of wood; wood charcoal // Builders' joinery and carpentry of wood, including cellular wood panels, assembled flooring panels, shingles and shakes.
+Description: Builders' joinery and carpentry of wood, including cellular wood pane",,
+WOODEN FURNITURE,,,11.6,HS02,940161,"Name: Seats (excl. of 9401.10-9401.50), with wooden frames, upholstered
+Description: Seats (excl. of 9401.10-9401.50), with wooden frames, upholstered",,
+WOODEN FURNITURE,,,11.6,HS02,940169,"Name: Seats (excl. of 9401.10-9401.50), with wooden frames, other than upholstere ...
+Description: Seats (excl. of 9401.10-9401.50), with wooden frames, other than upholstered",,
+WOODEN FURNITURE,,,11.6,HS07,940161,"Name: Seats (excl. of 9401.10-9401.50), with wooden frames, upholstered
+Description: -- Upholstered",,
+WOODEN FURNITURE,,,11.6,HS07,940169,"Name: Seats (excl. of 9401.10-9401.50), with wooden frames, other than upholstered
+Description: -- Other",,
+WOODEN FURNITURE,,,11.6,HS12,940161,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Seats ",,
+WOODEN FURNITURE,,,11.6,HS12,940169,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Seats ",,
+WOODEN FURNITURE,,,11.6,HS02,940190,"Name: Parts of the seats of 94.01
+Description: Parts of the seats of 94.01",,
+WOODEN FURNITURE,,,11.6,HS07,940190,"Name: Parts of the seats of 94.01
+Description: - Parts",,
+WOODEN FURNITURE,,,11.6,HS12,940190,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Seats ",,
+WOODEN FURNITURE,,,11.6,HS02,940330,"Name: Wooden furniture of a kind used in offices
+Description: Wooden furniture of a kind used in offices",,
+WOODEN FURNITURE,,,11.6,HS07,940330,"Name: Wooden furniture of a kind used in offices
+Description: - Wooden furniture of a kind used in offices",,
+WOODEN FURNITURE,,,11.6,HS12,940330,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Other ",,
+WOODEN FURNITURE,,,11.6,HS02,940340," 	Name: Wooden furniture of a kind used in the kitchen
+Description: Wooden furniture of a kind used in the kitchen",,
+WOODEN FURNITURE,,,11.6,HS07,940340,"Name: Wooden furniture of a kind used in the kitchen
+Description: - Wooden furniture of a kind used in the kitchen",,
+WOODEN FURNITURE,,,11.6,HS12,940340,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Other ",,
+WOODEN FURNITURE,,,11.6,HS02,940350,"Name: Wooden furniture of a kind used in the bedroom
+Description: Wooden furniture of a kind used in the bedroom",,
+WOODEN FURNITURE,,,11.6,HS07,940350,"Name: Wooden furniture of a kind used in the bedroom
+Description: - Wooden furniture of a kind used in the bedroom",,
+WOODEN FURNITURE,,,11.6,HS12,940350,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Other ",,
+WOODEN FURNITURE,,,11.6,HS02,940360,"Name: Wooden furniture (excl. of 94.01 & 9403.30-9403.50)
+Description: Wooden furniture (excl. of 94.01 & 9403.30-9403.50)",,
+WOODEN FURNITURE,,,11.6,HS07,940360,"Name: Wooden furniture (excl. of 94.01 & 9403.30-9403.50)
+Description: - Other wooden furniture",,
+WOODEN FURNITURE,,,11.6,HS12,940360,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Other ",,
+WOODEN FURNITURE,,,11.6,HS02,940390,"Name: Parts of the furniture of 94.03
+Description: Parts of the furniture of 94.03",,
+WOODEN FURNITURE,,,11.6,HS07,940390,"Name: Parts of the furniture of 94.03
+Description: - Parts",,
+WOODEN FURNITURE,,,11.6,HS12,940390,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Other ",,
+PREFABRICATED BUILDINGS,,,11.7,HS02,9406,"Name: Prefabricated buildings.
+Description: Prefabricated buildings.",,
+PREFABRICATED BUILDINGS,,,11.7,HS07,9406,"Name: Prefabricated buildings.
+Description: Prefabricated buildings.",,
+PREFABRICATED BUILDINGS,,,11.7,HS12,9406,"Name: Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings // Prefab",,
+COMPOSITE PAPER AND PAPERBOARD,,,12.1,HS02,4807,"Name: Wood sawn or chipped lengthwise, sliced or peeled
+Description: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm.",,
+COMPOSITE PAPER AND PAPERBOARD,,,12.1,HS07,4807,"Name: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm.
+Description: Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickn",,
+COMPOSITE PAPER AND PAPERBOARD,,,12.1,HS12,4807,"Name: Wood and articles of wood; wood charcoal // Wood sawn or chipped lengthwise, sliced or peeled, whether or not planed, sanded or end-jointed, of a thickness exceeding 6 mm.
+Description: Wood sawn or chipped lengthwise, sliced or peeled, whether or no",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS02,481141,"Name: Gummed/adhesive paper & paperboard, self-adhesive, in rolls/rect. (incl. sq ...
+Description: Gummed/adhesive paper & paperboard, self-adhesive, in rolls/rect. (incl. square) sheets, of any size, other than gds. of the kind desc. in 48.03/48.09/48.10",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS07,481141,"Name: Gummed/adhesive paper,paperboard,coated, impregnated, covered, surface-coloured, surface-decorated/printed, in rolls/rectangular (including square) sheets, of any size, other than goods of the kind described in heading 48.03,48.09/48.10, self-adhesi",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS12,481141,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (incl",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS02,481149,"Name: Gummed/adhesive paper & paperboard other than self-adhesive, in rolls/rect. ...
+Description: Gummed/adhesive paper & paperboard other than self-adhesive, in rolls/rect. (incl. square) sheets, of any size, other than gds. of the kind desc. in 48.03/4",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS07,481149,"Name: Gummed/adhesive paper,paperboard (excl. of 4811.41), coated, impregnated, covered, surface-coloured, surface-decorated/printed, in rolls/rectangular (including square) sheets, of any size, other than goods of the kind described in heading 48.03,48.0",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS12,481149,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (incl",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS02,481160,"Name: Paper & paperboard, coated/impregnated/covered with wax/paraffin wax/steari ...
+Description: Paper & paperboard, coated/impregnated/covered with wax/paraffin wax/stearin/oil/glycerol, in rolls/rect. (incl. square) sheets, of any size... [see complet",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS07,481160,"Name: Paper&paperboard coated/impregnated/ covered with wax/paraffin wax/stearin/oil/glycero, in rolls/rectangular (including square) sheets, of any size, other than goods of the kind described in heading 48.03,48.09/48.10
+Description: - Paper and paperbo",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS12,481160," 	Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (in",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS02,481190,"Name: Paper,paperboard,cellulose wadding&webs of cellulose fibres(excl.of 4811.10 ...
+Description: Paper,paperboard,cellulose wadding&webs of cellulose fibres(excl.of 4811.10-4811.60),in rolls/rect.(incl.square)sheets,of any size,other than gds.of the kin",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS07,481190,"Name: Paper, paperboard, cellulose wadding&webs of cellulose fibres(excl. of 4811.10-4811.60), coated/impregnated/covered/surface-coloured/surface-decorated/printed, in rolls/rectangular (including square) sheets, of any size, other than goods of the kind",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS12,481190,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (incl",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS07,481110,"Name: Tarred/bituminised/asphalted paper,paperboard, coated, impregnated, covered, surface-coloured, surface-decorated/printed, in rolls/rectangular (including square) sheets, of any size, other than goods of the kind described in heading 48.03,48.09/48.1",,
+SPECIAL COATED PAPER AND PULP PRODUCTS,,,12.2,HS12,481110,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper, paperboard, cellulose wadding and webs of cellulose fibres, coated, impregnated, covered, surface-coloured, surface-decorated or printed, in rolls or rectangular (incl",,
+"CARBON PAPER AND COPYING PAPER, READY FOR USE",,,12.3,HS02,4816,"Name: Carbon paper, self-copy paper and other copying or transfer papers
+Description: Carbon paper, self-copy paper and other copying or transfer papers (other than those of heading 48.09), duplicator stencils and offset plates, of paper, whether or not p",,
+"CARBON PAPER AND COPYING PAPER, READY FOR USE",,,12.3,HS07,4816,"Name: Carbon paper, self-copy paper and other copying or transfer papers (other than those of heading 48.09), duplicator stencils and offset plates, of paper, whether or not put up in boxes.
+Description: Carbon paper, self-copy paper and other copying or ",,
+"CARBON PAPER AND COPYING PAPER, READY FOR USE",,,12.3,HS12,4816,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Carbon paper, self-copy paper and other copying or transfer papers (other than those of heading 48.09), duplicator stencils and offset plates, of paper, whether or not put up",,
+"CARBON PAPER AND COPYING PAPER, READY FOR USE",,,12.4,HS02,4818,"Name: Toilet paper and similar paper, cellulose wadding or webs of cellulose fibr ...
+Description: Toilet paper and similar paper, cellulose wadding or webs of cellulose fibres, of a kind used for household or sanitary purposes, in rolls of a width not ex",,
+"CARBON PAPER AND COPYING PAPER, READY FOR USE",,,12.4,HS07,4818,"Name: Toilet paper and similar paper, cellulose wadding or webs of cellulose fibres, of a kind used for household or sanitary purposes, in rolls of a width not exceeding 36 cm, or cut to size or shape; handkerchiefs, cleansing tissues, towels, tablecloths",,
+"CARBON PAPER AND COPYING PAPER, READY FOR USE",,,12.4,HS12,4818,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Toilet paper and similar paper, cellulose wadding or webs of cellulose fibres, of a kind used for household or sanitary purposes, in rolls of a width not exceeding 36 cm, or ",,
+"PACKAGING CARTONS, BOXES ETC.",,,12.5,HS02,4419,"Name: Cartons, boxes, cases, bags and other packing containers, of paper
+Description: Cartons, boxes, cases, bags and other packing containers, of paper, paperboard, cellulose wadding or webs of cellulose fibres; box files, letter trays, and similar artic",,
+"PACKAGING CARTONS, BOXES ETC.",,,12.5,HS07,4419,"Name: Cartons, boxes, cases, bags and other packing containers, of paper, paperboard, cellulose wadding or webs of cellulose fibres; box files, letter trays, and similar articles, of paper or paperboard of a kind used in offices, shops or the like.
+Descri",,
+"PACKAGING CARTONS, BOXES ETC.",,,12.5,HS12,4419,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Toilet paper and similar paper, cellulose wadding or webs of cellulose fibres, of a kind used for household or sanitary purposes, in rolls of a width not exceeding 36 cm, or ",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4814,"Name: Wallpaper and similar wall coverings; window transparencies of paper.
+Description: Wallpaper and similar wall coverings; window transparencies of paper.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS07,4814,"Name: Wallpaper and similar wall coverings; window transparencies of paper.
+Description: Wallpaper and similar wall coverings; window transparencies of paper.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS12,4814,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Wallpaper and similar wall coverings; window transparencies of paper.
+Description: Wallpaper and similar wall coverings; window transparencies of paper.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4815,"Name: Floor coverings on a base of paper or of paperboard, whether or not cut to ...
+Description: Floor coverings on a base of paper or of paperboard, whether or not cut to size.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4817,"Name: Envelopes, letter cards, plain postcards and correspondence cards, of paper ...
+Description: Envelopes, letter cards, plain postcards and correspondence cards, of paper or paperboard; boxes, pouches, wallets and writing compendiums, of paper or pape",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS07,4817,"Name: Envelopes, letter cards, plain postcards and correspondence cards, of paper or paperboard; boxes, pouches, wallets and writing compendiums, of paper or paperboard, containing an assortment of paper stationery.
+Description: Envelopes, letter cards, p",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS12,4817,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Envelopes, letter cards, plain postcards and correspondence cards, of paper or paperboard; boxes, pouches, wallets and writing compendiums, of paper or paperboard, containing",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4820,"Name: Registers, account books, note books, order books, receipt books
+Description: Registers, account books, note books, order books, receipt books, letter pads, memorandum pads, diaries and similar articles, exercise books, blotting-pads, binders (loose",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS07,4820,"Name: Registers, account books, note books, order books, receipt books, letter pads, memorandum pads, diaries and similar articles, exercise books, blotting-pads, binders (loose-leaf or other), folders, file covers, manifold business forms, interleaved ca",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS12,4820,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Registers, account books, note books, order books, receipt books, letter pads, memorandum pads, diaries and similar articles, exercise books, blotting-pads, binders (loose-le",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4821,"Name: Paper or paperboard lables of all kinds, whether or not printed.
+Description: Paper or paperboard lables of all kinds, whether or not printed.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS07,4821,"Name: Paper or paperboard labels of all kinds, whether or not printed.
+Description: Paper or paperboard labels of all kinds, whether or not printed.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS12,4821,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Paper or paperboard labels of all kinds, whether or not printed.
+Description: Paper or paperboard labels of all kinds, whether or not printed.",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4822,"Name: Bobbins, spools, cops and similar supports of paper pulp, paper or paperboa ...
+Description: Bobbins, spools, cops and similar supports of paper pulp, paper or paperboard (whether or not perforated or hardened).",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS07,4822,"Name: Bobbins, spools, cops and similar supports of paper pulp, paper or paperboard (whether or not perforated or hardened).
+Description: Bobbins, spools, cops and similar supports of paper pulp, paper or paperboard (whether or not perforated or hardened)",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS12,4822,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Bobbins, spools, cops and similar supports of paper pulp, paper or paperboard (whether or not perforated or hardened).
+Description: Bobbins, spools, cops and similar supports",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4823,"Name: Other paper, paperboard, cellulose wadding and webs of cellulose fibres
+Description: Other paper, paperboard, cellulose wadding and webs of cellulose fibres, cut to size or shape; other articles of paper pulp, paper, paperboard, cellulose wadding or",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS07,4823,"Name: Other paper, paperboard, cellulose wadding and webs of cellulose fibres, cut to size or shape; other articles of paper pulp, paper, paperboard, cellulose wadding or webs of cellulose fibres.
+Description: Other paper, paperboard, cellulose wadding an",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS12,4823,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other paper, paperboard, cellulose wadding and webs of cellulose fibres, cut to size or shape; other articles of paper pulp, paper, paperboard, cellulose wadding or webs of c",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4802,"Name: Uncoated paper and paperboard, of a kind used for writing
+Description: Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (inclu",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE",,,12.6,HS02,4810,"Name: Paper and paperboard, coated on one or both sides with kaolin
+Description: Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: PRINTING AND WRITING PAPER, READY FOR USE",,,12.6.1,HS02,4802,"Name: Uncoated paper and paperboard, of a kind used for writing
+Description: Uncoated paper and paperboard, of a kind used for writing, printing or other graphic purposes, and non perforated punch-cards and punch tape paper, in rolls or rectangular (inclu",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: PRINTING AND WRITING PAPER, READY FOR USE",,,12.6.1,HS02,4810,"Name: Paper and paperboard, coated on one or both sides with kaolin
+Description: Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not ",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: PRINTING AND WRITING PAPER, READY FOR USE",,,12.6.1,HS07,482390,"Name: Paper, paperboard, cellulose wadding&webs of cellulose fibres, cut to size/shape; other articles of paper pulp, paper, paperboard, cellulose wadding/webs of cellulose fibres, n.e.s. in Ch.48
+Description: - Other",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: PRINTING AND WRITING PAPER, READY FOR USE",,,12.6.1,HS12,482390,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other paper, paperboard, cellulose wadding and webs of cellulose fibres, cut to size or shape; other articles of paper pulp, paper, paperboard, cellulose wadding or webs of c",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: PRINTING AND WRITING PAPER, READY FOR USE",,,12.6.1,HS02,482390,"Name: Paper, paperboard, cellulose wadding & webs of cellulose fibres, cut to siz ...
+Description: Paper, paperboard, cellulose wadding & webs of cellulose fibres, cut to size/shape; oth.arts.of paper pulp/paper/paperboard/cellulose wadding/webs of cellul",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ARTICLES, MOULDED OR PRESSED FROM PULP",,,12.6.2,HS02,482370,"Name: Moulded/pressed arts. of paper pulp
+Description: Moulded/pressed arts. of paper pulp",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ARTICLES, MOULDED OR PRESSED FROM PULP",,,12.6.2,HS07,482370,"Name: Moulded/pressed articles of paper pulp
+Description: - Moulded or pressed articles of paper pulp",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: ARTICLES, MOULDED OR PRESSED FROM PULP",,,12.6.2,HS12,482370,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other paper, paperboard, cellulose wadding and webs of cellulose fibres, cut to size or shape; other articles of paper pulp, paper, paperboard, cellulose wadding or webs of c",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: FILTER PAPER AND PAPERBOARD, READY FOR USEof which: FILTER PAPER AND PAPERBOARD, READY FOR USE of which: FILTER PAPER AND PAPERBOARD, READY FOR USE",,,12.6.3,HS02,482320,"Name: Filter paper & paperboard, cut to size/shape
+Description: Filter paper & paperboard, cut to size/shape",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: FILTER PAPER AND PAPERBOARD , READY FOR USE",,,12.6.3,HS07,482320," 	Name: Filter paper & paperboard, cut to size/shape
+Description: - Filter paper and paperboard",,
+"OTHER ARTICLES OF PAPER AND PAPERBOARD, READY FOR USE of which: FILTER PAPER AND PAPERBOARD , READY FOR USE",,,12.6.3,HS12,482320,"Name: Paper and paperboard; articles of paper pulp, of paper or of paperboard // Other paper, paperboard, cellulose wadding and webs of cellulose fibres, cut to size or shape; other articles of paper pulp, paper, paperboard, cellulose wadding or webs of c",,

@@ -1,0 +1,34 @@
+---
+title: "CSV export of 4403 products"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(fig.width=12)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+``` 
+
+
+# Extract product codes
+```{r}
+rawflow <- readdbtbl("raw_flow_yearly") %>% 
+    filter(productcode == 440799) %>% collect()
+
+valid <- readdbtbl("validated_flow_yearly")  %>%
+    filter(productcode == 440799) %>% collect()
+
+valid2 <- rawflow %>% clean()
+```
+
+

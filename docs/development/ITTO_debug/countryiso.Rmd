@@ -19,11 +19,9 @@ library(tidyr)
 
 ``` 
 
+
 # Country iso doesn't match coutry code and name in the validated flow table
-
-
 ```{r}
-
 rawflow <- readdbtbl("raw_flow_yearly") %>% 
     filter(productcode == 440799) %>% collect()
 

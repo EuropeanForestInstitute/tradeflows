@@ -1,0 +1,301 @@
+COMTRADE CODE,COMTRADE COUNTRIES,NT = not trop. TR = tropical,Regional Distribution,FAO code
+0,World,NT,World,N/A
+4,Afghanistan,NT,Asia,2
+8,Albania,NT,Europe,3
+10,Antarctica,NT,Antarctica,30
+12,Algeria,NT,Africa,4
+16,American Samoa,TR,Oceania,5
+20,Andorra,NT,Europe,6
+24,Angola,TR,Africa,7
+28,Antigua and Barbuda,TR,North America,8
+31,Azerbaijan,NT,Asia,52
+32,Argentina,NT,South America,9
+36,Australia,NT,Oceania,10
+40,Austria,NT,Europe,11
+44,Bahamas,NT,North America,12
+48,Bahrain,NT,Asia,13
+50,Bangladesh,TR,Asia,16
+51,Armenia,NT,Asia,1
+52,Barbados,TR,North America,14
+56,Belgium,NT,Europe,255
+58,Belgium-Luxembourg,NT,Europe,15
+60,Bermuda,NT,North America,17
+64,Bhutan,NT,Asia,18
+68,Bolivia,TR,South America,19
+70,Bosnia Herzegovina,NT,Europe,80
+72,Botswana,TR,Africa,20
+74,Ile Bouvet,NT,Antarctica,31
+76,Brazil,TR,South America,21
+80,British Antarctic Territories,NT,Antarctica,N/A
+84,Belize,TR,North America,23
+86,British Indian Ocean Territories,TR,Asia,24
+90,Solomon Islands,TR,Oceania,25
+92,British Virgin Islands,TR,North America,239
+96,Brunei Darussalam,TR,Asia,26
+97,EU-25,NT,Europe,N/A
+100,Bulgaria,NT,Europe,27
+104,Myanmar,TR,Asia,28
+108,Burundi,TR,Africa,29
+112,Belarus,NT,Europe,57
+116,Cambodia,TR,Asia,115
+120,Cameroon,TR,Africa,32
+124,Canada,NT,North America,33
+129,"Caribbean, not elsewhere specified",TR,South America,N/A
+132,Cape Verde,TR,Africa,35
+136,Cayman Islands,TR,North America,36
+140,Central African Republic,TR,Africa,37
+144,Sri Lanka,TR,Asia,38
+148,Chad,TR,Africa,39
+152,Chile,NT,South America,40
+156,China,NT,Asia,351
+162,Christmas Islands,TR,Oceania,42
+166,Cocos Islands,TR,Asia,43
+170,Colombia,TR,South America,44
+174,Comoros,TR,Africa,45
+175,Mayotte,TR,Africa,270
+178,Congo,TR,Africa,46
+180,Democratic Republic of the Congo,TR,Africa,250
+184,Cook Islands,TR,Oceania,47
+188,Costa Rica,TR,North America,48
+191,Croatia,NT,Europe,98
+192,Cuba,TR,North America,49
+196,Cyprus,NT,Europe,50
+200,Czechoslovakia,NT,Europe,51
+203,Czech Republic,NT,Europe,167
+204,Benin,TR,Africa,53
+208,Denmark,NT,Europe,54
+212,Dominica,TR,North America,55
+214,Dominican Republic,TR,North America,56
+218,Ecuador,TR,South America,58
+221,"Eastern Europe, not elsewhere specified",NT,Europe,N/A
+222,El Salvador,TR,North America,60
+226,Equatorial Guinea,TR,Africa,61
+230,Former Ethiopia,TR,Africa,62
+231,Ethiopia,TR,Africa,238
+232,Eritrea,TR,Africa,178
+233,Estonia,NT,Europe,63
+234,Faeroe Islands,NT,Europe,64
+238,Falkland Islands (Malvinas),NT,South America,65
+239,South Georgia and the South Sandwich Islands,NT,South America,271
+242,Fiji,TR,Oceania,66
+246,Finland,NT,Europe,67
+251,"France, Monaco",NT,Europe,68
+254,French Guiana,TR,South America,69
+258,French Polynesia,TR,Oceania,70
+260,French South Antarctic Territories,NT,Africa,71
+262,Djibouti,TR,Africa,72
+266,Gabon,TR,Africa,74
+268,Georgia,NT,Asia,73
+270,Gambia,TR,Africa,75
+275,Occupied Palestinian Territory,NT,Asia,299
+276,Germany,NT,Europe,79
+278,Former Democratic Republic of Germany,NT,Europe,N/A
+280,Former Federal Republic of Germany,NT,Europe,78
+288,Ghana,TR,Africa,81
+290,"Northern Africa, not elsewhere specified",NT,Africa,N/A
+292,Gibraltar,NT,Europe,82
+296,Kiribati,TR,Oceania,83
+300,Greece,NT,Europe,84
+304,Greenland,NT,North America,85
+308,Grenada,TR,North America,86
+312,Guadeloupe,TR,North America,87
+316,Guam,NT,Oceania,88
+320,Guatemala,TR,North America,89
+324,Guinea,TR,Africa,90
+328,Guyana,TR,South America,91
+332,Haiti,TR,North America,93
+334,Heard Island and McDonald Islands,NT,Antarctica,92
+336,Holy See (Vatican City State),NT,Europe,94
+340,Honduras,TR,North America,95
+344,"China, Hong Kong Special Administrative Region",TR,Asia,96
+348,Hungary,NT,Europe,97
+352,Iceland,NT,Europe,99
+356,"India, excluding Sikkim",TR,Asia,N/A
+360,Indonesia,TR,Asia,101
+364,Iran,NT,Asia,102
+368,Iraq,NT,Asia,103
+372,Ireland,NT,Europe,104
+376,Israel,NT,Asia,105
+381,Italy,NT,Europe,106
+384,Côte d'Ivoire,TR,Africa,107
+388,Jamaica,TR,North America,109
+392,Japan,NT,Asia,110
+398,Kazakhstan,NT,Asia,108
+400,Jordan,NT,Asia,112
+404,Kenya,TR,Africa,114
+408,Democratic People's Republic of Korea,NT,Asia,116
+410,Republic of Korea,NT,Asia,117
+414,Kuwait,NT,Asia,118
+417,Kyrgyzstan,NT,Asia,113
+418,Lao People's Dem. Rep.,TR,Asia,120
+422,Lebanon,NT,Asia,121
+426,Lesotho,TR,Africa,122
+428,Latvia,NT,Europe,119
+430,Liberia,TR,Africa,123
+434,Libya,NT,Africa,124
+440,Lithuania,NT,Europe,126
+442,Luxembourg,NT,Europe,256
+446,"China, Macao Special Administrative Region",TR,Asia,128
+450,Madagascar,TR,Africa,129
+454,Malawi,TR,Africa,130
+457,Sarawak,TR,Asia,N/A
+458,Malaysia,TR,Asia,131
+459,Peninsula Malaysia,TR,Asia,N/A
+461,Sabah,TR,Asia,N/A
+462,Maldives,TR,Asia,132
+466,Mali,TR,Africa,133
+470,Malta,NT,Europe,134
+471,"CACM, not elsewhere specified",TR,South America,N/A
+472,"Africa CAMEU region, not elsewhere specified",TR,Africa,N/A
+473,"LAIA, not elsewhere specified",TR,South America,N/A
+474,Martinique,TR,North America,135
+478,Mauritania,TR,Africa,136
+480,Mauritius,TR,Africa,137
+484,Mexico,TR,North America,138
+490,"Other Asia, not elsewhere specified",NT,Asia,214
+492,"Europe EU, not elsewhere specified",NT,Europe,N/A
+496,Mongolia,NT,Asia,141
+498,Republic of Moldova,NT,Europe,146
+499,Montenegro,NT,Europe,273
+500,Montserrat,TR,North America,142
+504,Morocco,NT,Africa,143
+508,Mozambique,TR,Africa,144
+512,Oman,TR,Asia,221
+516,Namibia,TR,Africa,147
+520,Nauru,TR,Oceania,148
+524,Nepal,NT,Asia,149
+527,"Oceania, not elsewhere specified",TR,Oceania,N/A
+528,Netherlands,NT,Europe,150
+530,Netherlands Antilles,TR,North America,151
+531,Curaçao,TR,South America,N/A
+532,Netherlands Antilles and Aruba,TR,North America,N/A
+533,Aruba,TR,North America,22
+534,Sint Maarten,TR,South America,N/A
+535,Bonaire,TR,South America,N/A
+536,Neutral Zone,,Not specified,152
+540,New Caledonia,TR,Oceania,153
+548,Vanuatu,TR,Oceania,155
+554,New Zealand,NT,Oceania,156
+558,Nicaragua,TR,North America,157
+562,Niger,TR,Africa,158
+566,Nigeria,TR,Africa,159
+568,"Other Europe, not elsewhere specified",NT,Europe,N/A
+570,Niue,TR,Oceania,160
+574,Norfolk Island,TR,Oceania,161
+577,"Other Africa, not elsewhere specified",TR,Africa,N/A
+579,"Norway, Svalbard and Jan Mayen",NT,Europe,162
+580,Northern Mariana Islands,TR,Oceania,163
+581,United States Minor Outlying Islands,NT,North America,N/A
+582,Former Pacific Islands,TR,Asia,164
+583,Federated States of Micronesia,TR,Oceania,145
+584,Marshall Islands,TR,Oceania,127
+585,Palau,TR,Oceania,180
+586,Pakistan,NT,Asia,165
+588,East and West Pakistan,NT,Asia,N/A
+590,"Former Panama, excluding Canal Zone",TR,North America,N/A
+591,Panama,TR,North America,166
+592,Former Panama-Canal-Zone,TR,North America,N/A
+598,Papua New Guinea,TR,Oceania,168
+600,Paraguay,TR,South America,169
+604,Peru,TR,South America,170
+608,Philippines,TR,Asia,171
+612,Pitcairn Islands,TR,Oceania,172
+616,Poland,NT,Europe,173
+620,Portugal,NT,Europe,174
+624,Guinea-Bissau,TR,Africa,175
+626,Timor-Leste,TR,Asia,176
+634,Qatar,NT,Asia,179
+636,"Rest of America, not elsewhere specified",TR,South America,N/A
+637,"North America, the Caribbean and Central America not elsewhere specified",TR,North America,N/A
+638,Réunion,TR,Africa,182
+642,Romania,NT,Europe,183
+643,Russian Federation,NT,Europe,185
+646,Rwanda,TR,Africa,184
+647,Ryukyu Islands,NT,Asia,N/A
+654,Saint Helena,NT,Africa,187
+658,"Saint Kitts, Nevis and Anguilla",TR,North America,N/A
+659,Saint Kitts and Nevis,TR,North America,188
+660,Anguilla,TR,North America,258
+662,Saint Lucia,TR,North America,189
+666,Saint Pierre and Miquelon,NT,North America,190
+670,Saint Vincent and the Grenadines,TR,North America,191
+674,San Marino,NT,Europe,192
+678,Sao Tome and Principe,TR,Africa,193
+682,Saudi Arabia,NT,Asia,194
+686,Senegal,TR,Africa,195
+688,Serbia,NT,Europe,272
+690,Seychelles,TR,Africa,196
+694,Sierra Leone,TR,Africa,197
+697,"Europe EFTA, not elsewhere specified",NT,Europe,N/A
+698,Sikkim,NT,Asia,N/A
+699,India,TR,Asia,100
+702,Singapore,TR,Asia,200
+703,Slovakia,NT,Europe,199
+704,Viet Nam,TR,Asia,237
+705,Slovenia,NT,Europe,198
+706,Somalia,TR,Africa,201
+710,South Africa,NT,Africa,202
+711,Southern African Customs Union,NT,Africa,N/A
+716,Zimbabwe,TR,Africa,181
+717,Former Rhodesia Nyas,TR,Africa,N/A
+720,Former Democratic Yemen,TR,Asia,247
+724,Spain,NT,Europe,203
+728,South Sudan,TR,Africa,N/A
+729,Sudan (from 2012),TR,Africa,276
+732,Western Sahara,NT,Africa,205
+736,Fmr Sudan,TR,Africa,206
+740,Suriname,TR,South America,207
+748,Swaziland,NT,Africa,209
+752,Sweden,NT,Europe,210
+757,"Switzerland, Liechtenstein",NT,Europe,211
+760,Syria,NT,Asia,212
+762,Tajikistan,NT,Asia,208
+764,Thailand,TR,Asia,216
+768,Togo,TR,Africa,217
+772,Tokelau,TR,Oceania,218
+776,Tonga,TR,Oceania,219
+780,Trinidad and Tobago,TR,North America,220
+784,United Arab Emirates,NT,Asia,225
+788,Tunisia,NT,Africa,222
+792,Turkey,NT,Asia,223
+795,Turkmenistan,NT,Asia,213
+796,Turks and Caicos Islands,TR,North America,224
+798,Tuvalu,TR,Oceania,227
+800,Uganda,TR,Africa,226
+804,Ukraine,NT,Europe,230
+807,The Former Yugoslav Republic of Macedonia,NT,Europe,154
+810,Former USSR,NT,Europe,228
+818,Egypt,NT,Africa,59
+826,United Kingdom,NT,Europe,229
+834,United Republic of Tanzania,TR,Africa,215
+835,Former Tanganyika,TR,Africa,N/A
+836,Former Zanzibar and Pemba Island,TR,Africa,N/A
+837,Bunkers,,Not specified,N/A
+838,Free Zones,,Not specified,N/A
+839,Special Categories,,Not specified,N/A
+841,USA and Puerto Rico,NT,North America,N/A
+842,"USA, Puerto Rico and US Virgin Islands",NT,North America,231
+849,US Miscellaneous Pacific Islands,TR,Oceania,N/A
+850,US Virgin Islands,TR,North America,240
+854,Burkina Faso,TR,Africa,233
+858,Uruguay,NT,South America,234
+860,Uzbekistan,NT,Asia,235
+862,Venezuela,TR,South America,236
+866,Former Democratic Republic of Vietnam,TR,Asia,N/A
+868,Former Republic of Vietnam,TR,Asia,N/A
+876,Wallis and Futuna Islands,TR,Oceania,243
+879,"Western Asia, not elsewhere specified",TR,Asia,N/A
+882,Samoa,TR,Oceania,244
+886,Former Arab Republic of Yemen,TR,Asia,246
+887,Yemen,TR,Asia,249
+890,Former Yugoslavia,NT,Europe,248
+891,Serbia and Montenegro,NT,Europe,186
+894,Zambia,TR,Africa,251
+899,"Areas, not elsewhere specified",NT,Not specified,N/A
+N/A,Channel Islands,NT,Europe,259
+N/A,Isle of Man,NT,Europe,264
+N/A,Liechtenstein,NT,Europe,125
+N/A,Monaco,NT,Europe,140
+N/A,Puerto Rico,TR,South America,177
+N/A,Svalbard and Jan Mayen Islands,NT,Europe,260
+N/A,Wake Island,TR,Asia,242
