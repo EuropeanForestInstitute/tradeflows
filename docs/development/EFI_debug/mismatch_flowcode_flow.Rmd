@@ -1,0 +1,76 @@
+---
+title: " Mismatch between flowcode and flow"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+``` 
+
+
+# Issue with flow and flowcode for flag > 5000
+
+```{r}
+swd99r <- readdbproduct(440799, "raw_flow_yearly")
+swd99r %>% select(flow, flowcode) %>% distinct() %>% arrange(flow)
+# 
+#        flow flowcode
+#       (chr)    (dbl)
+# 1    Export        2
+# 2    Import        1
+# 3 Re-Export        3
+# 4 Re-Import        4
+
+
+# Issue in the validated flow
+swd99v <- readdbproduct(440799, "validated_flow_yearly")
+swd99v %>% select(flow, flowcode) %>% distinct() %>% arrange(flow)
+# 
+#        flow flowcode
+#       (chr)    (dbl)
+# 1    Export        2
+# 2    Export        1
+# 3    Import        1
+# 4    Import        2
+# 5 Re-Export        3
+# 6 Re-Export        4
+# 7 Re-Import        3
+# 8 Re-Import        4
+```
+
+This mistake is happening for flows with a flag equal to 5000
+```{r}
+swd99v %>% 
+    mutate(flag5000 = flag>=5000) %>% 
+    select(flow, flowcode, flag5000) %>% 
+    distinct() %>% arrange(flag5000, flow)
+```
+
+
+# Changing the swap function
+```{r}
+prepareflowswap <- function(dtf, import = "Import", export = "Export"){
+    flow <- dtf %>% select(flow, flowcode) %>% distinct() 
+    flowswap <- flow %>%
+        mutate(flow = gsub("Import","aaaaaaa",flow),
+               flow = gsub("Export","Import",flow),
+               flow = gsub("aaaaaaa","Export",flow))
+    flow <- flow %>% select(flow, reporterflowcode = flowcode)
+    flowswap <- flowswap %>% select(flow, partnerflowcode = flowcode)
+    flowswap <- flow %>%
+        left_join(flowswap , by="flow")
+    # There should be one and only one definition of flow
+    stopifnot()
+}
+
+flowswapr <- prepareflowswap(swd99r)
+flowswapv <- prepareflowswap(swd99v)
+```
+

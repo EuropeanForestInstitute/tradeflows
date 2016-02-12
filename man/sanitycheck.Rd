@@ -12,5 +12,7 @@ sanitycheck(dtf)
 \description{
 "Import" and "Export" and used to add partner flow information.
 Should these characters be different then the user should be warned.
+"Import" and "Export" are hardcoded in the swapreporterpartner() function.
+This should be changed to environement variables using options() and getOption().
 }
 

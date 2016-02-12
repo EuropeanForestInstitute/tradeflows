@@ -350,14 +350,36 @@ visualise missing data
 
      
 ## Project issues + requests
-* place the methodology report datasets and plots in an R script that can be called from the package
+* SQLite database connection using RSQLite
+  Convert MySQL database to SQLite, using a script such as 
+  https://gist.github.com/esperlu/943776#file-mysql2sqlite-sh
+  See also http://stackoverflow.com/questions/3890518/convert-mysql-to-sqlite
+  or simply use R to move content from one base to the other. 
+  This might leave a sub-optimal SQL structure though.
+* place the methodology report datasets and plots in an R script  
+  that can be called from the package
 * Product report on the number of countries under each flag.
 * Export prices and conversion factors to Excel files
-[Next version] Write conversion factors, prices and choice description to the database during the cleaning process
+  [Next version] Write conversion factors, prices and 
+  choice description to the database during the cleaning process
 * Change loadcomtradeallreporters() output format from RDATA to RDS
- Object serialisation makes sense when there is only one object.
-* Convert MySQL database to SQLite, using a script such as 
-https://gist.github.com/esperlu/943776#file-mysql2sqlite-sh
-See also http://stackoverflow.com/questions/3890518/convert-mysql-to-sqlite
-* Make database connectors to SQLite. 
-
+  Object serialisation makes sense when there is only one object.
+* Export documentation to a github.io site, in the 
+  Group functions in sections in packagedocs/rd_index.yaml
+  re-create packagedocs if needed with the command:
+  packagedocs_init("."; "packagedocs")
+* Make a sankey diagram of a product or a range of products to illustrate all
+  outgoing flows from one country or all incoming flows into one country.
+  or more ambitious, illustrate all outgoing and icoming flows for a given product
+  See multilevel sankeys here:
+  https://developers.google.com/chart/interactive/docs/gallery/sankey#multilevel-sankeys
+  Other Tutorial on Sankeys with R:
+  http://timelyportfolio.github.io/rCharts_d3_sankey/example_build_network_sankey.html
+  http://rcharts.io/viewer/?6001601#.VrHVmZ5XbVR 
+  change Sankey at different point in time to illustrate changes
+  http://rcharts.io/gallery/#visualizationType=sankey
+  Use Sankey diagrams to illustrate the difference between raw and validated data
+  by using for example a color by flag or by drawing a sankey for raw data and another 
+  Sankey diagram for validated data.
+  Use Sankey diagrams to illustrate discrepancies between reported imports 
+  and exports. 

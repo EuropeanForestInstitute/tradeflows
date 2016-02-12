@@ -33,6 +33,8 @@ renamecolumns <- function(dtf, sourcedb = "comtrade", destdb = "efi"){
 #'
 #' "Import" and "Export" and used to add partner flow information.
 #' Should these characters be different then the user should be warned.
+#' "Import" and "Export" are hardcoded in the swapreporterpartner() function.
+#' This should be changed to environement variables using options() and getOption().
 #' @param dtf data frame of trade flows data
 #' @export
 sanitycheck <- function(dtf){
@@ -41,6 +43,26 @@ sanitycheck <- function(dtf){
     stopifnot(sum(grepl("Import",flow) + grepl("Export",flow)) ==
                   length(flow))
 }
+
+
+#' Return the length of unique combination of given column names
+#' @param dtf data frame
+#' @param ... further arguments passed to \code{\link{select_}()}
+#' @examples
+#' lengthunique(airquality)
+#' lengthunique(airquality, "Month", "Day")
+#' lengthunique(airquality, "Month")
+#' lengthunique(airquality, "Day")
+#' @export
+lengthunique <- function(dtf, ...){
+    dtf <- dtf %>%
+        select_(...)
+    if(ncol(dtf)!=0){
+        dtf <- dtf %>% distinct()
+    }
+    return(nrow(dtf))
+}
+
 
 
 #' Add regionreporter and regionpartner
@@ -511,7 +533,7 @@ shaveprice <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE)){
     dtf <- dtf %>% mutate(rawprice = price,
                           price = tradevalue / quantity)
     dtfinbound <- dtf %>%
-        filter(lowerprice<=price & price<=upperprice|
+        filter(lowerprice <= price & price <= upperprice|
                    is.na(price) |
                    # These conditions are problematic
                    # In general NA values should be avoided for the

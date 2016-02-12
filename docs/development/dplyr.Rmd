@@ -1,0 +1,74 @@
+---
+title: "dplyr"
+author: "Paul Rougieux"
+date: "26 January 2016"
+output: html_document
+---
+
+
+# dplyr segfault issue on 
+R version 3.2.3 (2015-12-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+dplyr_0.4.3
+```{r}
+library(dplyr)
+#' Return the length of unique combination of given column names
+#' @param dtf data frame
+#' @param ... further arguments passed to \code{\link{select_}()}
+#' @examples
+#' lengthunique(airquality, "Month")
+#' lengthunique(airquality, "Day")
+#' lengthunique(airquality, "Month","Day")
+#' nrow(airquality)
+#' @export
+lengthunique <- function(dtf, ...){
+    dtf <- dtf %>%
+        select_(...) %>%
+        distinct()
+    return(nrow(dtf))
+}
+```
+
+```{r eval=FALSE}
+# Returns a segfault
+lengthunique(airquality)
+```
+
+
+```
+*** caught segfault ***
+address (nil), cause 'memory not mapped'
+
+Traceback:
+ 1: .Call("dplyr_distinct_impl", PACKAGE = "dplyr", df, vars)
+ 2: distinct_impl(dist$data, dist$vars)
+ 3: distinct_.data.frame(.data, .dots = lazyeval::lazy_dots(...))
+ 4: distinct_(.data, .dots = lazyeval::lazy_dots(...))
+ 5: distinct(.)
+ 6: function_list[[k]](value)
+ 7: withVisible(function_list[[k]](value))
+ 8: freduce(value, `_function_list`)
+ 9: `_fseq`(`_lhs`)
+10: eval(expr, envir, enclos)
+11: eval(quote(`_fseq`(`_lhs`)), env, env)
+12: withVisible(eval(quote(`_fseq`(`_lhs`)), env, env))
+13: dtf %>% select_(...) %>% distinct()
+14: lengthunique(airquality)
+15: eval(expr, envir, enclos)
+16: eval(expr, envir, enclos)
+17: withVisible(eval(expr, envir, enclos))
+18: withCallingHandlers(withVisible(eval(expr, envir, enclos)), warning = wHandler,     error = eHandler, message = mHandler)
+19: handle(ev <- withCallingHandlers(withVisible(eval(expr, envir,     enclos)), warning = wHandler, error = eHandler, message = mHandler))
+20: evaluate_call(expr, parsed$src[[i]], envir = envir, enclos = enclos,     debug = debug, last = i == length(out), use_try = stop_on_error !=         2L, keep_warning = keep_warning, keep_message = keep_message,     output_handler = output_handler)
+21: evaluate::evaluate(code, envir = env, new_device = FALSE, keep_warning = !isFALSE(options$warning),     keep_message = !isFALSE(options$message), stop_on_error = if (options$error &&         options$include) 0L else 2L, output_handler = knit_handlers(options$render,         options))
+22: in_dir(opts_knit$get("root.dir") %n% input_dir(), evaluate::evaluate(code,     envir = env, new_device = FALSE, keep_warning = !isFALSE(options$warning),     keep_message = !isFALSE(options$message), stop_on_error = if (options$error &&         options$include) 0L else 2L, output_handler = knit_handlers(options$render,         options)))
+23: block_exec(params)
+24: call_block(x)
+25: process_group.block(group)
+26: process_group(group)
+27: withCallingHandlers(if (tangle) process_tangle(group) else process_group(group),     error = function(e) {        setwd(wd)        cat(res, sep = "\n", file = output %n% "")        message("Quitting from lines ", paste(current_lines(i),             collapse = "-"), " (", knit_concord$get("infile"),             ") ")    })
+28: process_file(text, output)
+29: knitr::knit(knit_input, knit_output, envir = envir, quiet = quiet,     encoding = encoding)
+30: rmarkdown::render("/home/paul/R/tradeflows/docs/development/dplyr.Rmd",     encoding = "UTF-8")
+aborting ...
+```

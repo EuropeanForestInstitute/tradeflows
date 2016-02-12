@@ -345,9 +345,24 @@ p + facet_grid(region + flow ~ year) +
 ### Distribution of unit prices along the tradevalue
 Vertical lines, represent large quantities which are at the same prices.
 ```{r}
+if (FALSE){
+    # Visualise raw prices
+    swd99r <- readdbproduct(440799,"raw_flow_yearly")
+    swd99 <- swd99r %>% addconversionfactorandprice()
+    swd99 <- swd99 %>% filter(flag == 0)
+    
+    # Visualise validated prices
+    swd99c <- swd99r %>% clean()
+    swd99 <- swd99c %>% addconversionfactorandprice()
+    
+    # Check dtfinbound in the shaveprice function a lot of rawprices are out of range there
+    # Due to the fact that the regional bounds on prices could not be calculated.
+}
+
 swd99$logprice <- round(log(swd99$price))
 # Remove infinite prices
 cat("\n\n")
+
 p <- ggplot(filter(swd99, price!=Inf),
             aes(x = tradevalue, y = price)) +
     geom_point(alpha = 1/5) +

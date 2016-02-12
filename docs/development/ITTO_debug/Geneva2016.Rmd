@@ -1,0 +1,70 @@
+---
+title: "Geneva Meeting February 2016"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+``` 
+
+
+# 2005 China Malaysia 440349 trade discrepancy issue
+```{r}
+chmy <- readdbtbl("validated_flow_yearly") %>%
+    filter(reporter == "China" & partner == "Myanmar") %>%
+    collect()
+mych <-  readdbtbl("validated_flow_yearly") %>%
+    filter(reporter == "Myanmar" & partner == "China") %>%
+    collect()
+
+chmyr <- readdbtbl("raw_flow_yearly") %>%
+    filter(reporter == "China" & partner == "Myanmar") %>%
+    collect()
+mychr <-  readdbtbl("raw_flow_yearly") %>%
+    filter(reporter == "Myanmar" & partner == "China") %>%
+    collect()
+```
+
+
+## Cameroon 440724
+```{r}
+# Find which product has the high volume issue
+cam <- readdbtbl("validated_flow_yearly") %>%
+     filter((reporter == "Cameroon" | partner == "Cameroon") & 
+                unit == "Volume in cubic meters") %>%
+     arrange(desc(quantity)) %>%
+     head(200)
+
+
+sawn24v <- readdbproduct(440724, "validated_flow_yearly")
+sawn24r <- readdbproduct(440724, "raw_flow_yearly")
+# Place a breakpoint in the price calculation to see the price
+sawn24c <- sawn24r %>% clean()
+# 2007 export from Africa, number of rows and price distribution
+sawn24r <- sawn24r %>% addconversionfactorandprice()
+
+# Only 18 from 120 entries have a price NA prices should not be taken into account in the calculation
+
+
+cleandb2excel(440724)
+```
+
+
+## Comtrade flags in the raw data 
+```{r}
+nrowflag <- readdbtbl("raw_flow_yearly") %>%
+    select(flag, unit) %>%
+    group_by(flag, unit) %>%
+    summarise(n = n()) %>% collect()
+```
+
