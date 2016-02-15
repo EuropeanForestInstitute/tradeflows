@@ -11,6 +11,8 @@ createoverviewreport(reporter_, productcode_ = NULL, beginyear = 0,
   dataonly = FALSE, ...)
 }
 \arguments{
+\item{reporter_}{character name of a country reporting data}
+
 \item{productcode_}{vector of product code, NULL by default to generate the report for all products}
 
 \item{template}{name of the template file.}

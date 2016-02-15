@@ -21,7 +21,7 @@ conversion factors, regional unit prices, choice between
 reporter and partner flows}
 
 \item{deleteextracolumns}{when TRUE, keep only columns from
-tradeflows::column_names$validated_flow}
+column_names$validated_flow}
 }
 \value{
 data frame with the same information as the original

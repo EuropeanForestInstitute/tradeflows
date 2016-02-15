@@ -18,14 +18,15 @@ createcountryindex(countries, template = "countryindex.Rmd",
 
 \item{filename}{name of the output file}
 
-\item{encoding, }{encoding of the template file
-#' @examples
-\dontrun{
-countries <- data_frame(reporter = c("Finland", "France"))
-createcountryindex(countries)
-}}
+\item{encoding, }{encoding of the template file}
 }
 \description{
 Generate a list of reports
+}
+\examples{
+\dontrun{
+countries <- data_frame(reporter = c("Finland", "France"))
+createcountryindex(countries)
+}
 }
 

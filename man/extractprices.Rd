@@ -28,4 +28,13 @@ Group trade flows by the given geographical aggregation level
 Prices depend on the quantity unit. For some products quantity unit changes
 from litre to m3 along the years.
 }
+\examples{
+\dontrun{
+# tf a data frame of trade flows
+price <-  tf \%>\% extractprices()
+priceglobal <- tf \%>\%
+    extractprices(grouping = c("flow", "year", "unit"))
+}
+
+}
 

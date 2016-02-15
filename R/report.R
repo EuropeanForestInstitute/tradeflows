@@ -68,8 +68,8 @@ extractmetadata <- function(tfdata){
 #' platform-dependent. All R platforms support ""
 #' (for the encoding of the current locale), "latin1" and "UTF-8".
 #' @examples
-#'\dontrun{
-#'createreport(NULL, template="allproducts.Rmd", reporterinreport ="China")
+#' \dontrun{
+#' createreport(NULL, template="allproducts.Rmd", reporterinreport ="China")
 #' }
 #' @export
 createreport <- function(tfdata,
@@ -155,7 +155,7 @@ createreportfromdb <- function(tableread,
 #' there are approximatley a dozen of product groups under jfsq level 1
 #' and sixty product groups under level 2.
 #' Depending on the level choosen, there will be a dozen or sixty titles in the overview report.
-#' @param reporter_
+#' @param reporter_ character name of a country reporting data
 #' @param productcode_ vector of product code, NULL by default to generate the report for all products
 #' @param template name of the template file.
 #' @param outputdir path where report will be saved, relative to the working directory
@@ -278,7 +278,7 @@ createoverviewreport <- function(reporter_,
 #' @param productcode_ vector of product codes
 #' @param ... arguments passed to \code{\link{createreport}()}
 #' @examples
-#'\dontrun{
+#' \dontrun{
 #' createcompletenessreport(440799, beginyear = 2010, endyear = 2011)
 #' }
 #' @export
@@ -386,7 +386,7 @@ description <- function(productcodes){
 #' Can be used with lapply to generate reports for a list of countries.
 #' @param reporter character containing one reporter name
 #' @examples
-#'\dontrun{
+#' \dontrun{
 #' countries <- c("Finland","France")
 #' lapply(countries, trytocreateoverviewreports)
 #' }
@@ -407,7 +407,7 @@ trytocreateoverviewreports <- function(reporter,
 #' @param outputdir name of the output directory relative to getwd()
 #' @param filename name of the output file
 #' @param encoding, encoding of the template file
-#' #' @examples
+#' @examples
 #' \dontrun{
 #' countries <- data_frame(reporter = c("Finland", "France"))
 #' createcountryindex(countries)

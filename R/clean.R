@@ -608,7 +608,7 @@ addmissingmirrorflow <- function(dtf){
 #' @param replacebypartnerquantity, when TRUE call replacebypartnerquantity()
 #' @param shaveprice when TRUE, call shaveprice()
 #' @param deleteextracolumns when TRUE, keep only columns from
-#' tradeflows::column_names$validated_flow
+#' column_names$validated_flow
 #' @param outputalltables when TRUE return a list of data frames
 #' containing the cleaned dataset and all tables used to compute it
 #' conversion factors, regional unit prices, choice between
