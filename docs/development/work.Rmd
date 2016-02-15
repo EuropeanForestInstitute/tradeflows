@@ -390,3 +390,8 @@ visualise missing data
 * Make database connectors to SQLite. 
 * introducing a $/kg price will mean that it has to be in agreement
   with the $/m3 price and the kg/m3 conversion factor.
+* Document function arguments to deal with R CMD check warnings of the type:
+  "Undocumented arguments in documentation object "
+  see those warnings on Travis: 
+  https://s3.amazonaws.com/archive.travis-ci.org/jobs/109356599/log.txt
+ 

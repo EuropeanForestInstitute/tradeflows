@@ -68,11 +68,12 @@ lengthunique <- function(dtf, ...){
 #' Add regionreporter and regionpartner
 #'
 #' @param dtf data frame of trade flows
+#' @param regioncolumn column containing region names
 #' @export
 addregion <- function(dtf, regioncolumn = "region"){
     dtf %>%
         merge(select(reportercomtrade,
-                     reportercode, regionreporter=region), all.x=TRUE) %>%
+                     reportercode, regionreporter = region), all.x=TRUE) %>%
         merge(select(reportercomtrade,
                      partnercode = reportercode, regionpartner=region), all.x=TRUE)
 }
