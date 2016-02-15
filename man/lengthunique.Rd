@@ -16,5 +16,8 @@ Return the length of unique combination of given column names
 }
 \examples{
 lengthunique(airquality)
+lengthunique(airquality, "Month", "Day")
+lengthunique(airquality, "Month")
+lengthunique(airquality, "Day")
 }
 

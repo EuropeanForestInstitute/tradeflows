@@ -11,6 +11,7 @@ output:
 ```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(tradeflows)
 library(knitr)
+opts_chunk$set(message=FALSE, warning = FALSE)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
 library(dplyr)
 library(ggplot2)
@@ -36,31 +37,136 @@ mychr <-  readdbtbl("raw_flow_yearly") %>%
 ```
 
 
-## Cameroon 440724
-```{r}
-# Find which product has the high volume issue
+# 440724 
+```{r }
+# Find which product has a high volume issue in the validated data
 cam <- readdbtbl("validated_flow_yearly") %>%
      filter((reporter == "Cameroon" | partner == "Cameroon") & 
                 unit == "Volume in cubic meters") %>%
      arrange(desc(quantity)) %>%
      head(200)
 
-
-sawn24v <- readdbproduct(440724, "validated_flow_yearly")
-sawn24r <- readdbproduct(440724, "raw_flow_yearly")
-# Place a breakpoint in the price calculation to see the price
-sawn24c <- sawn24r %>% clean()
-# 2007 export from Africa, number of rows and price distribution
-sawn24r <- sawn24r %>% addconversionfactorandprice()
-
-# Only 18 from 120 entries have a price NA prices should not be taken into account in the calculation
-
-
-cleandb2excel(440724)
+#' Display a sorted table for the purpose of this analysis
+#' @param dtf a data frame of trade flows
+littletable <- function(dtf,n=2){
+    dtf %>% 
+        select(reporter, partner, year, flow, tradevalue, quantity, weight, price) %>%
+        arrange(desc(quantity)) %>%
+        head(n) %>%
+        kable()
+}
 ```
 
 
-## Comtrade flags in the raw data 
+## Raw data shows Kuwait, Botswana and South Africa import extreme quantities
+```{r}
+sawn24r <- readdbproduct(440724, "raw_flow_yearly") %>% 
+    filterworldeu28() %>%
+    addconversionfactorandprice() %>%
+    addregion()
+sawn24r %>% littletable()
+sawn24r %>% filter(regionreporter == "Africa") %>% littletable()
+```
+
+
+## Validated data shows Cameroon Netherlands with extreme volume and price issue
+Kuwait, Botswana and South Africa trade flows were corrected in the validated data,
+but not the export flows between Cameroon and Netherlands remained erroneous
+```{r}
+sawn24v <- readdbproduct(440724, "validated_flow_yearly") %>%
+    addconversionfactorandprice() %>%
+    addregion()
+sawn24v %>% littletable()
+```
+
+Archive table to compare once the algorithm has been modified
+
+|reporter |partner     | year|flow   | tradevalue| quantity|   weight|   price|
+|:--------|:-----------|----:|:------|----------:|--------:|--------:|-------:|
+|Cameroon |Netherlands | 2007|Export |   30350149|  9547163| 52119188| 3.17897|
+|Cameroon |Netherlands | 2008|Export |   37635852|  5136247| 57231874| 7.32750|
+
+
+## Price extraction issues
+Analyse 2007 exports from Africa. Only 18 from 120 entries have a price. All other values are  not available (NA). NA values should not be taken into account in the calculation
+```{r eval=TRUE}
+sawn24r2007afr <- sawn24r %>% filter(regionreporter == "Africa" & year == 2007)
+sawn24r2007afr %>% 
+    mutate(value = ifelse(is.na(price),"NA","value"),
+           value = ifelse(is.infinite(price),"Inf",value)) %>%
+    group_by(value) %>% summarise(nrow = n()) %>% kable()
+
+# Change in median price when removing NA values, same as option na.rm
+median(sawn24r2007afr$price)
+median(sawn24r2007afr$price, na.rm = TRUE)
+median(sawn24r2007afr$price[!is.na(sawn24r2007afr$price)])
+
+# Change in median price when removing NA and Inf values
+median(sawn24r2007afr$price[!is.na(sawn24r2007afr$price) & !is.infinite(sawn24r2007afr$price)])
+
+price <-  sawn24r %>%
+    extractprices()
+
+ggplot(price, aes(x = year, y = medianprice, ymin = lowerprice, ymax = upperprice)) +
+    geom_point() + geom_errorbar() +
+    facet_grid(unit + flow ~ regionreporter) +
+    ggtitle("Regional median prices and price bounds")
+
+ggplot(price, aes(x = year, y = medianprice, color = regionreporter)) +
+    geom_line() + facet_grid(flow ~ .) +
+    ggtitle("Global median prices")
+
+priceglobal <- sawn24r %>%
+    extractprices(grouping = c("flow", "year", "unit"))
+
+ggplot(priceglobal, aes(x = year, y = medianprice, ymin = lowerprice, ymax = upperprice)) +
+    geom_point() + geom_errorbar() +
+    facet_grid(unit + flow ~ . ) + 
+    ggtitle("Global median prices and price bounds")
+
+ggplot(priceglobal, aes(x = year, y = medianprice, color = flow)) +
+    geom_line() + 
+    ggtitle("Global median prices")
+
+# Try smooth
+plot(priceglobal$medianprice[priceglobal$flow == "Import"])
+plot(smooth(priceglobal$medianprice[priceglobal$flow == "Import"]))
+plot(priceglobal$medianprice[priceglobal$flow == "Export"])
+plot(smooth(priceglobal$medianprice[priceglobal$flow == "Export"]))
+priceglobal <- priceglobal %>% 
+    group_by(flow) %>%
+    mutate(mediansmooth = as.numeric(smooth(medianprice)))
+ggplot(priceglobal, aes(x = year, y = mediansmooth, color = flow)) +
+    geom_line() + 
+    ggtitle("Global median prices")
+```
+
+    
+## Correct the "shave price" algorithm
+Place a breakpoint in the price calculation to see the price data
+```{r}
+sawn24c <- sawn24r %>% clean()
+# Number of rows and price distribution
+# This can be used to export prices and conversion factors to an excel file
+# cleandb2excel(440724)
+```
+
+
+## Conversion factor issues
+Infinite conversion factor should not be taken into account in the 
+calculation of the mean conversion factor.
+```{r}
+conv <- sawn24r %>% 
+    extractconversionfactors()
+sum(conv$medianconversion)
+
+ggplot(conv, aes(x = year, y = medianconversion)) +
+    geom_point() + 
+    facet_grid(unit + flow ~ regionreporter )
+```
+
+
+# Comtrade flags in the raw data 
 ```{r}
 nrowflag <- readdbtbl("raw_flow_yearly") %>%
     select(flag, unit) %>%
@@ -68,3 +174,8 @@ nrowflag <- readdbtbl("raw_flow_yearly") %>%
     summarise(n = n()) %>% collect()
 ```
 
+
+## Include comtrade estimates in the price calculation
+Functions that extract prices and conversion factors have flag
+that can disable comtrade estimates if required. 
+This is not activated by default.

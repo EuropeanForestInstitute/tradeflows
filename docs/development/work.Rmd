@@ -383,3 +383,10 @@ visualise missing data
   Sankey diagram for validated data.
   Use Sankey diagrams to illustrate discrepancies between reported imports 
   and exports. 
+* add global variables for variables used in NSE dplyr and ggplot code
+  see Hadley's change of mind on the "no visible binding for global variable" 
+  issue when running R CMD Check.
+  https://stackoverflow.com/posts/12429344/revisions
+* Make database connectors to SQLite. 
+* introducing a $/kg price will mean that it has to be in agreement
+  with the $/m3 price and the kg/m3 conversion factor.

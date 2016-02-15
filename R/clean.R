@@ -118,8 +118,7 @@ filterworldeu28 <- function(dtf){
 #' from litre to m3 along the years.
 #' @param dtf a dataframe containing all trade flows for one product
 #' and their individual prices
-#' @param geoaggregation a character vector specifying the regional aggregation
-#'     level, a column name in the reportercomtrade table
+#' @param grouping a character vector specifying the grouping variables
 #' @param includeqestimates logical TRUE when comtrade quantity estimates
 #' can be included
 #' @param lowercoef numeric multiplier of the first quartile to
@@ -127,13 +126,20 @@ filterworldeu28 <- function(dtf){
 #' @param uppercoef numeric multiplier of the third quartile to
 #' obtain an upper bound on prices
 #' @export
+#' @examples
+#' \dontrun{
+#' # tf a data frame of trade flows
+#' price <-  tf %>% extractprices()
+#' priceglobal <- tf %>%
+#'     extractprices(grouping = c("flow", "year", "unit"))
+#' }
+##'
 extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
-                          geoaggregation = "regionreporter",
+                          grouping = c("flow", "regionreporter", "year", "unit"),
                           includeqestimates = TRUE){
-    # Geoaggregation should be a column of the data frame
-    # for example regionreporter
-    stopifnot(geoaggregation %in% names(dtf))
-    if(includeqestimates==FALSE){ # Condition easier to understand for user of the function
+    # grouping variables should be present in the data frame
+    stopifnot(grouping %in% names(dtf))
+    if(identical(includeqestimates,FALSE)){ # Condition easier to understand for user of the function
         dtf <- dtf %>% filter(flag==0 |flag==4 )
     }
     # replace infinite price values by NA for the mean price
@@ -141,24 +147,18 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
     dtf$price[is.infinite(dtf$price)] <- NA
     dtf %>%
         filter(flow %in% c("Import", "Export")) %>%
-        # Remove EU28 reporter
-        filter(!reporter %in% c("EU-28")) %>%
-        # Remove EU-28 and World partner
-        filter(!partner %in%c("EU-28", "World")) %>%
-        # Remove missing quantity
-        filter(!is.na(quantity)& unit !="No Quantity") %>%
-        # Calculate yearly regional prices
-        group_by(flow, regionreporter, year, unit) %>%
-        summarise(lowerprice = lowercoef * quantile(price, 0.25,
-                                                    names=FALSE, na.rm=TRUE),
-                  medianprice = median(price, na.rm=TRUE),
-                  upperprice = uppercoef * quantile(price, 0.75,
-                                                    names=FALSE, na.rm=TRUE),
+        filterworldeu28() %>%
+        # Price whould not be NA and not be infinite
+        filter(!is.na(price) & !is.infinite(price)) %>%
+        # Calculate yearly regional prices by unit
+        group_by_(.dots = grouping) %>%
+        summarise(lowerprice = lowercoef * quantile(price, 0.25, names=FALSE),
+                  medianprice = median(price),
+                  upperprice = uppercoef * quantile(price, 0.75, names=FALSE),
                   # The average price often cannot be computed because there
                   # are infinite prices when quantity is = 0
                   averageprice = mean(price, na.rm=TRUE),
-                  weightedaverageprice = sum(tradevalue, na.rm=TRUE)/
-                                                   sum(quantity, na.rm=TRUE) #,
+                  weightedaverageprice = sum(tradevalue)/ sum(quantity) #,
                   # Price weighted by the quantity, same value as above
                   # weightedaverageprice1 = sum(price * quantity, na.rm=TRUE)/
                   #  sum(quantity, na.rm=TRUE),
@@ -192,12 +192,10 @@ extractconversionfactors <- function(dtf, geoaggregation="region",
     }
     dtf <- dtf %>%
         filter(flow %in% c("Import", "Export")) %>%
-        # Remove EU28 reporter
-        filter(!reporter %in% c("EU-28")) %>%
-        # Remove World partner
-        filter(!partner %in%c("EU-28", "World")) %>%
-        # Remove missing quantity
-        filter(!is.na(quantity) & unit !="No Quantity")
+        filterworldeu28() %>%
+        # Remove missing and infinite conversion factors
+        filter(!is.na(conversion) & !is.infinite(conversion))
+
     if(geoaggregation == "region"){
         dtf <- dtf %>%  group_by(flow, regionreporter, year, unit)
     } else {
@@ -532,23 +530,36 @@ shaveprice <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE)){
     # Split flows which have prices out of bounds from those which don't
     dtf <- dtf %>% mutate(rawprice = price,
                           price = tradevalue / quantity)
+    # Deal with missing prices and missing price bounds
+    dtfnoboundprice <- dtf %>%
+        # These NA conditions on lowerprice and upperprice are problematic
+        # In general NA values should be avoided for the
+        # upper and lower bounds on prices
+        # The price calculation should add
+        # missing upper and lower bound from the world price bounds
+        # And this dtfnoboundprice data frame should be empty
+        filter((is.na(lowerprice)|is.na(upperprice)) & !is.na(price))
+    dtfnoprice <- dtf %>%
+        filter(is.na(price))
+    if (identical(nrow(data.frame()),0L)){
+        # it is not possible to check this in the price calculation
+        # because some NA values can come from the merge
+        message(nrow(dtfnoboundprice), " rows where price bounds were not available")
+    }
     dtfinbound <- dtf %>%
-        filter(lowerprice <= price & price <= upperprice|
-                   is.na(price) |
-                   # These conditions are problematic
-                   # In general NA values should be avoided for the
-                   # upper and lower bounds on prices
-                   is.na(lowerprice)|is.na(upperprice))
+        filter((lowerprice <= price & price <= upperprice))
+    # This is where the modification took place
     dtfoutbound <- dtf %>%
+        # Will contain also Inf prices
         filter(price<lowerprice | upperprice<price) %>%
         mutate(quantity = quantity_up,
                flag = flag + 300)
-    dtfresult <- rbind(dtfinbound, dtfoutbound)
+    dtfresult <- rbind(dtfinbound, dtfoutbound, dtfnoboundprice, dtfnoprice)
     stopifnot(nrow(dtf) == nrow(dtfresult))
     if (verbose){
         message(nrow(dtfoutbound), " rows had a price too high or too low")
         message("Readjusting quantities so that prices are within the lower and upper bounds",
-                changeflowmessage(dtf,dtfresult))
+                changeflowmessage(dtf, dtfresult))
     }
     return(dtfresult)
 }
