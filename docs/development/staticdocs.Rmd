@@ -1,0 +1,12 @@
+---
+title: "Staticdocs"
+author: "Paul Rougieux"
+date: "16 February 2016"
+output: html_document
+---
+
+
+```{r}
+library(staticdocs)
+build_site()
+```
