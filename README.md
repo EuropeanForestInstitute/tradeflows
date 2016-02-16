@@ -13,8 +13,12 @@ COMTRADE and COMEXT databases, feed it through algorithms to compare
 unit values, to mirror export and import values.
 Data will be delivered to an online user-interface.
 
+Main package documentation
+
 Examples and demonstration:
 
+* [Main package documentation](http://europeanforestinstitute.github.io/tradeflows/index.html)
+* `vignettes` contains the vignettes in raw format
 * `inst/templates` contains templates to generate various reports
 * `docs/development/overview` contains development version of plots
 * `docs/development/cleaning` contain unit price calculations 

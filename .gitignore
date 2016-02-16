@@ -25,3 +25,5 @@
 inst/doc
 # Ignore package documentation which is tracked in another repository
 packagedocs
+inst/web
+
