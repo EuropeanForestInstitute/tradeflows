@@ -138,8 +138,10 @@ filterworldeu28 <- function(dtf){
 extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
                           grouping = c("flow", "regionreporter", "year", "unit"),
                           includeqestimates = TRUE){
-    # grouping variables should be present in the data frame
+    # Grouping variables should be present in the data frame
     stopifnot(grouping %in% names(dtf))
+    # Price should be present in the data frame
+    stopifnot("price" %in% names(dtf))
     if(identical(includeqestimates,FALSE)){ # Condition easier to understand for user of the function
         dtf <- dtf %>% filter(flag==0 |flag==4 )
     }
@@ -195,7 +197,8 @@ extractconversionfactors <- function(dtf, geoaggregation="region",
         filter(flow %in% c("Import", "Export")) %>%
         filterworldeu28() %>%
         # Remove missing and infinite conversion factors
-        filter(!is.na(conversion) & !is.infinite(conversion))
+        filter(!is.na(conversion) & !is.infinite(conversion) &
+                   !conversion == 0)
 
     if(geoaggregation == "region"){
         dtf <- dtf %>%  group_by(flow, regionreporter, year, unit)
@@ -203,7 +206,7 @@ extractconversionfactors <- function(dtf, geoaggregation="region",
         dtf <- dtf %>% group_by(flow, year, unit)
     }
     dtf %>%
-        summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
+        summarise(medianconversion = round(median(conversion)))
 }
 
 

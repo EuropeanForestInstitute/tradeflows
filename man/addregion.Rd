@@ -8,6 +8,8 @@ addregion(dtf, regioncolumn = "region")
 }
 \arguments{
 \item{dtf}{data frame of trade flows}
+
+\item{regioncolumn}{column containing region names}
 }
 \description{
 Add regionreporter and regionpartner

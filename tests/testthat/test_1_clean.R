@@ -7,11 +7,53 @@ options(tradeflows.verbose = FALSE)
 # But to run this test suite on its own
 # use devtools::load_all() or CTRL-SHIFT-L all to load unexported functions.
 
+# According to Hadley Wickham's book on R development and testing.
+# Setup and teardown methods are not needed because of R's copy on modify principle
+# All objects created within test_that() calls are temporary.
+# Objects are dropped at the end of the call. If an object was modified
+# it was only the copy of that object that was modified.
+# And the original is left in its original state
+# a <- 1
+# test_that("Modify variable in a test", {a <- 2})
+# test_that("Variable stays unchanged for the next test",
+#           {expect_that(a, equals(1))})
+
 # This test suite assumes that
 # The package contains a test dataset called sawnwoodexample.
 swd <- tradeflows::sawnwoodexample
 
-context("Preparatory functions: addregion, addprice, etc")
+
+### Dummy trade flows ####
+# This test suite also uses dummy trade flows data
+dummytf <- data_frame(reporter = letters[1:6],
+                      partner = letters[21:26],
+                      flow = rep(c("Import","Export"),3),
+                      regionreporter = rep(c("West","West","East"),2),
+                      tradevalue = rlnorm(6,11,3),
+                      quantity = rlnorm(6,7,3),
+                      weight = rlnorm(6,11,3),
+                      unit = "m3",
+                      year = 2013) %>%
+    addconversionfactorandprice()
+
+# Compare to real data
+# Draw test data from a distribution similar to real data
+if(FALSE){
+    library(tradeflows)
+    swd <- readdbproduct(440799, "raw_flow_yearly")
+    hist(log(swd$weight))
+    hist(log10(swd$weight))
+    hist(log(rlnorm(5e5,meanlog = 11)))
+    summary(swd[c("quantity","weight","tradevalue")])
+    summary(rlnorm(1e6,15,2))
+    summary(rlnorm(1e6,11,5))
+    summary(rlnorm(1e6,11,3)) # weight and tradevalue
+    summary(rlnorm(1e6,8,3))
+    summary(rlnorm(1e6,7,3)) # quantity
+}
+
+# Prices and conversion factors ####
+context("Prices and conversion factors")
 
 test_that("Add region works",{
     dtf <- data_frame(reportercode = c(4,8,716),
@@ -35,18 +77,26 @@ test_that("Price and conversion factorcalculation, deals with NA", {
 })
 
 
-test_that("Price extraction ", {
-    dtf <- data_frame(reporter = letters[1:6],
-                      partner = letters[21:26],
-                      flow = rep(c("Import","Export"),3),
-                      regionreporter = rep(c("a","a","b"),2),
-                      tradevalue = rnorm(6,100000,10000),
-                      quantity = rnorm(6,1000,100),
-                      unit = "m3",
-                      year = 2013) %>%
-        mutate(price = tradevalue / quantity)
-    dtf2 <- dtf %>% extractprices()
-    # message("Try to use a different geoaggregation level in clean")
+test_that("Price extraction works with different aggregation levels ", {
+    priceregional <- dummytf %>%
+        extractprices()
+    priceglobal <- dummytf %>%
+        extractprices(grouping = c("flow", "year", "unit"))
+})
+
+
+test_that("Conversion factor extraction ignores Inf and O values ", {
+    dummytf$conversion[1] <- Inf
+    dummytf$conversion[3] <- 0
+    median(dummytf$conversion)
+    cf1 <- dummytf %>%
+        extractconversionfactors()
+    cf2 <- dummytf %>%
+        filter(!is.infinite(conversion) & !conversion ==0) %>%
+        group_by(flow, regionreporter, year, unit) %>%
+        summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
+    expect_equal(cf1$medianconversion, cf2$medianconversion)
+    cf2$medianconversion
 })
 
 
@@ -58,9 +108,6 @@ test_that("Grouping works in priceextraction", {
 
 
 context("Partner flows")
-
-# According to Hadley Wickham's book on R development and testing.
-# Setup and teardown methods are not needed because of R's copy on modify principle
 mockflows <- data_frame(productcode = c(440349, 440349, 440349, 440349),
                         flow = c("Import", "Export","Import", "Export"),
                         period = c(2010L, 2010L, 2011L, 2011L),
@@ -91,7 +138,7 @@ test_that("chosereporterorpartner keeps NA values in the standard deviation of p
     dtf <- dtf %>%
         addpartnerflow %>%
         choosereporterorpartner()
-    expect_that(dtf$favorpartner, equals(c(NA,NA)))
+    expect_equal(dtf$favorpartner, c(NA,NA))
 })
 
 
