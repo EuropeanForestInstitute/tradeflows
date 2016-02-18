@@ -96,7 +96,6 @@ test_that("Conversion factor extraction ignores Inf and O values ", {
         group_by(flow, regionreporter, year, unit) %>%
         summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
     expect_equal(cf1$medianconversion, cf2$medianconversion)
-    cf2$medianconversion
 })
 
 
