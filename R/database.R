@@ -3,7 +3,7 @@
 #' Database connection parameters
 #' Are storred in the installed version of the package
 #' Run this command to find the location of the configuration file on your machine:
-#' system.file("config/databaseconf.R", package="tradeflows").
+#' system.file("config/databaseconfig.R", package="tradeflows").
 #' Use reload=TRUE to force reloading the file after modification.
 #' @param reload logical, force reloading the configuration file
 #' @param silent logical, do not print "already loaded" message when TRUE
