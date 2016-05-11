@@ -1,0 +1,57 @@
+---
+title: "Visualising trade flows data"
+author: "Paul Rougieux"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Loading trade flows from comtrade}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+output:
+  knitr:::html_vignette:
+    toc: yes
+---
+```{r buildvignette, eval=FALSE, echo=FALSE}
+# To build this vignette run 
+devtools::build_vignettes()
+# Then rebuild the package CTRL+SHIFT+B so that the vignette is 
+# integrated to the package documentation
+```
+
+```{r packages, message=FALSE, warning=FALSE}
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+```
+
+
+The package ggplot2 is used for visualisation examples below. 
+
+# Load data
+The documentation of each function is available by entering `?function_name` at the R prompt.
+```{r, message=FALSE, warning=FALSE}
+swd99 <- readdbproduct(440799, "raw_flow_yearly") %>%
+    filterworldeu28() %>%
+    addregion() %>%
+    addconversionfactorandprice()
+```
+
+
+
+# Price distribution
+
+## Distribution of unit prices along the tradevalue
+Lines represent large quantities which are at the same prices.
+
+```{r plotprices}
+p <- ggplot(filter(swd99, price!=Inf),
+            aes(x = tradevalue, y = price)) +
+    geom_point(alpha = 1/5) +
+     coord_cartesian(ylim =c(0,2000)) +
+    ggtitle("Variation of prices along the tradevalue")
+p + scale_x_log10(limits=c(1000, NA)) + 
+    xlab("Trade value $ (log scale)")
+p + scale_x_log10(limits=c(1000, NA)) + 
+    xlab("Trade value $ (log scale)") + 
+    facet_wrap(~flow) + aes(color=as.factor(flag))
+
+```
