@@ -1,3 +1,18 @@
+################################### #
+# Load Example dataset for sawnwood #
+################################### #
+# Load from local database
+sawnwoodexample <- readdbproduct(440799, "raw_flow_yearly")
+# Save data frame for dissemination within the package
+devtools::use_data(sawnwoodexample, overwrite = TRUE)
+
+# Alternative (long) load from Comtrade API
+# loadcomtradeallreporters(440799, path = "/tmp")
+# load("/tmp/440799.RData")
+# sawnwoodexample <- dtf %>% renamecolumns()
+# More details on API issues in "docs/development/comtrade.Rmd"
+
+
 # Call functions from load.R to load sample comtrade datasets
 # No need to source load.R as it is loaded within the package already
 # This script will run on a development system
@@ -27,27 +42,6 @@ claswd$productcode
 nrow(claswd)
 
 
-################################### #
-# Load Example dataset for sawnwood #
-################################### #
-# More details on API issues in "docs/development/comtrade.Rmd"
-# Germany, swd, swdoak, swdbeech
-swdde <- loadcomtrade_bycode(c(4407, 440791, 440792), 276, "recent")
-# add 5 years before
-swdde2 <- loadcomtrade_bycode(c(4407, 440791, 440792), 276, seq(2004,2008))
-swdde <- rbind(swdde, swdde2)
-# France, swd, swdoak, swdbeech
-swdfr <- loadcomtrade_bycode(c(4407, 440791, 440792), 251, "recent")
-# add 5 years before
-swdfr2 <- loadcomtrade_bycode(c(4407, 440791, 440792), 251, seq(2004,2008))
-swdfr <- rbind(swdfr, swdfr2)
-
-# bind tables together
-sawnwoodexample <- rbind(swdde, swdfr) %>%
-    arrange(yr, rgCode, ptCode)
-unique(sawnwoodexample[c("yr", "rtTitle")])
-sawnwoodexample <- renamecolumns(sawnwoodexample)
-devtools::use_data(sawnwoodexample, overwrite = TRUE)
 
 
 ################ #

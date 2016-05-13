@@ -29,10 +29,17 @@ The package ggplot2 is used for visualisation examples below.
 # Load data
 The documentation of each function is available by entering `?function_name` at the R prompt.
 ```{r, message=FALSE, warning=FALSE}
-swd99 <- readdbproduct(440799, "raw_flow_yearly") %>%
+swd99 <- tradeflows::sawnwoodexample %>%
     filterworldeu28() %>%
     addregion() %>%
     addconversionfactorandprice()
+
+# Alternative way to load the dataset 
+# when access to a database is available
+# in the code above, replace
+# 'tradeflows::sawnwoodexample' 
+# by
+# 'readdbproduct(440799, "raw_flow_yearly")'
 ```
 
 
@@ -46,12 +53,13 @@ Lines represent large quantities which are at the same prices.
 p <- ggplot(filter(swd99, price!=Inf),
             aes(x = tradevalue, y = price)) +
     geom_point(alpha = 1/5) +
-     coord_cartesian(ylim =c(0,2000)) +
+    scale_x_log10(limits=c(1000, NA)) + 
+    xlab("Trade value $ (log scale)") +
+    coord_cartesian(ylim =c(0,2000)) +
+    ylab(expression("Price $/m"^"3")) + 
     ggtitle("Variation of prices along the tradevalue")
-p + scale_x_log10(limits=c(1000, NA)) + 
-    xlab("Trade value $ (log scale)")
-p + scale_x_log10(limits=c(1000, NA)) + 
-    xlab("Trade value $ (log scale)") + 
-    facet_wrap(~flow) + aes(color=as.factor(flag))
+p 
+p + facet_wrap(~flow) +
+    aes(color=as.factor(flag))
 
 ```
