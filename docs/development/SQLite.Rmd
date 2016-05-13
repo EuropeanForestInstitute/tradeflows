@@ -16,15 +16,54 @@ library(dplyr)
 ``` 
 
 
-# Using a MySQL to SQLite conversion script
-[conversion scirpt](https://gist.github.com/esperlu/943776#file-mysql2sqlite-sh) found on a [Stackoverflow answer](http://stackoverflow.com/a/9933603/2641825).
+# Convert from MySQL to SQLite 
 
-Convert from MySQL to SQLite with the script
+[conversion scirpt](https://gist.github.com/esperlu/943776#file-mysql2sqlite-sh) found on a [Stackoverflow answer](http://stackoverflow.com/a/9933603/2641825).
+See also below for another version of that script. 
+
+## Conversion script first version 
+The script connects to MySQL, creates the dump 
+and then convers to SQLite.
 ```
+cp ~/downloads/mysql2sqlite.sh /tmp/
+cd /tmp
+chmod +x mysql2sqlite.sh # Make it executable
+# Old version by Esperlu
 ./mysql2sqlite.sh -u R -p tradeflows | sqlite3 tradeflows.sqlite
 ```
 The raw database was copied but there was an issue with the validated database: `Error: near line 5217030: no such table: validated_flow_yearly`.
-Browse the newly created SQLite database 
+
+## Conversion script second version 
+Another version of the conversion script is 
+maintained at https://github.com/dumblob/mysql2sqlite
+It converts from a MySQL dump into a SQLite dump.
+```
+# Same as above for download and permission
+# Command is different
+cd /tmp
+chmod +x mysql2sqlite.sh
+./mysql2sqlite.sh raw_ | sqlite3 tradeflows.sqlite
+```
+
+## Importing from CSV into SQLite
+[How to output MySQl query result in CSV format ?](http://stackoverflow.com/questions/356578/how-to-output-mysql-query-results-in-csv-format)
+
+MySQL command to export CSV
+```
+select * from raw_flow_yearly into outfile '/tmp/raw_flow_yearly2.csv' fields terminated by ',' enclosed by '"' lines terminated by '\n';
+```
+Copy database structure.
+[SQLite datatypes](https://www.sqlite.org/datatype3.html) are called affinity.
+Since the csv file doesn't contain information 
+about the datatypes, I decided to copy the structure from MYSQL into SQLite and use that structure. 
+
+
+
+SQLite command to import CSV
+
+
+
+## Browse the newly created SQLite database 
 ```
 # Bash command to start sqlite
 sqlite3 tradeflows.sqlite3
