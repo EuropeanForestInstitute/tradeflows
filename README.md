@@ -31,7 +31,7 @@ desktop with the devtools package.
 library(devtools)
 install_github("EuropeanForestInstitute/tradeflows")
 # Optionally build vignettes containing tutorials:
-install_github("paul4forest/tradeflows", build_vignettes = TRUE)
+install_github("EuropeanForestInstitute/tradeflows", build_vignettes = TRUE)
 ```
 
 ## Input
