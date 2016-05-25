@@ -23,6 +23,7 @@ followed by a function name.
 For example enter `?loadcomtradebycode` at the command prompt to see
 the documentation for that function.
 
+R code in this document is not evaluated by default, to avoid loading data from the API on test systems and when building package Vignettes. Copy the code in an R session to evaluate it.
 
 ## Loading Comtrade data in 2 stages
 ### Stage 1 load from one reporting country 
@@ -31,7 +32,7 @@ Comtrade API documentation is available at http://comtrade.un.org/data/doc/api/
 The function `loadcomtradebycode()` loads a JSON file 
 from the comtrade API in a temporary directory and returns a dataframe.
 It loads trade flows between one reporting country (column `reporter`) and all its partner countries (column `partner`).
-```{r loadcomtradebycode, echo=TRUE, eval=TRUE}
+```{r loadcomtradebycode, echo=TRUE, eval=FALSE}
 library(tradeflows)
 library(dplyr)
 library(knitr) # Package to display nice tables
