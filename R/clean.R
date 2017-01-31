@@ -278,7 +278,7 @@ removeduplicatedflows <- function(dtf){
         # Remove duplicated columns in dtf
         return(anti_join(dtf, duplicatedflows,
                          by=c("reportercode", "partnercode", "productcode",
-                              "flow", "period")))
+                              "flow", "period", "lastchanged")))
     }
     return(dtf)
 }

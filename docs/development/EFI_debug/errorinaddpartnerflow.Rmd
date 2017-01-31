@@ -28,7 +28,6 @@ Execution halted
 
 # Reproduce error in addpartnerflow
 # Cleaning 444010
-
 ```{r eval=FALSE}
 # This product should work 440130
 cleandbproduct(440110,tableread = "raw_flow_yearly", tablewrite = "validated_flow_yearly")
@@ -38,7 +37,6 @@ dtf2 <- dtf %>% inner_join(select(findduplicatedflows(dtf),
 reportercode, partnercode,productcode, flow, period), 
 by=c("reportercode", "partnercode", "productcode", "flow", "period"))
 unique(dtf$year)
-
 ```
 
 
@@ -61,25 +59,30 @@ Error in addpartnerflow(.) : Remove duplicated entries before adding partner flo
 
 ```
 
+
 Duplicated flows in the raw table are considered a good thing, to keep a history of quantity modifications.
 But in the validated table, it is clear that there should be no duplicated flows.
 
-Until now, the procedure that dealt with duplicated flows removed them only if they were completely identical. When only one column differs, then both flows are kept.
+Until now, the procedure that dealt with duplicated flows removed them only if they were completely identical. When only one column differed, then both flows were kept.
 
-SQL query shows that there are duplicated flows in the row database
-for example the 440110 fuel wood trade flows between 
+For example this SQL query shows that there are duplicated flows in the row database
+for  the 440110 fuel wood trade flows between Japan and Indonesia
+
+
 ```
 SELECT * FROM tradeflows.raw_flow_yearly where productcode = 440110 and reporter = "Japan" and partner = "Indonesia" and period = 2014 ;
 ```
-Shows that there are 2 flows for Indonesia, one with timestamp 2015-08-10 16:50:02 and trade value 56793 and another one with timestamp 2016-10-21 22:22:32. and trade value 56715. Side note: fFlows have the same quantity and weight, but do not have the same trade value, probably reflecting an update in exchange rates at some point. 
 
 
- I vaggely remember saying this should be dealt with in the R code (not in PHP), by simply taking the flow with the most recent timestamp. So that's what I'll do here. 
+Shows that there are 2 flows for Indonesia, one with timestamp 2015-08-10 16:50:02 and trade value 56793 and another one with timestamp 2016-10-21 22:22:32. and trade value 56715. Side note: flows have the same quantity and weight, but do not have the same trade value, probably reflecting an update in exchange rates at some point.
 
-Wondering about these two which should have been removed
+
+Looking at the validated flow:
+
 ```
-SELECT * FROM tradeflows.raw_flow_yearly where productcode = 440110 and reporter = "France" and partner = "Germany" and period = 2014 ;
+SELECT * FROM tradeflows.validated_flow_yearly where productcode = 440110 and reporter = "Japan" and partner = "Indonesia" and period = 2014 ;
 ```
+It kept only the most recent trade value: 56715.
 
 
 # Cleaning 440130 works
