@@ -1,0 +1,90 @@
+---
+title: "Error in addpartnerflow"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tradeflows)
+library(knitr)
+opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+library(dplyr)
+sessionInfo()
+    ``` 
+
+# Simo's message 20161213
+I tried to clean products 440110, 440121, 440122, 440130 and 440131. Most have over 10000 rows in the database, only 440131 has about 8000 rows, so it seems to me it should not fail because of lack of data. Cleaning was successful only for 440130, all others failed with error
+
+Error in addpartnerflow(.) :
+  Remove duplicated entries before adding partner flows
+Calls: cleandbproduct ... freduce -> withVisible -> <Anonymous> -> addpartnerflow
+In addition: There were 20 warnings (use warnings() to see them)
+Execution halted
+
+
+# Reproduce error in addpartnerflow
+# Cleaning 444010
+
+```{r eval=FALSE}
+# This product should work 440130
+cleandbproduct(440110,tableread = "raw_flow_yearly", tablewrite = "validated_flow_yearly")
+
+# Code used inside the debugger in function addparnerflow() to see those duplicated flows
+dtf2 <- dtf %>% inner_join(select(findduplicatedflows(dtf), 
+reportercode, partnercode,productcode, flow, period), 
+by=c("reportercode", "partnercode", "productcode", "flow", "period"))
+unique(dtf$year)
+
+```
+
+
+```
+chr "raw_flow_yearly"
+NULL
+ chr "validated_flow_yearly"
+NULL
+Unsigned INTEGER in col 0 imported as numericUnsigned INTEGER in col 5 imported as numericUnsigned INTEGER in col 7 imported as numericUnsigned INTEGER in col 9 imported as numericUnsigned INTEGER in col 12 imported as numericUnsigned INTEGER in col 15 imported as numericUnsigned INTEGER in col 17 imported as numericUnsigned INTEGER in col 22 imported as numericUnsigned INTEGER in col 23 imported as numericunrecognized MySQL field type 7 in column 24 imported as characterUnsigned INTEGER in col 0 imported as numericUnsigned INTEGER in col 5 imported as numericUnsigned INTEGER in col 7 imported as numericUnsigned INTEGER in col 9 imported as numericUnsigned INTEGER in col 12 imported as numericUnsigned INTEGER in col 15 imported as numericUnsigned INTEGER in col 17 imported as numericUnsigned INTEGER in col 22 imported as numericUnsigned INTEGER in col 23 imported as numericunrecognized MySQL field type 7 in column 24 imported as characterThere were duplicated lines for the following re... <truncated>
+CanadaCroatiaCyprusCzechiaDenmarkEstoniaFinlandGermanyHungaryItalyJapanKazakhstanLatviaLuxembourgMontenegroNetherlandsNorwayPortugalSlovakiaSloveniaSwedenTurkeyUSAFranceIreland
+Auto-disconnecting mysql connection (0, 5)
+There were duplicated lines for the following reporters:
+14716 rows in the dataset
+3 rows where quantity was not available but weight was available
+Using a conversion factor to estimate quantity from weight changed world exports by 0.00034 % and world imports by 0 %  (positive values imply an increase).
+227 rows where neither quantity nor weight were available
+Using a unit price to estimate quantity from weight changed world exports by 0.6 % and world imports by 0.042 %  (positive values imply an increase).
+ Show Traceback
+Error in addpartnerflow(.) : Remove duplicated entries before adding partner flows
+
+```
+
+Duplicated flows in the raw table are considered a good thing, to keep a history of quantity modifications.
+But in the validated table, it is clear that there should be no duplicated flows.
+
+Until now, the procedure that dealt with duplicated flows removed them only if they were completely identical. When only one column differs, then both flows are kept.
+
+SQL query shows that there are duplicated flows in the row database
+for example the 440110 fuel wood trade flows between 
+```
+SELECT * FROM tradeflows.raw_flow_yearly where productcode = 440110 and reporter = "Japan" and partner = "Indonesia" and period = 2014 ;
+```
+Shows that there are 2 flows for Indonesia, one with timestamp 2015-08-10 16:50:02 and trade value 56793 and another one with timestamp 2016-10-21 22:22:32. and trade value 56715. Side note: fFlows have the same quantity and weight, but do not have the same trade value, probably reflecting an update in exchange rates at some point. 
+
+
+ I vaggely remember saying this should be dealt with in the R code (not in PHP), by simply taking the flow with the most recent timestamp. So that's what I'll do here. 
+
+Wondering about these two which should have been removed
+```
+SELECT * FROM tradeflows.raw_flow_yearly where productcode = 440110 and reporter = "France" and partner = "Germany" and period = 2014 ;
+```
+
+
+# Cleaning 440130 works
+
+```{r}
+# This product should work 440130
+cleandbproduct(440130,tableread = "raw_flow_yearly", tablewrite = "validated_flow_yearly")
+```

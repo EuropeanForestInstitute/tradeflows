@@ -250,6 +250,9 @@ changecolumntype <- function(dtf){
 #'  tests for duplicated reportercode, partnercode, productcode, flow, period
 #' @export
 findduplicatedflows <- function(dtf){
+    # Arrange by descending order of last change
+    # So that the duplicates returned by this function are the old ones
+    dtf <- dtf %>% arrange(desc(lastchanged))
     # This checks only the selected columns in dtf
     dtf$duplicate <- duplicated(select(dtf, reportercode, partnercode,
                                        productcode, flow, period))
@@ -272,8 +275,10 @@ removeduplicatedflows <- function(dtf){
     if(nrow(duplicatedflows)>0){
         message("There were duplicated lines for the following reporters:")
         message(unique(duplicatedflows$reporter))
-        # This checks for all columns in dtf
-        return(unique(dtf))
+        # Remove duplicated columns in dtf
+        return(anti_join(dtf, duplicatedflows,
+                         by=c("reportercode", "partnercode", "productcode",
+                              "flow", "period")))
     }
     return(dtf)
 }
