@@ -27,18 +27,20 @@ Execution halted
 
 
 # Reproduce error in addpartnerflow
+
 # Cleaning 444010
 ```{r eval=FALSE}
-# This product should work 440130
 cleandbproduct(440110,tableread = "raw_flow_yearly", tablewrite = "validated_flow_yearly")
 
 # Code used inside the debugger in function addparnerflow() to see those duplicated flows
-dtf2 <- dtf %>% inner_join(select(findduplicatedflows(dtf), 
-reportercode, partnercode,productcode, flow, period), 
-by=c("reportercode", "partnercode", "productcode", "flow", "period"))
-unique(dtf$year)
+# dtf2 <- dtf %>% inner_join(select(findduplicatedflows(dtf), 
+# reportercode, partnercode,productcode, flow, period), 
+# by=c("reportercode", "partnercode", "productcode", "flow", "period"))
+# unique(dtf$year)
 ```
 
+
+Errors while cleaning
 
 ```
 chr "raw_flow_yearly"
@@ -91,3 +93,17 @@ It kept only the most recent trade value: 56715.
 # This product should work 440130
 cleandbproduct(440130,tableread = "raw_flow_yearly", tablewrite = "validated_flow_yearly")
 ```
+
+
+# Nature of the lastchanged column
+That column is an INT(10) in MySQL. 
+It looks like a POSIX time.
+```{r loadswddata, message=FALSE, warning=FALSE}
+swd99 <- readdbproduct(440799, "raw_flow_yearly")
+```
+
+```{r lastchanged}
+as.POSIXct(swd99$lastchanged[1],origin = "1970-01-01")
+swd99$timeinfo[1]
+```
+
