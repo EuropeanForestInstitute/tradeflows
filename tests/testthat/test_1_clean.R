@@ -33,7 +33,8 @@ dummytf <- data_frame(reporter = letters[1:6],
                       quantity = rlnorm(6,7,3),
                       weight = rlnorm(6,11,3),
                       unit = "m3",
-                      year = 2013) %>%
+                      year = 2013,
+                      lastchanged = 1481435872+1:6) %>%
     addconversionfactorandprice()
 
 # Compare to real data
@@ -122,7 +123,8 @@ mockflows <- data_frame(productcode = c(440349, 440349, 440349, 440349),
                         price = c(NA, NA, NA, NA),
                         lowerprice = c(321, 229, 321, 229),
                         medianprice = c(465, 965, 465, 965),
-                        upperprice = c(1139, 1939, 1139, 1939))
+                        upperprice = c(1139, 1939, 1139, 1939),
+                        lastchanged = 1481435872 + 1:4)
 
 
 test_that("chosereporterorpartner keeps NA values in the standard deviation of prices",{
