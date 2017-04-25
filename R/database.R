@@ -61,6 +61,7 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
                     paste(missingcolumns, collapse=", "))
         }
     }
+    RMySQL::dbDisconnect(DBread)
 }
 
 
@@ -153,6 +154,7 @@ deletedbproduct <- function(productcode, tabledelete){
     nbrowsdeleted <- RMySQL::dbGetRowsAffected(res)
     message(nbrowsdeleted," rows were deleted.")
     RMySQL::dbClearResult(res)
+    dbDisconnect(DBwrite)
     return(nbrowsdeleted)
 }
 
@@ -230,6 +232,7 @@ if (FALSE){
     dbGetQuery(DBwrite,"set names utf8")
     res <- dbSendQuery(DBwrite,"show variables like 'character_set_%'")
     dbFetch(res)
+    dbDisconnect(DBwrite)
 
     # Can the same be done with a dplyr connection?
     db <- getOption("tradeflowsDB")
