@@ -27,9 +27,9 @@ The default .sql file is storred in the package configuration folder.
 }
 \examples{
 # Load new database structures in the test database
-# (1) Load a database structure designed to contain raw data
+# Load a database structure designed to contain raw data
 createdbstructure(sqlfile = "raw_comext.sql", dbname = "test")
-# (2) Load a database structure designed to contain validated data
+# Load a database structure designed to contain validated data
 createdbstructure(sqlfile = "val_comext.sql", dbname = "test")
 }
 

@@ -9,9 +9,9 @@
 #' transfer the database structure
 #' @examples
 #' # Load new database structures in the test database
-#' # (1) Load a database structure designed to contain raw data
+#' # Load a database structure designed to contain raw data
 #' createdbstructure(sqlfile = "raw_comext.sql", dbname = "test")
-#' # (2) Load a database structure designed to contain validated data
+#' # Load a database structure designed to contain validated data
 #' createdbstructure(sqlfile = "val_comext.sql", dbname = "test")
 #' @export
 createdbstructure <- function(sqlfile,
@@ -36,8 +36,11 @@ createdbstructure <- function(sqlfile,
     } else { # Load sqlfile into the database
         tryCatch({
             message("Loading table definitions from:\n", sqlfile,
-                    "\ninto the ", dbname, " database.")
+                    "\ninto the `", dbname, "` database.")
             system(sprintf("cat '%s' | mysql %s", sqlfile, dbname), intern = TRUE)
+            # Display the names of created tables
+            createtables <- gsub("\\(","",grep("CREATE TABLE",readLines(sqlfile),value=TRUE))
+            message(paste(createtables, collapse = "\n"))
         # In case of error or warning, print additional message
         }, error = function(errorcondition){
             message(toString(errorcondition), "\n", mysqlconfigmessage)

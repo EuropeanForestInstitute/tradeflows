@@ -28,10 +28,9 @@ Examples and demonstration:
 This R package can be installed on a server or
 desktop with the devtools package.
 ```
-library(devtools)
-install_github("EuropeanForestInstitute/tradeflows")
+devtools::install_github("EuropeanForestInstitute/tradeflows")
 # Optionally build vignettes containing tutorials:
-install_github("EuropeanForestInstitute/tradeflows", build_vignettes = TRUE)
+devtools::install_github("EuropeanForestInstitute/tradeflows", build_vignettes = TRUE)
 ```
 
 ## Input
