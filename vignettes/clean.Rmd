@@ -17,17 +17,10 @@ devtools::build_vignettes()
 # integrated to the package documentation
 ```
 
-Function documentation can be accessed at the R 
-command line by entering a question mark "?"
+Function documentation can be accessed at the R command line by entering a question mark "?"
 followed by a function name. 
-For example enter `?clean` at the command prompt to see
-the documentation for that function.
+For example enter `?clean` at the command prompt to see the documentation for that function.
 
-
-## Refining trade flows data from a file
-```{r eval=FALSE}
-
-```
 
 
 
@@ -38,11 +31,25 @@ The methodology report explains the data
 refining process in details.
 The source code of the `clean()` fonction gives details on the implementation of the data refining workflow.
 ```{r eval=FALSE}
+library(tradeflows)
 ?clean # View help for this function
-sawnwood99_raw <- readdbproduct(440799, "raw_flow_yearly")
-sawnwood99_validated <- clean(sawnwood99_raw)
 
-# Those 2 functions together in one go
+# Here are the steps performed when cleaning data from the database 
+# (more convenient function further below)
+# Read a data frame from the database
+sawnwood99_raw <- readdbproduct(440799, "raw_flow_yearly")
+# Clean the data frame
+sawnwood99_validated <- clean(sawnwood99_raw)
+# Select columns to write to the database
+columnswrite <- tradeflows::column_names$efi[column_names[,"validated_flow_yearly"]]
+columnswrite <- columnswrite[!columnswrite == "lastchanged"]
+sawnwood99_validated <- sawnwood99_validated %>% select_(.dots = columnswrite)
+# Delete product from the validated table 
+deletedbproduct(440799, "validated_flow_yearly")
+# Write the data frame to the database
+writedbproduct(sawnwood99_validated, "validated_flow_yearly")
+
+# Those functions together in one go
 cleandbproduct(440799, "raw_flow_yearly", "validated_flow_yearly")
 ```
 

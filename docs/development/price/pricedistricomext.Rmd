@@ -1,0 +1,97 @@
+---
+title: "Price distribution"
+author: "Paul Rougieux"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  html_document:
+    toc: yes
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE, warning=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+
+```{r loadcomextdata}
+dtf <- readdbtbl("raw_comext_monthly_201707") 
+# All columns are numeric
+dtf %>% head() %>% collect() %>% str()
+productcodes44 <- dtf %>% 
+    select(pc = productcode) %>% 
+    distinct() %>% 
+    filter(round(pc / 1000000,0) == 44) %>% # explain() 
+    collect()
+```
+
+
+# Plot changes of price distribution
+[Stackoverflow question](https://stackoverflow.com/questions/45299043/how-to-reproduce-this-moving-distribution-plot-with-r?noredirect=1#comment77562559_45299043)
+
+## UK import prices 
+
+### Most recent data
+```{r}
+# REPORTER.txt
+# 006	01/01/1976	31/12/2500	Utd. Kingdom
+# FLOW : =1 for import =2 for export
+ukimportprices44 <- dtf %>% 
+    mutate(pc = productcode, 
+           price = tradevalue / weight) %>% 
+    filter(round(pc / 1000000,0) == 44 & 
+               reportercode == 6 &
+               flowcode == 1) %>% 
+    # explain() 
+    collect()
+unique(ukimportprices44$period)
+ukimportprices44 <- ukimportprices44 %>% 
+    mutate(period = factor(period, levels = rev(unique(period))),
+           eu = partnercode %in% # very approximate quick and dirty EU list
+               # based on a quick glance at PARTNERS.txt
+               c(1, 2, 3, 4, 4, 5, 5, 6, 7, 8, 9, 10, 11, 11, 17, 18, 19, 21, 
+                 21, 22, 23, 24, 25, 27, 28, 28, 28, 30, 32, 36, 37, 38, 39, 40, 
+                 41, 42, 43, 44, 45, 46, 47, 48, 48, 50, 52, 53, 53, 54, 54, 55))
+summary(ukimportprices44$price)
+# Histogram
+hist(ukimportprices44$price)
+library(ggjoy)
+ggplot(ukimportprices44,
+       aes(x = price, y = period, fill = eu)) +
+        geom_joy(scale = 2, alpha = .5, rel_min_height = 0.01) + 
+    xlim(c(0,5)) + theme_minimal()
+    theme_joy() #+ 
+    # scale_y_discrete(breaks=c(2001,2005,2010))
+```
+
+
+Prices outside the range
+```{r}
+ukimportprices44 %>% 
+    filter(price > 1000) %>% 
+    distinct(partnercode) 
+```
+Plot along product code
+```{r}
+# Add 4 digit product code
+ukimportprices44 <- ukimportprices44 %>% 
+    mutate(productcode4d = productcode %/% 1e4)
+ggplot(ukimportprices44,
+       aes(x = price, y = as.factor(productcode4d), fill = eu)) +
+        geom_joy(scale = 2, alpha = .5, rel_min_height = 0.01) + 
+    xlim(c(0,5)) + theme_joy() + theme_minimal() +
+    xlab("Price in 1000 €/ T")
+```
+
+
+### Archive data
+```{r}
+
+```
+

@@ -791,7 +791,7 @@ cleandbproduct <- function(productcode, tableread, tablewrite, ...){
     # Remove column names added by the merge with price and conversionfactor tables
     # Keep only column names in the final table validated_flow
     # This is usefull for database output
-    columnswrite <- column_names$efi[column_names[,tablewrite]]
+    columnswrite <- tradeflows::column_names$efi[column_names[,tablewrite]]
     # Add or remove colum names here if needed
     # Remove lastchanged because is in the database
     # raw_flow table but we want the database to compute it again

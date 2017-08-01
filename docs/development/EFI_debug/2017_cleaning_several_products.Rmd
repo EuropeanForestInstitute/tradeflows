@@ -1,0 +1,53 @@
+---
+title: "2017 cleaning several products"
+author: "Paul Rougieux"
+date: "25 April 2017"
+output: html_document
+---
+
+
+# Cleaning several products 
+
+```{r}
+
+# Cleaning only one product "other sawnwood" 440799
+# cleandbproduct(440799, "raw_flow_yearly", "validated_flow_yearly")
+
+library(tradeflows)
+library(dplyr)
+# Get a list of sawnwood product codes that start with 4407
+swd <- readdbtbl("raw_flow_yearly") %>% 
+    distinct(productcode) %>% 
+    collect() %>% 
+    filter(grepl("4407", productcode)) 
+
+
+# Clean all products in the sawnwood list
+if(FALSE){
+    purrr::walk(swd$productcode, cleandbproduct,"raw_flow_yearly", "validated_flow_yearly")
+}
+
+```
+
+
+# Which products are in the database?
+```{r}
+# Columnd names
+readdbtbl("raw_flow_yearly") %>% head() %>% collect() %>% names()
+
+
+# Last changed for each product
+lcp <- readdbtbl("raw_flow_yearly") %>% 
+    group_by(productcode) %>% 
+    summarise(lastchanged = max(lastchanged),
+              timeinfo = max(timeinfo)) %>% 
+    collect() 
+lcp <- lcp %>% 
+    mutate(lastchanged3 = as.POSIXct(lastchanged, origin="1970-01-01"))  
+
+
+
+```
+
+
+# What are the latest 
