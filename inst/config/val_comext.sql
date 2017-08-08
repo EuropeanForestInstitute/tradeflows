@@ -1,10 +1,8 @@
 -- Database structure of the validated comext data
 --
 -- To load this table in the database, use the R function:
---     tradeflows::createdbstructure()
+--     tradeflows::createdbstructure(sqlfile = "val_comext.sql", dbname = "test")
 --
-
-
 
 --
 -- Table structure for table `val_comext_cn`

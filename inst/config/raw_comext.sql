@@ -2,7 +2,7 @@
 -- MySQL table structure for the Comext raw data
 --
 -- To load this table in the database, use the R function:
---     tradeharvester::createdbstructure()
+--     tradeflows::createdbstructure(sqlfile = "raw_comext.sql", dbname = "test")
 --
 -- Loading this structure will erase all data in
 -- raw_comext_cn, raw_comext_monthly, etc... tables defined below,
