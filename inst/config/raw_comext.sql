@@ -77,7 +77,11 @@ CREATE TABLE `raw_comext_monthly` (
   `tradevalue` double DEFAULT NULL,
   `weight` double DEFAULT NULL,
   `quantity` int DEFAULT NULL,
+  KEY `reportercode` (`reportercode`)
+  KEY `partnercode` (`partnercode`)
   KEY `productcode` (`productcode`)
+  KEY `flowcode` (`flowcode`)
+  KEY `period` (`period`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -95,6 +99,10 @@ CREATE TABLE `raw_comext_yearly` (
   `tradevalue` double DEFAULT NULL,
   `weight` double DEFAULT NULL,
   `quantity` int DEFAULT NULL,
+  KEY `reportercode` (`reportercode`)
+  KEY `partnercode` (`partnercode`)
   KEY `productcode` (`productcode`)
+  KEY `flowcode` (`flowcode`)
+  KEY `period` (`period`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
