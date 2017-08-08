@@ -5,7 +5,7 @@ output:
     toc : true
 ---
 
-[![Travis](https://api.travis-ci.org/paul4forest/tradeflows.svg?branch=master)](https://travis-ci.org/paul4forest/tradeflows)
+[![Travis](https://api.travis-ci.org/paulrougieux/tradeflows.svg?branch=master)](https://travis-ci.org/paulrougieux/tradeflows)
 
 This R package prepares data for a forest products trade flow database.
 It contains functions that automatically grab data from the 
