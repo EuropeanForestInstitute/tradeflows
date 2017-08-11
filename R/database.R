@@ -44,6 +44,7 @@ createdbstructure <- function(sqlfile,
         # In case of error or warning, print additional message
         }, error = function(errorcondition){
             message(toString(errorcondition), "\n", mysqlconfigmessage)
+            stop(errorcondition)
         }, warning = function(warningcondition){
             message(toString(warningcondition), "\n", mysqlconfigmessage)
         }
@@ -185,7 +186,7 @@ writedbproduct <- function(dtf, tablewrite){
                                  password=db["password"], dbname=db["dbname"])
     dtf <- data.frame(dtf)
     result <- RMySQL::dbWriteTable(DBwrite, name = tablewrite,
-                           value=dtf, append=TRUE, row.names = FALSE)
+                                   value=dtf, append=TRUE, row.names = FALSE)
     RMySQL::dbDisconnect(DBwrite)
     return(result)
 }
@@ -226,7 +227,11 @@ nrowinDB <- function(tableread){
 }
 
 
-#' Create a dplyr connector to MySQL
+#' [Deprecated] Create a dplyr connector to MySQL
+#' @description
+#' \code{readdbtbl} is deprecated, use \code{dplyr::\link{tbl}} instead.
+#' See example below.
+#' @details [Deprecated] Old description
 #'
 #' Return a dplyr tbl object for the given MySQL database table
 #' tbl objects allow lazy operations. See src_mysql.
@@ -237,6 +242,11 @@ nrowinDB <- function(tableread){
 #' @return a dplyr tbl object
 #' @examples
 #'\dontrun{
+#' # From 2017 onwards, use
+#' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+#' prod <- tbl(con, "raw_comext_cn")
+#' RMySQL::dbDisconnect(con)
+#' # Deprecated, before 2017
 #' readdbtbl("raw_flow_yearly") %>%
 #'     group_by(productcode) %>%
 #'     summarise(nrow = n()) %>%
@@ -245,6 +255,10 @@ nrowinDB <- function(tableread){
 #' }
 #' @export
 readdbtbl <- function(tableread){
+    .Deprecated(new = "tbl", package = "dplyr",
+                msg = "'readdbtbl' is deprecated. Use 'tbl' instead.
+see example use in help('readdbtbl')
+and a list of deprecated functions in help('tradeflows-deprecated')")
     setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
     DBread <- src_mysql(user=db["user"], host=db["host"],

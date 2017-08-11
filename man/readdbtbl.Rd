@@ -2,7 +2,7 @@
 % Please edit documentation in R/database.R
 \name{readdbtbl}
 \alias{readdbtbl}
-\title{Create a dplyr connector to MySQL}
+\title{[Deprecated] Create a dplyr connector to MySQL}
 \usage{
 readdbtbl(tableread)
 }
@@ -13,6 +13,12 @@ readdbtbl(tableread)
 a dplyr tbl object
 }
 \description{
+\code{readdbtbl} is deprecated, use \code{dplyr::\link{tbl}} instead.
+See example below.
+}
+\details{
+[Deprecated] Old description
+
 Return a dplyr tbl object for the given MySQL database table
 tbl objects allow lazy operations. See src_mysql.
 The issue is that 2 table objects created with this function will
@@ -21,6 +27,11 @@ Therefore they will not be available for a merge within the database.
 }
 \examples{
 \dontrun{
+# From 2017 onwards, use
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+prod <- tbl(con, "raw_comext_cn")
+RMySQL::dbDisconnect(con)
+# Deprecated, before 2017
 readdbtbl("raw_flow_yearly") \%>\%
     group_by(productcode) \%>\%
     summarise(nrow = n()) \%>\%
