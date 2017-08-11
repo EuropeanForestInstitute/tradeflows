@@ -1,0 +1,78 @@
+---
+title: "Extract unique product codes"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, echo=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+``` 
+
+
+# Load all codes in a data frame
+```{r loadproductsfromdb}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+if(FALSE){ # If codes are not present, transfer them
+    tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
+}
+# Load all products in a dataframe
+allproducts <- tbl(con, "raw_comext_cn") %>% collect()
+RMySQL::dbDisconnect(con)
+
+# Keep wood products only
+wp <- allproducts %>% 
+    filter(grepl("^44|^94", productcode))
+
+# For information regexp filtering is also possible with a SQL statement, 
+# see for example 
+# https://stackoverflow.com/questions/15687136/logical-and-operator-in-mysql-regexp
+# and MySQL regexp documentation
+# https://dev.mysql.com/doc/refman/5.5/en/regexp.html
+
+# Why are dates read as character vectors?
+
+```
+
+
+# Are recent product codes unique?
+```{r search4uniquecodes}
+# A data frame to view in the data explorer
+wpdates <- wp %>% 
+    group_by(productcode) %>% 
+    summarise(maxdatestart = max(datestart),
+              datestart = paste(datestart, collapse=", "), 
+              dateend = paste(dateend, collapse = ", "),
+              # keep only distinct product description
+              productdescription = paste(unique(productdescription), collapse = ", "),
+              n = n()) %>% 
+    arrange(desc(n))
+
+# Wood products repeated
+# Keep only the most recent datestart, which still appears more than once
+wprep <- wp %>% 
+    group_by(productcode) %>% 
+    filter(datestart == max(datestart)) %>% 
+    summarise(datestart = paste(datestart, collapse=", "), 
+              dateend = paste(dateend, collapse = ", "),
+              # keep only distinct product description
+              productdescription = paste(unique(productdescription), collapse = ", "),
+              n = n()) %>% 
+    arrange(desc(n)) %>% 
+    filter(n>1) 
+wprep %>% kable()
+
+# It seems these lines contain identical information
+# In other words, distinct rows for all columns
+nrow(unique(wprep)) 
+# should be equal to distinct product codes
+length(unique(wprep$productcode))
+# This can be tested with 
+stopifnot(identical(nrow(unique(wprep)), length(unique(wprep$productcode))))    
+```
+

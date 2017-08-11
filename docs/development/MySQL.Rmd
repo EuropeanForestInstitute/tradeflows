@@ -8,9 +8,10 @@ output:
 ---
 
 
-```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../..") # file paths are relative to the root of the project directory
+opts_knit$set(eval = FALSE)
 library(tradeflows)
 library(dplyr)
 library(RMySQL)
@@ -48,7 +49,7 @@ cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows
 
 checkdbcolumns(c("validated_flow_yearly"))
 # Connect to db
-setdatabaseconfig(message=FALSE)
+setdatabaseconfig(silent = FALSE)
 db <- getOption("tradeflowsDB")
 DBwrite <- dbConnect(MySQL(), user=db["user"], host=db["host"],
                      password=db["password"], dbname=db["dbname"])
@@ -191,6 +192,17 @@ charcoal90 <- loadrawdata(440290)
 ### Write data
 ```{r database.R}
 
+```
+
+
+# Data types
+Data types are infered from the function `dbDataType`, for example
+```{r datatypes, eval=TRUE}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+RMySQL::dbDataType(con, 1)
+RMySQL::dbDataType(con, 1L)
+RMySQL::dbDataType(con, Sys.Date())
+RMySQL::dbDisconnect(con)
 ```
 
 

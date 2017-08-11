@@ -5,7 +5,7 @@ output:
     toc: true
 ---
 
-```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
+```{r setup, message=FALSE, warning=FALSE, echo=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 library(tradeflows)
@@ -41,10 +41,12 @@ Do you have any idea of the time frame at which these eurostat urls change?
 ```{r download, eval=FALSE}
 # The problem is that the directory name changes through time. 
 # Last time downloaded data I used this URL (difference highlighted)
-download.file(paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&downfile=comext%2F2015S1%2Fdata%2F",bulkfile), 
-              destfile = paste0("data-raw/",bulkfile))
+if(FALSE){
+    download.file(paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&downfile=comext%2F2015S1%2Fdata%2F",bulkfile), 
+                  destfile = paste0("data-raw/",bulkfile))
+}
 # The previous url doesn't work anymore, now I have to use this one:
-comexturl <- paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2F201706%2Fdata%2Fnc", year, month,".7z")
+comexturl <- paste0("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=comext%2F201707%2Fdata%2Fnc", year, month,".7z")
 
 # I going through the various Comext instructions trying to find out.
 # Do you have any idea of the time frame at which these eurostat urls change?

@@ -2,11 +2,11 @@
 title: "Price distribution"
 author: "Paul Rougieux"
 output:
+  html_document:
+    toc: yes
   pdf_document:
     toc: yes
     toc_depth: 3
-  html_document:
-    toc: yes
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}

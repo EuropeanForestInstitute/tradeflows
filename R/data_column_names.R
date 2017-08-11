@@ -3,7 +3,6 @@
 #' A match table between the column names of
 #' different trade data sources.
 #'
-#'
 #' @section Data sources:
 #'
 #' \itemize{
