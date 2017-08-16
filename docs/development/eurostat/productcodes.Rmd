@@ -17,8 +17,13 @@ library(tidyr)
 
 # Load all codes in a data frame
 ```{r loadproductsfromdb}
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 if(FALSE){ # If codes are not present, transfer them
+    # create emtpty database structure for raw codes
+    createdbstructure(sqlfile = 'raw_comext.sql', dbname = 'test')
+    # create empty database structure for validated codes
+    createdbstructure(sqlfile = 'val_comext.sql', dbname = 'test')
+    # transfer raw codes
     tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 }
 # Load all products in a dataframe
@@ -75,4 +80,78 @@ length(unique(wprep$productcode))
 # This can be tested with 
 stopifnot(identical(nrow(unique(wprep)), length(unique(wprep$productcode))))    
 ```
+
+ 
+# Are datestart2 and dateend2 allways identicall to datestart and dateend?
+```{r}
+summary(allproducts$datestart == allproducts$datestart2)
+summary(allproducts$dateend == allproducts$dateend2)
+diffdates <- allproducts %>% 
+    filter(datestart != datestart2 |
+           dateend != dateend2)
+```
+No there are 8 rows in which this is not the case.
+
+
+# cleancodes function debugging
+```{r eval=FALSE}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+inputfields <- RMySQL::dbListFields(con,"raw_comext_cn")
+outputfields <- RMySQL::dbListFields(con,"val_comext_cn")
+# validated fields should exist in the raw table
+stopifnot(outputfields %in% inputfields)
+
+# clean products:
+cleancode(con, "raw_comext_cn", "val_comext_cn", productcode)
+# returns the error
+# Error: identical(nrow(unique(dtf)), nrow(distinct(dtf, !(!codevariable)))) is not TRUE
+
+# Load all products in a dataframe
+allproducts <- tbl(con, "raw_comext_cn") %>% collect()
+RMySQL::dbDisconnect(con)
+
+
+# Select output fields
+allproducts %>% select(outputfields)
+allproducts[outputfields]
+
+dtf <- allproducts %>% 
+    group_by(productcode) %>%
+    filter(datestart == max(datestart))
+stopifnot(identical(nrow(unique(dtf)),
+                    nrow(distinct(dtf, productcode))))
+# difference
+nrow(unique(dtf)) - nrow(distinct(dtf, productcode))
+
+# What are those duplicated rows?
+dtf_c <- dtf %>%  
+    group_by(productcode) %>% 
+    mutate(n = n()) %>% 
+    arrange(desc(n)) %>% 
+    filter(n>2)
+dtf_c_u <- unique(dtf_c)
+length(unique(dtf_c_u$productcode))
+
+dtf_cd <- dtf %>%  
+    group_by(productcode, productdescription) %>% 
+    mutate(n = n()) %>% 
+    arrange(desc(n)) %>% 
+    filter(n>2)
+dtf_cd_u <- unique(dtf_cd)
+length(unique(dtf_cd_u$productcode))
+
+dtf_cdse <- dtf %>%  
+    group_by(productcode, productdescription, datestart, dateend) %>% 
+    mutate(n = n()) %>% 
+    arrange(desc(n)) %>% 
+    filter(n>2)
+dtf_cd_u <- unique(dtf_cd)
+length(unique(dtf_cd_u$productcode))
+```
+
+
+# Conclusions
+cleancodes should first create the database structure.
+The cleancode function should check which columns are present in the validated
+table and select only these ones. 
 

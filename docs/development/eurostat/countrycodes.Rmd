@@ -1,0 +1,34 @@
+---
+title: "Extract unique country codes"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, echo=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+``` 
+
+
+# Load all codes in a data frame
+```{r loadproductsfromdb}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+if(FALSE){ # If raw codes are not present, transfer them
+    tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
+}
+
+```
+
+
+
+# Clean all codes, using the function
+```{r}
+
+
+```
+

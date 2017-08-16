@@ -17,7 +17,8 @@
 createdbstructure <- function(sqlfile,
                               dbname = "tradeflows",
                               sqlfolder = system.file("config", package="tradeflows", mustWork = TRUE),
-                              messageonly = FALSE){
+                              messageonly = FALSE,
+                              verbose = TRUE){
     sqlfile <- file.path(sqlfolder, sqlfile)
     mysqlconfigmessage <-
     "In case of access denied try to edit the mysql configuration file in ~/.my.cnf, it should contain
@@ -35,12 +36,14 @@ createdbstructure <- function(sqlfile,
         return()
     } else { # Load sqlfile into the database
         tryCatch({
-            message("Loading table definitions from:\n", sqlfile,
-                    "\ninto the `", dbname, "` database.")
+            if(verbose){
+                message("Loading table definitions from:\n", sqlfile,
+                        "\ninto the `", dbname, "` database.")
+            }
             system(sprintf("cat '%s' | mysql %s", sqlfile, dbname), intern = TRUE)
             # Display the names of created tables
             createtables <- gsub("\\(","",grep("CREATE TABLE",readLines(sqlfile),value=TRUE))
-            message(paste(createtables, collapse = "\n"))
+            if(verbose){message(paste(createtables, collapse = "\n"))}
         # In case of error or warning, print additional message
         }, error = function(errorcondition){
             message(toString(errorcondition), "\n", mysqlconfigmessage)

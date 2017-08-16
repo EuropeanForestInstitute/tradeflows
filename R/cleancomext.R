@@ -9,16 +9,22 @@
 #' @return TRUE on success
 #' The output is actually a database table containing the cleaned codes.
 #' @examples \dontrun{
+#' # Connect to the database
 #' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
-#' # Write dummy codes to the database
+#' # Write dummy codes to the database table "raw_code"
 #' raw_code <- data.frame(code = c(4L, 4L), datestart = c(1L, 2L))
 #' RMySQL::dbWriteTable(con, "raw_code", raw_code, row.names = FALSE, overwrite = TRUE)
-#' # Clean them
+#' # Clean the codes and write them to the database table "val_code" (for validated code)
 #' cleancode(con, tableread = "raw_code", tablewrite = "val_code", codevariable = "code")
+#'
+#' # Comext codes
+#' if(FALSE){ # If raw codes are not present, transfer them
+#' tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
+#' }
 #' # Clean real comext codes
-#'
-#'
-#' on.exit(RMySQL::dbDisconnect(con))
+#' cleanallcomextcodes(con)
+#' # Disconnect from the database
+#' RMySQL::dbDisconnect(con)
 #' }
 #' @export
 cleancode <- function(RMySQLcon, tableread, tablewrite, codevariable){
@@ -26,11 +32,38 @@ cleancode <- function(RMySQLcon, tableread, tablewrite, codevariable){
     # Implementation based on the "programming with dplyr" vignette
     # https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html
     codevariable <- enquo(codevariable)
-    # Load data and keep only most recent codes
+
+    # Check if output fields are in input fields
+    inputfields <- RMySQL::dbListFields(RMySQLcon, tableread)
+    outputfields <- RMySQL::dbListFields(RMySQLcon, tablewrite)
+    stopifnot(outputfields %in% inputfields)
+
+    # This function cannot use  RMySQL::dbWriteTable with overwrite = TRUE
+    # because this would also overwrites the field types and indexes.
+    # dbWriteTable chooses default types that are not optimal,
+    # for example, it changes date fields to text fields.
+    # Therefore use RMySQL::dbWriteTable with append = TRUE,
+    # but first check if the table is empty
+    # and if it is not empty, ask to recreate the database
+    # structure with empty tables.
+    res <- RMySQL::dbSendQuery(RMySQLcon, sprintf("SELECT COUNT(*) as nrow FROM %s;",tablewrite))
+    sqltable <- RMySQL::dbFetch(res)
+    RMySQL::dbClearResult(res)
+    # Check if the output table is empty
+    if(sqltable$nrow > 0){
+        stop("Table ", tablewrite, " is not empty.",
+             "You can recreate an empty table structure with:\n",
+             sprintf("tradeflows::createdbstructure(sqlfile = 'raw_comext.sql', dbname = '%s')",
+                     RMySQL::dbGetInfo(RMySQLcon)$dbname))
+    }
+
+
+    # load all codes and keep only most recent codes
     dtf <- tbl(RMySQLcon, tableread) %>%
         collect() %>%
         group_by(!!codevariable) %>%
-        filter(datestart == max(datestart))
+        filter(datestart == max(datestart)) %>%
+        select(outputfields)
     # The number of distinct rows for all columns should be equal to
     # the number of distinct codes
     stopifnot(identical(nrow(unique(dtf)),
@@ -38,5 +71,21 @@ cleancode <- function(RMySQLcon, tableread, tablewrite, codevariable){
     # Remove duplicates
     dtf <- unique(dtf)
     # Write back to the database
-    RMySQL::dbWriteTable(RMySQLcon, tablewrite, dtf, row.names = FALSE, overwrite = TRUE)
+    RMySQL::dbWriteTable(RMySQLcon, tablewrite, dtf,
+                         row.names = FALSE, append = TRUE)
+}
+
+
+
+#' @description \code{cleanallcomextcodes} extracts unique product
+#' and country codes from the Comext raw data so that they are ready for use
+#' as unique keys.
+#' It is a porcelaine function based on the plumbing function \code{cleancode}.
+#'
+#' @rdname cleancode
+#' @export
+cleanallcomextcodes <- function(RMySQLcon){
+    cleancode(RMySQLcon, "raw_comext_cn", "val_comext_cn", productcode)
+
+
 }
