@@ -103,12 +103,12 @@ No there are 8 rows in which this is not the case.
 ```{r eval=FALSE}
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 inputfields <- RMySQL::dbListFields(con,"raw_comext_product")
-outputfields <- RMySQL::dbListFields(con,"val_comext_cn")
+outputfields <- RMySQL::dbListFields(con,"val_comext_product")
 # validated fields should exist in the raw table
 stopifnot(outputfields %in% inputfields)
 
 # clean products:
-cleancode(con, "raw_comext_product", "val_comext_cn", productcode)
+cleancode(con, "raw_comext_product", "val_comext_product", productcode)
 # inside that function, dtf has 21833 rows, this is the number of most recent codes
 # returns the error
 # Error: identical(nrow(unique(dtf)), nrow(distinct(dtf, !(!codevariable)))) is not TRUE
@@ -173,7 +173,7 @@ dtf_c_u$productdescription[1:5]
 # See steps above to recreate the database if needed
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
 
-cleancode(con, "raw_comext_product", "val_comext_cn", productcode)
+cleancode(con, "raw_comext_product", "val_comext_product", productcode)
 
 RMySQL::dbDisconnect(con)
 

@@ -85,7 +85,7 @@ cleancode <- function(RMySQLcon, tableread, tablewrite, codevariable){
 #' @rdname cleancode
 #' @export
 cleanallcomextcodes <- function(RMySQLcon){
-    cleancode(RMySQLcon, "raw_comext_product", "val_comext_cn", productcode)
+    cleancode(RMySQLcon, "raw_comext_product", "val_comext_product", productcode)
 
 
 }

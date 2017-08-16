@@ -5,10 +5,10 @@
 --
 
 --
--- Table structure for table `val_comext_cn`
+-- Table structure for table `val_comext_product`
 --
-DROP TABLE IF EXISTS `val_comext_cn`;
-CREATE TABLE `val_comext_cn` (
+DROP TABLE IF EXISTS `val_comext_product`;
+CREATE TABLE `val_comext_product` (
   `productcode` int DEFAULT NULL,
   `productdescription` text COLLATE utf8_unicode_ci,
   UNIQUE KEY `productcode` (`productcode`)
