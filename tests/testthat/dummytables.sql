@@ -13,8 +13,7 @@ CREATE TABLE `raw_dummy_code` (
   `code` int DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `datestart` date DEFAULT NULL,
-  `dateend` date DEFAULT NULL,
-  UNIQUE KEY `code` (`code`)
+  `dateend` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -26,8 +25,7 @@ CREATE TABLE `raw_dummy_product` (
   `productcode` int DEFAULT NULL,
   `productdescription` text COLLATE utf8_unicode_ci,
   `datestart` date DEFAULT NULL,
-  `dateend` date DEFAULT NULL,
-  UNIQUE KEY `productcode` (`productcode`)
+  `dateend` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -39,8 +37,7 @@ CREATE TABLE `raw_dummy_reporter` (
   `reportercode` int DEFAULT NULL,
   `reporter` text COLLATE utf8_unicode_ci,
   `datestart` date DEFAULT NULL,
-  `dateend` date DEFAULT NULL,
-  UNIQUE KEY `reportercode` (`reportercode`)
+  `dateend` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -52,8 +49,7 @@ CREATE TABLE `raw_dummy_partner` (
   `partnercode` int DEFAULT NULL,
   `partner` text COLLATE utf8_unicode_ci,
   `datestart` date DEFAULT NULL,
-  `dateend` date DEFAULT NULL,
-  UNIQUE KEY `partnercode` (`partnercode`)
+  `dateend` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 

@@ -19,24 +19,30 @@
 # See RMySQL test examples at:
 # https://github.com/rstats-db/RMySQL/tree/master/tests/testthat
 
+
+# Create dummy database structure
+dummysql <- "dummytables.sql" # file name will be reused to delete all tables at the end of the test suite
+if (RMySQL::mysqlHasDefault()){
+    createdbstructure(dummysql, dbname = "test", sqlfolder = ".",verbose=FALSE)
+}
+
 # Create dummy codes
 # Declare numeric values as integer data type
-raw_dummy_code <- data.frame(code = c(4L, 4L, 4L),
-                       datestart = c(2001, 2002, 2002),
-                       dateend = c(2001,2500,2500),
-                       description = c("old","recent","recent"),
-                       stringsAsFactors = FALSE)
+raw_dummy_code <- data.frame(code = c(4, 4L, 4L),
+                             datestart = c("2001-01-01", "2002-01-01", "2002-01-01"),
+                             dateend = c("2001-12-31", "2500-01-01", "2500-01-01"),
+                             description = c("old","recent","recent"),
+                             stringsAsFactors = FALSE)
 raw_dummy_product <- data.frame(productcode = c(44L, 44L),
                                 productdescription = c("old","recent"),
                                 datestart = c("2001-01-01", "2002-01-01"),
                                 dateend = c("2001-12-31", "2500-01-01"),
                                 stringsAsFactors = FALSE)
 raw_dummy_reporter <- data.frame(reportercode = c(5L, 6L, 5L),
-                                 datestart = c(1L, 2L, 2L),
-                                 reporter = c("old","recent","recent"),
+                                 reporter = c("oldcountryA", "recentcountryB", "recentcountryA"),
+                                 datestart = c("2001-01-01", "2002-01-01","2002-01-01"),
+                                 dateend = c("2001-12-31", "2500-01-01","2500-01-01"),
                                  stringsAsFactors = FALSE)
-# Create dummy database structure
-createdbstructure("dummytables.sql", dbname = "test", sqlfolder = ".",verbose=FALSE)
 
 
 context("Test database writable")
@@ -55,6 +61,9 @@ test_that("dummy data can be written to the database and read back", {
     # Transfer a data frame to the database
     RMySQL::dbWriteTable(con, "raw_dummy_code2", raw_dummy_code, row.names = FALSE,overwrite = TRUE)
     expect_equal(RMySQL::dbReadTable(con, "raw_dummy_code2"), raw_dummy_code)
+    res <- RMySQL::dbSendQuery(con, "DROP TABLE IF EXISTS `raw_dummy_code2`;")
+    # clear result, to avoid the warning "Closing open result sets"
+    RMySQL::dbClearResult(res)
 })
 
 
@@ -90,12 +99,12 @@ test_that("codes correspond to the max(datestart) and are unique", {
     # Test most recent description
     expect_equal(val_dummy_code$description, "recent")
     expect_equal(val_dummy_product$productdescription, "recent")
-    expect_equal(val_dummy_reporter$reporter, "recent")
+    expect_equal(val_dummy_reporter$reporter, c("recentcountryB", "recentcountryA"))
 })
 
 
 test_that("an error is raised if most recent codes are not exact duplicates", {
-    skip("want to see the mysql database content after the other test")
+    # skip("want to see the mysql database content after the other test")
     if (!RMySQL::mysqlHasDefault()) skip("Test database not available")
     con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
     on.exit(RMySQL::dbDisconnect(con))
@@ -109,3 +118,18 @@ test_that("an error is raised if most recent codes are not exact duplicates", {
                  regexp = "identical")
 })
 
+
+# Remove dummy tables from the test database
+# In case of test failures, you can comment these line out
+# to investigate what was present in the dummy database tables.
+if (RMySQL::mysqlHasDefault()){
+    # Collect the list of drop statements
+    tables2delete <- grep("DROP TABLE IF EXISTS",readLines(dummysql),value=TRUE)
+    con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+    # Send drop statements one by one to the database engine
+    res <- sapply(tables2delete, function(dropstatement){RMySQL::dbSendQuery(con, dropstatement)})
+    # clear all results, to avoid the warning "Closing open result sets"
+    sapply(res, RMySQL::dbClearResult)
+    # RMySQL::dbRemoveTable(con, "raw_dummy_code2") # another way to remove a table
+    RMySQL::dbDisconnect(con)
+}
