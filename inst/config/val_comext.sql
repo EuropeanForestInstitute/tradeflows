@@ -9,7 +9,7 @@
 --
 DROP TABLE IF EXISTS `val_comext_product`;
 CREATE TABLE `val_comext_product` (
-  `productcode` int DEFAULT NULL,
+  `productcode` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `productdescription` text COLLATE utf8_unicode_ci,
   UNIQUE KEY `productcode` (`productcode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

@@ -23,7 +23,7 @@
 --
 DROP TABLE IF EXISTS `raw_comext_product`;
 CREATE TABLE `raw_comext_product` (
-  `productcode` int DEFAULT NULL,
+  `productcode` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `datestart` date DEFAULT NULL,
   `dateend` date DEFAULT NULL,
   `productdescription` text COLLATE utf8_unicode_ci,
@@ -70,7 +70,7 @@ DROP TABLE IF EXISTS `raw_comext_monthly`;
 CREATE TABLE `raw_comext_monthly` (
   `reportercode` int DEFAULT NULL,
   `partnercode` int DEFAULT NULL,
-  `productcode` int DEFAULT NULL,
+  `productcode` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `flowcode` int DEFAULT NULL,
   `statregime` int DEFAULT NULL,
   `period` int DEFAULT NULL,
@@ -92,7 +92,7 @@ DROP TABLE IF EXISTS `raw_comext_yearly`;
 CREATE TABLE `raw_comext_yearly` (
   `reportercode` int DEFAULT NULL,
   `partnercode` int DEFAULT NULL,
-  `productcode` int DEFAULT NULL,
+  `productcode` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `flowcode` int DEFAULT NULL,
   `statregime` int DEFAULT NULL,
   `period` int DEFAULT NULL,

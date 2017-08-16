@@ -165,6 +165,27 @@ dtf_c_u$productdescription[1:5]
 # Looking at the source file, this seems to be due to the fact that 
 # productcodes do not contain only numbers, but can also contain characters
 
+readLines("../tradeharvester/data-raw/comext/201707/text/english/CN.txt") %>% 
+    grep("7302;", ., value=TRUE)
+# For example 7302I0 or 7302I2 are product codes, which get truncated during database load process.
+
+# I decided to change this variable to a VARCHAR type in MySQL
+
+# Maximum character length
+product <- read.table("../tradeharvester/data-raw/comext/201707/text/english/CN.txt",
+                      sep = "\t")  
+# Error in scan(file = file, what = what, sep = sep, quote = quote, dec = dec,  : 
+#   line 5534 did not have 6 elements
+cntxt <- readLines("../tradeharvester/data-raw/comext/201707/text/english/CN.txt")
+cntxt[5534]
+# but it does have 6 elements!
+product_20089218 <- read.table(text = cntxt[5534], header = FALSE, sep="\t")
+# cntxt[c(1:5533,5535,length(cntxt))]
+product0 <- read.table(text = paste(cntxt[1:1000],collapse="\n"), 
+                  header = FALSE, sep = "\t")
+max(nchar(as.character(product0$V1)))
+
+# I'll make it a varchar(10)
 ```
 
 
