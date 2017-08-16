@@ -247,7 +247,7 @@ nrowinDB <- function(tableread){
 #'\dontrun{
 #' # From 2017 onwards, use
 #' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
-#' prod <- tbl(con, "raw_comext_cn")
+#' prod <- tbl(con, "raw_comext_product")
 #' RMySQL::dbDisconnect(con)
 #' # Deprecated, before 2017
 #' readdbtbl("raw_flow_yearly") %>%

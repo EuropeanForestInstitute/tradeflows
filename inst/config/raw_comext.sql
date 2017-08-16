@@ -5,7 +5,7 @@
 --     tradeflows::createdbstructure(sqlfile = "raw_comext.sql", dbname = "test")
 --
 -- Loading this structure will erase all data in
--- raw_comext_cn, raw_comext_monthly, etc... tables defined below,
+-- raw_comext_product, raw_comext_monthly, etc... tables defined below,
 -- but it will not erase data in specific
 -- monthly recent (raw_comext_monthly_[year][month])
 -- and archived tables (raw_comext_monthly_[year] and raw_comext_yearly_[year]),
@@ -19,10 +19,10 @@
 
 
 --
--- Table structure for table `raw_comext_cn`
+-- Table structure for table `raw_comext_product`
 --
-DROP TABLE IF EXISTS `raw_comext_cn`;
-CREATE TABLE `raw_comext_cn` (
+DROP TABLE IF EXISTS `raw_comext_product`;
+CREATE TABLE `raw_comext_product` (
   `productcode` int DEFAULT NULL,
   `datestart` date DEFAULT NULL,
   `dateend` date DEFAULT NULL,
