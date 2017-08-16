@@ -1,5 +1,5 @@
 ---
-title: "Extract unique product codes"
+title: "Extract unique product codes from the Comext Combined Nomenclature codes"
 output:
   html_document:
     toc: true
@@ -15,9 +15,8 @@ library(tidyr)
 ``` 
 
 
-# Load all codes in a data frame
-```{r loadproductsfromdb}
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+# If codes are not present, transfer them
+```{r eval=FALSE}
 if(FALSE){ # If codes are not present, transfer them
     # create emtpty database structure for raw codes
     createdbstructure(sqlfile = 'raw_comext.sql', dbname = 'test')
@@ -26,6 +25,14 @@ if(FALSE){ # If codes are not present, transfer them
     # transfer raw codes
     tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 }
+```
+
+
+# Explore raw product codes 
+## Load raw product codes in a data frame
+```{r loadproductsfromdb}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+
 # Load all products in a dataframe
 allproducts <- tbl(con, "raw_comext_cn") %>% collect()
 RMySQL::dbDisconnect(con)
@@ -44,8 +51,7 @@ wp <- allproducts %>%
 
 ```
 
-
-# Are recent product codes unique?
+## Are recent product codes unique?
 ```{r search4uniquecodes}
 # A data frame to view in the data explorer
 wpdates <- wp %>% 
@@ -82,7 +88,7 @@ stopifnot(identical(nrow(unique(wprep)), length(unique(wprep$productcode))))
 ```
 
  
-# Are datestart2 and dateend2 allways identicall to datestart and dateend?
+## Are datestart2 and dateend2 allways identicall to datestart and dateend?
 ```{r}
 summary(allproducts$datestart == allproducts$datestart2)
 summary(allproducts$dateend == allproducts$dateend2)
@@ -103,6 +109,7 @@ stopifnot(outputfields %in% inputfields)
 
 # clean products:
 cleancode(con, "raw_comext_cn", "val_comext_cn", productcode)
+# inside that function, dtf has 21833 rows, this is the number of most recent codes
 # returns the error
 # Error: identical(nrow(unique(dtf)), nrow(distinct(dtf, !(!codevariable)))) is not TRUE
 
@@ -112,8 +119,8 @@ RMySQL::dbDisconnect(con)
 
 
 # Select output fields
-allproducts %>% select(outputfields)
-allproducts[outputfields]
+# allproducts %>% select(outputfields)
+# allproducts[outputfields]
 
 dtf <- allproducts %>% 
     group_by(productcode) %>%
@@ -124,6 +131,7 @@ stopifnot(identical(nrow(unique(dtf)),
 nrow(unique(dtf)) - nrow(distinct(dtf, productcode))
 
 # What are those duplicated rows?
+# group by productcode
 dtf_c <- dtf %>%  
     group_by(productcode) %>% 
     mutate(n = n()) %>% 
@@ -132,6 +140,7 @@ dtf_c <- dtf %>%
 dtf_c_u <- unique(dtf_c)
 length(unique(dtf_c_u$productcode))
 
+# group by productcode and productdescription
 dtf_cd <- dtf %>%  
     group_by(productcode, productdescription) %>% 
     mutate(n = n()) %>% 
@@ -140,15 +149,35 @@ dtf_cd <- dtf %>%
 dtf_cd_u <- unique(dtf_cd)
 length(unique(dtf_cd_u$productcode))
 
+# group by productcode, productdescription, datestart and dateend
 dtf_cdse <- dtf %>%  
     group_by(productcode, productdescription, datestart, dateend) %>% 
     mutate(n = n()) %>% 
     arrange(desc(n)) %>% 
     filter(n>2)
-dtf_cd_u <- unique(dtf_cd)
-length(unique(dtf_cd_u$productcode))
+dtf_cdse_u <- unique(dtf_cdse)
+length(unique(dtf_cdse_u$productcode))
+
+
+# It seems the descriptions are different:
+dtf_c_u$productdescription[1:5]
+
+# Looking at the source file, this seems to be due to the fact that 
+# productcodes do not contain only numbers, but can also contain characters
+
 ```
 
+
+# cleanallcodes function
+```{r}
+# See steps above to recreate the database if needed
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+
+cleancode(con, "raw_comext_cn", "val_comext_cn", productcode)
+
+RMySQL::dbDisconnect(con)
+
+```
 
 # Conclusions
 cleancodes should first create the database structure.
