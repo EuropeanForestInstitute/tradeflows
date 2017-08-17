@@ -23,7 +23,9 @@ if(FALSE){ # If codes are not present, transfer them
     # create empty database structure for validated codes
     createdbstructure(sqlfile = 'val_comext.sql', dbname = 'test')
     # transfer raw codes
+    con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
     tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
+    RMySQL::dbDisconnect(con)
 }
 ```
 
@@ -98,8 +100,8 @@ diffdates <- allproducts %>%
 ```
 No there are 8 rows in which this is not the case.
 
-
-# cleancodes function debugging
+# cleancodes
+## 20170816 cleancodes function debugging before the change of productcodes to a character variable
 ```{r eval=FALSE}
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 inputfields <- RMySQL::dbListFields(con,"raw_comext_product")
@@ -161,19 +163,24 @@ length(unique(dtf_cdse_u$productcode))
 
 # It seems the descriptions are different:
 dtf_c_u$productdescription[1:5]
+```
 
-# Looking at the source file, this seems to be due to the fact that 
+
+### Reading the raw text file directly
+```{r}
+# Looking at the source file, the duplicated codes issue seems to be due to the fact that 
 # productcodes do not contain only numbers, but can also contain characters
-
+# Reading the text file line by line
 readLines("../tradeharvester/data-raw/comext/201707/text/english/CN.txt") %>% 
     grep("7302;", ., value=TRUE)
-# For example 7302I0 or 7302I2 are product codes, which get truncated during database load process.
+# For example 7302I0 or 7302I2 are product codes, which get truncated during the database load process.
 
 # I decided to change this variable to a VARCHAR type in MySQL
 
+# Trying to read the text file into a data frame
 # Maximum character length
-product <- read.table("../tradeharvester/data-raw/comext/201707/text/english/CN.txt",
-                      sep = "\t")  
+# product <- read.table("../tradeharvester/data-raw/comext/201707/text/english/CN.txt",
+#                       sep = "\t")  
 # Error in scan(file = file, what = what, sep = sep, quote = quote, dec = dec,  : 
 #   line 5534 did not have 6 elements
 cntxt <- readLines("../tradeharvester/data-raw/comext/201707/text/english/CN.txt")
@@ -189,16 +196,89 @@ max(nchar(as.character(product0$V1)))
 ```
 
 
-# cleanallcodes function
+## cleanallcodes function
 ```{r}
 # See steps above to recreate the database if needed
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 
-cleancode(con, "raw_comext_product", "val_comext_product", productcode)
+
+try(cleancode(con, "raw_comext_product", "val_comext_product", productcode))
+
+
+
+# In debug mode inside the cleancode function,
+# nrow(dtf) 
+# [1] 23994
+# nrow(unique(dtf))
+# [1] 23994
+# Browse[2]> nrow(distinct(dtf, !!codevariable))
+# [1] 23994
+# Are there no duplicates?
+
+# number of rows
+res <- RMySQL::dbSendQuery(con, "SELECT COUNT(*) as nrow FROM val_comext_product")
+sqltable <- RMySQL::dbFetch(res)
+RMySQL::dbClearResult(res)
+sqltable$nrow
 
 RMySQL::dbDisconnect(con)
 
 ```
+
+
+# Add information 
+## Merge with dplyr::left_join
+```{r}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+# tables
+product <- tbl(con, "val_comext_product")
+reporter <- tbl(con, "val_comext_reporter")
+partner <- tbl(con, "val_comext_partner")
+monthly <- tbl(con, "raw_comext_monthly_201707")
+
+
+# if needed put back the data again
+if(FALSE){
+    # Run this in a separate R session, the transfer will take several minutes
+    library(tradeharvester)
+    setwd("~/R/tradeharvester")
+    con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+    transfer7zfolder2db(con,
+                        rawdatacomextfolder = "data-raw/comext/201707/data",
+                        productcodestart = c(44, 94),
+                        tablename = "raw_comext_monthly_201707",
+                        tabletemplate = "raw_comext_monthly")
+    RMySQL::dbDisconnect(con)
+}
+
+
+# Get only raw data for one product code
+wp <- monthly %>% 
+    filter(productcode == 44L) %>% collect()
+# Get raw data with product and country information for one product code
+query <- monthly %>% 
+    filter(productcode == 44L) %>% 
+    # join    
+    left_join(product, by = "productcode") %>% 
+    left_join(reporter, by = "reportercode") %>% 
+    left_join(partner, by = "partnercode")
+# Show the SQL query
+query %>% explain()
+# Get data from the database
+dtf <- query %>% collect()
+dtf %>% head %>% kable()
+
+RMySQL::dbDisconnect(con)
+
+```
+
+
+## Merge with SQL LEFT JOIN 
+```{r}
+
+```
+
+
 
 # Conclusions
 cleancodes should first create the database structure.

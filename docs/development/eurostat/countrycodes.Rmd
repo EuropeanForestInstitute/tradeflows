@@ -15,20 +15,57 @@ library(tidyr)
 ``` 
 
 
-# Load all codes in a data frame
+# Load raw codes from the text file directly
+```{r}
+reportertxt <- read.table(file = "../tradeharvester/data-raw/comext/201707/text/english/REPORTERS.txt",
+           sep = "\t", header = FALSE)
+nrow(reportertxt)
+partnertxt <- read.table(file = "../tradeharvester/data-raw/comext/201707/text/english/PARTNERS.txt",
+           sep = "\t", header = FALSE)
+nrow(partnertxt)
+
+```
+
+
+# Load raw codes from the database 
 ```{r loadproductsfromdb}
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 if(FALSE){ # If raw codes are not present, transfer them
     tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 }
+reporter <- tbl(con, "raw_comext_reporter")
+reporter %>% distinct(reportercode) %>% collect() %>%  nrow()
+partner <- tbl(con, "raw_comext_partner")
+reporter %>% 
+    left_join(partner, by = c("reportercode" = "partnercode")) %>% 
+    explain()
 
 ```
 
 
 
-# Clean all codes, using the function
+# Clean using the function
+## Clean reporter code
 ```{r}
+try(cleancode(con, "raw_comext_reporter", "val_comext_reporter", reportercode))
+# dtf has 29 observations inside the cleancode function in breakpoint mode
+# nrows in the database
+res <- RMySQL::dbSendQuery(con, "SELECT COUNT(*) as nrow FROM val_comext_reporter")
+sqltable <- RMySQL::dbFetch(res)
+RMySQL::dbClearResult(res)
+sqltable$nrow
 
 
+```
+
+## Clean partner codes
+```{r error=TRUE, message=TRUE, warning=TRUE}
+try(cleancode(con, "raw_comext_partner", "val_comext_partner", partnercode))
+# dtf has 295 observation inside the cleancode function in breakpoint mode
+# nrows in the database
+res <- RMySQL::dbSendQuery(con, "SELECT COUNT(*) as nrow FROM val_comext_partner")
+sqltable <- RMySQL::dbFetch(res)
+RMySQL::dbClearResult(res)
+sqltable$nrow
 ```
 

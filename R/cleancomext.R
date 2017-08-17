@@ -8,7 +8,7 @@
 #' @param codevariable unquoted code variable (à la dplyr verbs)
 #' @return TRUE on success
 #' The output is actually a database table containing the cleaned codes.
-#' @examples \dontrun{
+#' @examples \dontrun{ # Clean product and country codes
 #' # Connect to the database
 #' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 #' # Write dummy codes to the database table "raw_code"
@@ -21,7 +21,7 @@
 #' if(FALSE){ # If raw codes are not present, transfer them
 #' tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 #' }
-#' # Clean real comext codes
+#' # Clean comext product, reporter and partner codes
 #' cleanallcomextcodes(con)
 #' # Disconnect from the database
 #' RMySQL::dbDisconnect(con)
@@ -53,7 +53,7 @@ cleancode <- function(RMySQLcon, tableread, tablewrite, codevariable){
     if(sqltable$nrow > 0){
         stop("Table ", tablewrite, " is not empty.",
              "You can recreate an empty table structure with:\n",
-             sprintf("tradeflows::createdbstructure(sqlfile = 'raw_comext.sql', dbname = '%s')",
+             sprintf("tradeflows::createdbstructure(sqlfile = 'val_comext.sql', dbname = '%s')",
                      RMySQL::dbGetInfo(RMySQLcon)$dbname))
     }
 
@@ -85,7 +85,25 @@ cleancode <- function(RMySQLcon, tableread, tablewrite, codevariable){
 #' @rdname cleancode
 #' @export
 cleanallcomextcodes <- function(RMySQLcon){
+    createdbstructure(sqlfile = "val_comext.sql",
+                      # extract db name from the RMySQL connection object
+                      dbname = RMySQL::dbGetInfo(RMySQLcon)$dbname)
+    message("Cleaning product, reporter and partner codes...")
     cleancode(RMySQLcon, "raw_comext_product", "val_comext_product", productcode)
+    cleancode(RMySQLcon, "raw_comext_reporter", "val_comext_reporter", reportercode)
+    cleancode(RMySQLcon, "raw_comext_partner", "val_comext_partner", partnercode)
 
-
+    # Diagnostics
+    # Display row count information
+    # based on https://stackoverflow.com/a/1775272/2641825
+    res <- RMySQL::dbSendQuery(RMySQLcon, "SELECT
+    (SELECT COUNT(*) FROM   val_comext_product)  AS product,
+    (SELECT COUNT(*) FROM   val_comext_reporter) AS reporter,
+    (SELECT COUNT(*) FROM   val_comext_partner)  AS partner")
+    nrows <- RMySQL::dbFetch(res)
+    RMySQL::dbClearResult(res)
+    message("Transfered:\n",
+            nrows$product, " rows to the val_comext_product table\n",
+            nrows$reporter, " rows to the val_comext_reporter table\n",
+            nrows$partner, " rows to the val_comext_partner table.\n")
 }

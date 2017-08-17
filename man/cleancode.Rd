@@ -32,7 +32,7 @@ as unique keys.
 It is a porcelaine function based on the plumbing function \code{cleancode}.
 }
 \examples{
-\dontrun{
+\dontrun{ # Clean product and country codes
 # Connect to the database
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 # Write dummy codes to the database table "raw_code"
@@ -45,7 +45,7 @@ cleancode(con, tableread = "raw_code", tablewrite = "val_code", codevariable = "
 if(FALSE){ # If raw codes are not present, transfer them
 tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 }
-# Clean real comext codes
+# Clean comext product, reporter and partner codes
 cleanallcomextcodes(con)
 # Disconnect from the database
 RMySQL::dbDisconnect(con)
