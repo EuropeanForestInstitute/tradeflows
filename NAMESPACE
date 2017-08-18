@@ -3,6 +3,7 @@
 export(addconversionfactorandprice)
 export(addmissingmirrorflow)
 export(addpartnerflow)
+export(addproreppar2tbl)
 export(addregion)
 export(calculatediscrepancies)
 export(changecolumntype)

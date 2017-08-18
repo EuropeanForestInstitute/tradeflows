@@ -1,0 +1,46 @@
+---
+title: "Extract unique product codes from the Comext Combined Nomenclature codes"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, echo=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+library(tradeflows)
+library(dplyr)
+library(tidyr)
+``` 
+
+
+# CSV explort example with UK data
+## UK import from Indonesia
+```{r}
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+tbl(con, "val_comext_reporter") %>% collect() 
+# UK reportercode is 6
+tbl(con, "val_comext_partner") %>% 
+    collect() %>% filter(grepl("Indonesia",partner))
+# Indonesia partnercode is 700
+
+wpuk <- tbl(con, "raw_comext_monthly_201707") %>% 
+    filter(productcode == 44 & reportercode == 6 & partnercode == 700) %>% 
+    addproreppar2tbl(con, .) %>% 
+    filter(reporter == "Utd. Kingdom") %>% 
+    show_query() %>% 
+    collect()
+```
+
+
+## List of VPA countries
+```{r}
+
+```
+
+
+
+```{r disconnectfromDB}
+RMySQL::dbDisconnect(con)
+```
+

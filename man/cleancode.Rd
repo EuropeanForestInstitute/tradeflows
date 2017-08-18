@@ -43,6 +43,7 @@ cleancode(con, tableread = "raw_code", tablewrite = "val_code", codevariable = "
 
 # Comext codes
 if(FALSE){ # If raw codes are not present, transfer them
+createdbstructure(sqlfile = "raw_comext.sql", dbname = "test")
 tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 }
 # Clean comext product, reporter and partner codes

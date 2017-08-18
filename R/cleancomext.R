@@ -19,6 +19,7 @@
 #'
 #' # Comext codes
 #' if(FALSE){ # If raw codes are not present, transfer them
+#' createdbstructure(sqlfile = "raw_comext.sql", dbname = "test")
 #' tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "~/R/tradeharvester/data-raw/comext/201707/text/english/")
 #' }
 #' # Clean comext product, reporter and partner codes
@@ -106,4 +107,30 @@ cleanallcomextcodes <- function(RMySQLcon){
             nrows$product, " rows to the val_comext_product table\n",
             nrows$reporter, " rows to the val_comext_reporter table\n",
             nrows$partner, " rows to the val_comext_partner table.\n")
+}
+
+
+#' Add product reporter and partner to a tbl object
+#' @return a tbl object left joined to the product, reporter and partner tables.
+#' @param RMySQLcon database connection object created by \code{RMySQL::\link{dbConnect}}
+#' @param maintbl tbl containing trade data, with productcode, reportercode and partnercode
+#' @examples \dontrun{
+#' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+#' monthly <- tbl(con, "raw_comext_monthly_201707")
+#' monthly %>%
+#'     filter(productcode == 44) %>%
+#'     addproreppar2tbl(con, .) %>%
+#'     collect()
+#' RMySQL::dbDisconnect(con)
+#'
+#' }
+#' @export
+addproreppar2tbl <- function(RMySQLcon, maintbl){
+    maintbl %>%
+        left_join(tbl(RMySQLcon, "val_comext_product"),
+                  by = "productcode") %>%
+        left_join(tbl(RMySQLcon, "val_comext_reporter"),
+                  by = "reportercode") %>%
+        left_join(tbl(RMySQLcon, "val_comext_partner"),
+                  by = "partnercode")
 }

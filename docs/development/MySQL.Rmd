@@ -17,14 +17,36 @@ library(dplyr)
 library(RMySQL)
 ``` 
 
-## Load dump
+# mysqldump
+## Load a dump
 The following commands can be used to load mysql dump files:
-```
+```{bash eval=FALSE}
 cat raw_flow_yearly.sql | mysql -u paul -p  tradeflows
 cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows
 ```
 
-## SELECT using dplyr
+
+## Create a dump
+[how to compress a mysqldump with 7z via a pipe?](https://unix.stackexchange.com/questions/232006/how-to-compress-a-mysql-dump-using-7z-via-a-pipe)
+```{bash eval=FALSE}
+# Make sure the archive doesn't exist already 
+# other wise it will contain the SQL dump twice
+# prefer 7zr to 7z as this is the only one available on the server
+mysqldump tradeflows raw_comext_monthly_201707 | 7zr a -si raw_comext_monthly_201707.sql.7z
+```
+Create an R function that dumps a database table to a given folder location.
+If the archive exists already, do not recreate it, unless force=TRUE.
+    If force=TRUE, delete the archive.
+If the archive doesn't exist, 
+compress the output of mysqldump and store it in the given folder.
+
+Create an R function that dumps all tables in the trade flows database, 
+each table in a separate .sql.7z file.
+
+Create an R function that dumps all tables containing a given pattern in 
+their names, such as "monthly" or "yearly".
+
+# SELECT using dplyr
 * Description and examples in the `?src_mysql` documentation
     To connect to a database :
     ```
@@ -96,16 +118,8 @@ germimport <- rawdata %>%
     select(year, flow, reporter, partner, tradevalue) %>%
     collect
 ```
-### Run SQL statements on the database
-Number of unique product codes and of unique countries
-```
-SELECT count(distinct(productcode)) FROM tradeflows.raw_flow_yearly;
-/* 127 */
-SELECT count(distinct(reporter)) FROM tradeflows.raw_flow_yearly;
-/* 190 */
-SELECT count(distinct(partner)) FROM tradeflows.raw_flow_yearly;
-/* 248 */
-```
+
+
 
 ### db_insert_into, for test purposes only
 ```{r insertdplyr, eval=FALSE}
@@ -119,6 +133,17 @@ Look at `?db_insert_into` for a list of database actions.
 
     If you find yourself overriding many of these functions
     it may suggest that you should just override copy_to instead.
+
+# Run SQL statements on the database
+Number of unique product codes and of unique countries
+```{sql eval=FALSE}
+SELECT count(distinct(productcode)) FROM tradeflows.raw_flow_yearly;
+/* 127 */
+SELECT count(distinct(reporter)) FROM tradeflows.raw_flow_yearly;
+/* 190 */
+SELECT count(distinct(partner)) FROM tradeflows.raw_flow_yearly;
+/* 248 */
+```
 
 ## SELECT, INSERT and more using RMySQL, 
 Source of the package : [RMySQL](https://github.com/jeffreyhorner/RMySQL)
