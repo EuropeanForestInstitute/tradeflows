@@ -28,12 +28,28 @@ cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows
 
 ## Create a dump
 [how to compress a mysqldump with 7z via a pipe?](https://unix.stackexchange.com/questions/232006/how-to-compress-a-mysql-dump-using-7z-via-a-pipe)
+First version needed to make sure the archive doesn't exist already 
+other wise it would contain the SQL dump twice.
+See Paul's question on stackexchange 
+[How to overwrite content in a 7z archive created from a pipe?](https://unix.stackexchange.com/questions/386913/how-to-overwrite-content-in-a-7z-archive-created-from-a-pipe)
+The answer is to supply a name for the file generated from standard input, 
+within the `-si` option, such as `-sifilename`.
 ```{bash eval=FALSE}
-# Make sure the archive doesn't exist already 
-# other wise it will contain the SQL dump twice
 # prefer 7zr to 7z as this is the only one available on the server
-mysqldump tradeflows raw_comext_monthly_201707 | 7zr a -si raw_comext_monthly_201707.sql.7z
+cd _server_path_/sqldump
+
+# Recent data
+mysqldump tradeflows raw_comext_monthly_201708 | 7zr a -si raw_comext_monthly_201708.sql.7z
+
+# Monthly archive
+mysqldump tradeflows raw_comext_monthly_2016S1 | 7zr a -si raw_comext_monthly_2016S1.sql.7z
+
+# Dump validated codes
+mysqldump tradeflows val_comext_product | 7zr a -si val_comext_product.sql.7z
+mysqldump tradeflows val_comext_reporter | 7zr a -si val_comext_reporter.sql.7z
+mysqldump tradeflows val_comext_partner | 7zr a -si val_comext_partner.sql.7z
 ```
+
 Create an R function that dumps a database table to a given folder location.
 If the archive exists already, do not recreate it, unless force=TRUE.
     If force=TRUE, delete the archive.
@@ -45,6 +61,7 @@ each table in a separate .sql.7z file.
 
 Create an R function that dumps all tables containing a given pattern in 
 their names, such as "monthly" or "yearly".
+
 
 # SELECT using dplyr
 * Description and examples in the `?src_mysql` documentation

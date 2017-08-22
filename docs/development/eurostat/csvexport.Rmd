@@ -11,6 +11,7 @@ opts_knit$set(root.dir="../../..") # file paths are relative to the root of the 
 library(tradeflows)
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 ``` 
 
 
@@ -23,13 +24,51 @@ tbl(con, "val_comext_reporter") %>% collect()
 tbl(con, "val_comext_partner") %>% 
     collect() %>% filter(grepl("Indonesia",partner))
 # Indonesia partnercode is 700
-
-wpuk <- tbl(con, "raw_comext_monthly_201707") %>% 
-    filter(productcode == 44 & reportercode == 6 & partnercode == 700) %>% 
+# recent data
+wpukind_r <- tbl(con, "raw_comext_monthly_201708") %>% 
+    filter(reportercode == 6 & partnercode == 700) %>% 
     addproreppar2tbl(con, .) %>% 
-    filter(reporter == "Utd. Kingdom") %>% 
-    show_query() %>% 
+    # show_query() %>% 
     collect()
+
+# archive data
+wpukind_a <- tbl(con, "raw_comext_monthly_2016S1") %>% 
+    filter(reportercode == 6 & partnercode == 700) %>% 
+    addproreppar2tbl(con, .) %>% 
+    collect()
+
+
+# bind archive and recent data, keep only imports
+wpukind <- rbind(wpukind_a, wpukind_r) %>% 
+    filter(flowcode == 1)
+
+# keep only product 44
+wpukind44 <- wpukind %>% filter(productcode == 44)
+wpukind44182080 <- wpukind %>% filter(productcode == 44182080)
+
+# Keep only furniture product 94
+wpukind94 <- wpukind %>% filter(productcode == 94)
+wpukind94036090 <- wpukind %>% filter(productcode == 94036090)
+
+write.csv(wpukind44, "/tmp/comext/ukindonesia44.csv")
+write.csv(wpukind94, "/tmp/comext/ukindonesia94.csv")
+# 2 highest traded products at the 8 digit level
+
+write.csv(wpukind44182080, "/tmp/comext/ukindonesia44182080.csv")
+write.csv(wpukind94036090, "/tmp/comext/ukindonesia94036090.csv")
+
+
+# keep only product with highest import in value over the period
+# Calculate highest import value
+wpukind %>% group_by(productcode) %>% 
+    summarise(tradevalue = sum(tradevalue)) %>% 
+    arrange(desc(tradevalue))
+
+# Wood products
+ggplot(wpukind44, 
+       aes(x = as.factor(period), y = tradevalue)) +
+    geom_point() + ylab("Trade value in 1000€")
+lubridate::ym(c("201001"))
 ```
 
 

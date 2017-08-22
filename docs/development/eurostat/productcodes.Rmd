@@ -226,6 +226,40 @@ RMySQL::dbDisconnect(con)
 ```
 
 
+## Clean codes on the server
+#### 201708
+```{r eval=FALSE}
+# I first had to update the package
+devtools::install_github("EuropeanForestInstitute/tradeflows")
+library(tradeflows)
+# Update the database structures for raw and validated data
+createdbstructure(sqlfile = "raw_comext.sql", dbname = "tradeflows")
+createdbstructure(sqlfile = "val_comext.sql", dbname = "tradeflows")
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+# Transfer raw codes from the files to the database
+tradeharvester::transfertxtcodesfolder2db(con, rawdatacomextfolder = "/mnt/sdb/data-raw/comext/201707/text/english/")
+# Clean codes
+cleanallcomextcodes(con)
+
+# Transfer monthly data again, because productcode has a INT type instead of VARCHAT(10).
+library(tradeharvester)
+# Transfer monthly recent
+transfer7zfolder2db(con,
+                    rawdatacomextfolder = "/mnt/sdb/data-raw/comext/201708/data",
+                    productcodestart = c(44, 94),
+                    tablename = "raw_comext_monthly_201708",
+                    tabletemplate = "raw_comext_monthly")
+
+# Transfer monthly archive
+# raw_comext_monthly_2016S1 had approximately 30309561 rows before the update
+transfer7zfolder2db(con,
+                    rawdatacomextfolder = "/mnt/sdb/data-raw/comext/2016S1/data",
+                    productcodestart = c(44, 94),
+                    tablename = "raw_comext_monthly_2016S1",
+                    tabletemplate = "raw_comext_monthly")
+```
+
+
 # Add information 
 ## Merge with dplyr::left_join
 ```{r}
@@ -302,16 +336,6 @@ SELECT *
 Is it possible to reduce the size of this chunk?
 
 Stackoverflow [Multiple left join and where clause](https://stackoverflow.com/a/14261094/2641825)
-
-```{sql eval=FALSE}
-SELECT something
-FROM   master      parent
-JOIN   master      child ON child.parent_id = parent.id
-LEFT   JOIN second parentdata ON parentdata.id = parent.secondary_id
-LEFT   JOIN second childdata ON childdata.id = child.secondary_id
-WHERE  parent.parent_id = 'rootID'
-```
-    
     
 ## Join 2 tables
 ```{sql eval=FALSE}
