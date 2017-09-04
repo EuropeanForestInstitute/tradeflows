@@ -1,0 +1,87 @@
+---
+title: "Using tradeflows function on the Comext data"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: html_document
+---
+
+
+```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+``` 
+
+```{r databasetableanalysed, echo=FALSE}
+# Comment out to pass tableanalysed as a parameter in the parent environment
+tableanalysed = 'raw_comext_monthly_201708' 
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+```
+
+
+# Clean function alone
+```{r eval=FALSE}
+# Find a product which doesn't have a 0 quantity
+wp <- tbl(con, tableanalysed) %>% 
+    filter(productcode == 44071031) %>% 
+    collect()
+# Descriptive statistics
+# number of rows
+wp %>% count()
+# Summary of data columns for that product
+summary(wp[c("tradevalue", "weight","quantity")])
+# Number of 0 values
+wp %>% filter(tradevalue == 0) %>% count()
+wp %>% filter(weight== 0) %>% count()
+wp %>% filter(quantity == 0) %>% count()
+
+clean(wp)
+```
+
+
+# Try to run components of the clean function one by one
+```{r eval=FALSE}
+# sanitycheck OK
+wp %>% 
+    sanitycheck() 
+
+# filterworldeu28 OK
+wp %>% 
+    mutate(reporter = NA,
+           partner = NA) %>%  # add dummy reporter and partner columns
+    filterworldeu28()
+
+# removeduplicatedflows
+wp %>% 
+    mutate(lastchanged = NA,
+           flow = flowcode,
+           reporter = reportercode) %>% # add dummy columns
+    removeduplicatedflows()
+    
+# addconversionfactorandprice --> price/weight is missing, 
+# add pricew = tradevalue / weight to the function
+wp %>% 
+    addconversionfactorandprice()
+
+# addregion --> leads to erroneous region names since reportercde and partnercode a
+# are different between the Comtrade and Comext.
+wp %>% 
+    addregion()
+
+# extractprices
+price <- wp %>% 
+    mutate(flow = flowcode, 
+           regionreporter = 1, 
+           year = substr(as.character(period),1,4),
+           unit = NA) %>% 
+    addconversionfactorandprice() %>% 
+    extractprices()
+
+# extractconversionfactors
+conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregation)
+```
+
