@@ -16,16 +16,22 @@ library(ggplot2)
 library(reshape2)
 ``` 
 
-```{r databasetableanalysed, echo=FALSE}
-# Comment out to pass tableanalysed as a parameter in the parent environment
+
+This document first tries to run the existing clean function 
+- written for Comtrade data - on Comext data.
+Then it describes the development process needed to make
+the clean function work with Comext data.
+
+
+# Note: It is very important to replace 0 zero values by NA
+ 
+# Load data
+```{r load_data_and_descriptive_statistics, echo=TRUE}
 tableanalysed = 'raw_comext_monthly_201708' 
+
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
-```
 
-
-# Clean function alone
-```{r eval=FALSE}
-# Find a product which doesn't have a 0 quantity
+# Use a product which doesn't have a 0 quantity
 wp <- tbl(con, tableanalysed) %>% 
     filter(productcode == 44071031) %>% 
     collect()
@@ -38,12 +44,20 @@ summary(wp[c("tradevalue", "weight","quantity")])
 wp %>% filter(tradevalue == 0) %>% count()
 wp %>% filter(weight== 0) %>% count()
 wp %>% filter(quantity == 0) %>% count()
+```
 
+
+# Crash test
+
+## Crash test run the clean() function alone
+```{r eval=FALSE}
 clean(wp)
 ```
 
 
-# Try to run components of the clean function one by one
+## Run components of the clean() function one by one
+
+
 ```{r eval=FALSE}
 # sanitycheck OK
 wp %>% 
@@ -51,8 +65,12 @@ wp %>%
 
 # filterworldeu28 OK
 wp %>% 
-    mutate(reporter = NA,
-           partner = NA) %>%  # add dummy reporter and partner columns
+    # add dummy reporter and partner columns 
+    # mutate(reporter = NA,
+    #        partner = NA) %>%  
+    # Dummy reporter & partner are not necessary since 20170911, 
+    # the filterworldeu28() function now checks for the presence
+    # of a "reporter" column and gives a warning if not present.
     filterworldeu28()
 
 # removeduplicatedflows
@@ -83,5 +101,36 @@ price <- wp %>%
 
 # extractconversionfactors
 conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregation)
+```
+
+
+# Develop the clean function for Comext data
+
+The goal is to reuse as many components from the Comtrade function 
+as possible. When it is not possible to reuse and or modify a function 
+written for Comtrade, then write a new function, which should still be 
+present in the tradeflows package, but in a separate script called
+`cleancomext.R`. These - Comext specific - functions 
+might be moved later to the "eutradeflows" package if they become too numerous.
+However, there is no need to complexify the package structure.
+If there is only a handfull of - Comext speficic - functions, then they are well placed in tradeflows package.
+
+```{r}
+wp <- wp  %>% 
+    addconversionfactorandprice() 
+
+prices <- wp %>%
+    # grouping by productcode is technicaly not necessary, because
+    # cleaning operations are performed product by product.
+    # But it doesn't cost much to keep the product information in the grouping,
+    # and it might prevent confusion in later data processing,
+    # so keep "productcode" in the grouping.
+    extractprices(grouping = c("productcode", "flow", "year"))
+```
+
+
+
+```{r dbDisconnect}
+RMySQL::dbDisconnect(con)
 ```
 

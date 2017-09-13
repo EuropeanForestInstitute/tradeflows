@@ -104,10 +104,16 @@ addconversionfactorandprice <- function(dtf){
 #' Remove EU-28 and World partner
 #' @param dtf data frame containing comtrade trade flows
 #' @export
-filterworldeu28 <- function(dtf){
-     dtf %>%
-        filter(!reporter %in% c("EU-28")) %>%
-        filter(!partner %in%c("EU-28", "World"))
+filterworldeu28 <- function(dtf, verbose = FALSE){
+    if(!"reporter" %in% names(dtf)){
+        if(verbose) message("Message from filterworldeu28(): ",
+                            "the 'reporter' column is not present in the dataset.")
+        return(dtf)
+    } else {
+        dtf %>%
+            filter(!reporter %in% c("EU-28")) %>%
+            filter(!partner %in%c("EU-28", "World"))
+    }
 }
 
 
@@ -148,12 +154,16 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
     # replace infinite price values by NA for the mean price
     # calculation
     dtf$price[is.infinite(dtf$price)] <- NA
+
+
     dtf %>%
-        filter(flow %in% c("Import", "Export")) %>%
-        filterworldeu28() %>%
+        # Keep only import and export prices, no re-export
+        filter(flow %in% c("Import", "Export") | flow %in% c(1,2)) %>%
+        # Remove world and EU28 values
+        filterworldeu28(verbose = TRUE) %>%
         # Price whould not be NA and not be infinite
         filter(!is.na(price) & !is.infinite(price)) %>%
-        # Calculate yearly regional prices by unit
+        # Calculate yearly regional prices by unit and/or by other grouping variables
         group_by_(.dots = grouping) %>%
         summarise(lowerprice = lowercoef * quantile(price, 0.25, names=FALSE),
                   medianprice = median(price),
@@ -524,6 +534,7 @@ replacebypartnerquantity <- function(dtf, choice, verbose = getOption("tradeflow
 #' checked and quantity replaced accordingly
 #' This function comes after estimatequantity()
 #' and after addpartnerflow()
+#' so that the input data frame contains information on the price bounds
 #' check this order in the source of the clean() function.
 #' Check unit price for all flows
 #' recalculate unit price based on quantity estimate
@@ -560,7 +571,7 @@ shaveprice <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE)){
     # This is where the modification took place
     dtfoutbound <- dtf %>%
         # Will contain also Inf prices
-        filter(price<lowerprice | upperprice<price) %>%
+        filter(price < lowerprice | upperprice < price) %>%
         mutate(quantity = quantity_up,
                flag = flag + 300)
     dtfresult <- rbind(dtfinbound, dtfoutbound, dtfnoboundprice, dtfnoprice)

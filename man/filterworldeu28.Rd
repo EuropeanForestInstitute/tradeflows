@@ -4,7 +4,7 @@
 \alias{filterworldeu28}
 \title{Filter world and EU28}
 \usage{
-filterworldeu28(dtf)
+filterworldeu28(dtf, verbose = FALSE)
 }
 \arguments{
 \item{dtf}{data frame containing comtrade trade flows}
