@@ -23,7 +23,7 @@ options(tradeflows.verbose = FALSE)
 swd <- tradeflows::sawnwoodexample
 
 
-### Dummy trade flows ####
+# Dummy trade flows ####
 # This test suite also uses dummy trade flows data
 dummytf <- data_frame(reporter = letters[1:6],
                       partner = letters[21:26],
@@ -92,10 +92,16 @@ test_that("Conversion factor extraction ignores Inf and O values ", {
     median(dummytf$conversion)
     cf1 <- dummytf %>%
         extractconversionfactors()
+    if(FALSE){ # to delete
+        dummytf[c("flow", "regionreporter", "conversion")]
+        dummytf %>%
+            filter(!is.infinite(conversion) & !conversion ==0) %>%
+            select(flow, regionreporter, conversion)
+    }
     cf2 <- dummytf %>%
         filter(!is.infinite(conversion) & !conversion ==0) %>%
         group_by(flow, regionreporter, year, unit) %>%
-        summarise(medianconversion = round(median(conversion,na.rm=TRUE)))
+        summarise(medianconversion = median(conversion,na.rm=TRUE))
     expect_equal(cf1$medianconversion, cf2$medianconversion)
 })
 
