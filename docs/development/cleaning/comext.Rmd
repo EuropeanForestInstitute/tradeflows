@@ -6,7 +6,7 @@ output: html_document
 ---
 
 
-```{r packages, echo=FALSE, warning=FALSE, message=FALSE}
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
 opts_chunk$set(echo=FALSE)
@@ -14,9 +14,7 @@ library(tradeflows)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-``` 
 
-```{r databasetableanalysed, echo=FALSE}
 # Comment out to pass tableanalysed as a parameter in the parent environment
 recenttable <- 'raw_comext_monthly_201709' 
 archivetable <- 'raw_comext_monthly_2016S1'
@@ -24,7 +22,7 @@ archivetable <- 'raw_comext_monthly_2016S1'
 # Tropical product (data starts only in 2012)
 # productanalysed <- 44072960 
 # Spruce sawnwood sub-product with the most number of lines (data starts as early as  2000)
-productanalysed <- 44071091
+productanalysed <- "44071091"
 # Another spruce
 # productanalysed <- 44071031
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
@@ -114,8 +112,21 @@ conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregatio
 
 # Develop a new clean function for Comext data
 
+## Workflow
+Prices are computed on a per-product basis.
+Trade flows data cleaning steps __for a given product__:
+
+ * load trade flows data into an R data frame
+ * add prices and conversion factors to the data frame
+ * compute median prices, price bounds and conversion factors in a data frame
+ * calculate missing quantities
+ * shave prices
+ * store prices and conversion factors in the database
+ * store modified trade flows into the database
+
 
 ## Reflections
+### Reflections on where to locate functions between the tradeflows and eutradeflows packages
 The goal is to reuse as many components from the Comtrade function 
 as possible. When it is not possible to reuse and or modify a function 
 written for Comtrade, then write a new function, which should still be 
@@ -125,6 +136,8 @@ might be moved later to the "eutradeflows" package if they become too numerous.
 However, there is no need to complexify the package structure.
 If there is only a handfull of - Comext speficic - functions, then they are well placed in tradeflows package.
 
+
+### Reflection on monthly and yearly prices
 There is a difference between:
 
 * extracting median prices (and price bounds)
@@ -132,26 +145,26 @@ There is a difference between:
 * and extraction median prices (and price bounds)
   from yearly prices grouped by product, flow and year.
 
-Trade flows data cleaning steps:
-
- * Add prices and conversion factors
- * Shave prices
-
-### Reflections on prices and conversion factors
-I think prices and conversion factors can be storred in the same database
-table since they will beused at the same aggregation level. 
-I first added `` to the extractprices() function. 
+### Reflections on storing prices and conversion factors
+The 3 informations: price, pricew and conversion factor (cv) 
+could be storred in the same database table 
+since they are used at the same (time and geographical) aggregation level. 
+I first added a conversion factor calculation to the extractprices() function. 
 Then realised there were Inf et NaN values in the conversion factor. 
-Which were normally filtered in 
-This means I will keep the 2 functions separate. 
+Which were normally filtered separately.
+Inf, NaN and NA values do not appear in the same rows 
+for the price, pricew and conversion factor columns.
+That means that rows excluded vary between the 3 calculations.
+This means I will keep the price, pricew and cv calculation functions separate. 
 I'll keep the 2 tables separate in the database too. 
 Since I can't think of an absolute necessary to keep them together.
 And there is a slight chance that I might need different aggregation level
 for the 2 informations in the future.
 
 
-## Extract prices and write them to the database
 
+
+## Extract prices and write them to the database
 ```{r}
 # wp stands for wood products
 wparchive <- tbl(con, archivetable) %>% 
@@ -232,9 +245,104 @@ RMySQL::dbSendQuery(con, "TRUNCATE table vld_comext_cv")
 RMySQL::dbWriteTable(con, "vld_comext_cv", cv,
                      append = TRUE,
                      row.names = FALSE)
+```
+
+## developt the cleancomextmonthly1product() function
+### Load archive and recent data into a data frame
+```{r}
+# Assign variables which will be used as function parameters in the real function
+RMySQLcon <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows") 
+tablearchive <- "raw_comext_monthly_2016S1"
+tablerecent <- "raw_comext_monthly_201709"
+tableprice <- "vld_comext_price"
+tablecv <- "vld_comext_cv"
+productanalysed
+
+# load trade flows from the database into a data frame
+# Load archive data 
+dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+    filter(productcode == productanalysed) %>% 
+    # Add quantity units
+    eutradeflows::addunit2tbl(RMySQLcon, 
+                              maintbl = ., 
+                              tableunit = "vld_comext_unit")  %>% 
+    collect()
+
+# Load recent data
+dtfr <- tbl(RMySQLcon, tablerecent) %>% 
+    filter(productcode == productanalysed) %>% 
+    # Add quantity units
+    eutradeflows::addunit2tbl(RMySQLcon, 
+                              maintbl = ., 
+                              tableunit = "vld_comext_unit")  %>% 
+    collect()
+
+# Combine archive and recent data
+dtf <- rbind(dtfa, dtfr)
+
+# Remove unnecessary objects
+rm(dtfa)
+rm(dtfr)
+
+
+# Add prices and conversion factors to the data frame
+dtf <- addconversionfactorandprice(dtf)
+
 
 ```
 
+
+
+# Issues
+### 20170928 Speed of selecting archive data
+Since productcode is stored as a character variable in SQL,
+is the filtering on productcode faster when productcode is a character, 
+instead of a numeric value? 
+```{r}
+# numeric
+system.time(dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+    filter(productcode == 44071091) %>% 
+    collect())
+#  user  system elapsed 
+# 0.180   0.004  47.816 
+
+# character
+system.time(dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+    filter(productcode == "44071091") %>% 
+    collect())
+#  user  system elapsed 
+# 0.188   0.004   5.349 
+```
+Yes, filtering only lasts 6 seconds for a productcode encoded as character.
+In comarison, filtering lasts 48 seconds when the productcode is
+encoded as a numeric variable.
+
+## 20170928 Sum trade values works also with na.rm=TRUE 
+```{r}
+# In the database, sumarise is translated to SQL
+tbl(RMySQLcon, tablearchive) %>%
+    summarise(n = sum(tradevalue, na.rm = TRUE)) %>% 
+    explain() %>% collect()
+# On a data frame
+
+
+```
+
+## 20170928
+The addunit2tbl function was originally developped for 2 tbl objects, 
+Will it work for one data frame and one tbl object?
+The answer is no, it returns the error:
+```
+Error: `x` and `y` must share the same src, set `copy` = TRUE (may be slow)
+```
+
+```{r eval=FALSE}
+eutradeflows::addunit2tbl(RMySQLcon, maintbl = dtf, 
+                          tableunit = "vld_comext_unit") 
+```
+In the end I decided to add units during the data frame load statement.
+See above, under the comment:
+"load trade flows from the database into a data frame"
 
 
 ```{r dbDisconnect}
