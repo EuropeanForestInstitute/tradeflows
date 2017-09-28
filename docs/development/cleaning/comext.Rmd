@@ -12,10 +12,23 @@ opts_knit$set(root.dir="../../..") # file paths are relative to the root of the 
 opts_chunk$set(echo=FALSE)
 library(tradeflows)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
-library(reshape2)
 ``` 
 
+```{r databasetableanalysed, echo=FALSE}
+# Comment out to pass tableanalysed as a parameter in the parent environment
+recenttable <- 'raw_comext_monthly_201709' 
+archivetable <- 'raw_comext_monthly_2016S1'
+# Use a product which doesn't have a zero quantity
+# Tropical product (data starts only in 2012)
+# productanalysed <- 44072960 
+# Spruce sawnwood sub-product with the most number of lines (data starts as early as  2000)
+productanalysed <- 44071091
+# Another spruce
+# productanalysed <- 44071031
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+```
 
 This document first tries to run the existing clean function 
 - written for Comtrade data - on Comext data.
@@ -23,16 +36,14 @@ Then it describes the development process needed to make
 the clean function work with Comext data.
 
 
-# Note: It is very important to replace 0 zero values by NA
- 
-# Load data
+# Run the existing `tradeharvester::transfer7zfolder2db()` function on the Comext data
+
+Note: 0 zero values and empty strings were replaced by NA (NULL in Mysql)
+during the load operation performed by `
+
+
 ```{r load_data_and_descriptive_statistics, echo=TRUE}
-tableanalysed = 'raw_comext_monthly_201708' 
-
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
-
-# Use a product which doesn't have a 0 quantity
-wp <- tbl(con, tableanalysed) %>% 
+wp <- tbl(con, recenttable) %>% 
     filter(productcode == 44071031) %>% 
     collect()
 # Descriptive statistics
@@ -45,9 +56,6 @@ wp %>% filter(tradevalue == 0) %>% count()
 wp %>% filter(weight== 0) %>% count()
 wp %>% filter(quantity == 0) %>% count()
 ```
-
-
-# Crash test
 
 ## Crash test run the clean() function alone
 ```{r eval=FALSE}
@@ -104,8 +112,10 @@ conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregatio
 ```
 
 
-# Develop the clean function for Comext data
+# Develop a new clean function for Comext data
 
+
+## Reflections
 The goal is to reuse as many components from the Comtrade function 
 as possible. When it is not possible to reuse and or modify a function 
 written for Comtrade, then write a new function, which should still be 
@@ -115,7 +125,50 @@ might be moved later to the "eutradeflows" package if they become too numerous.
 However, there is no need to complexify the package structure.
 If there is only a handfull of - Comext speficic - functions, then they are well placed in tradeflows package.
 
+There is a difference between:
+
+* extracting median prices (and price bounds)
+  from monthly prices grouped by product, flow and year
+* and extraction median prices (and price bounds)
+  from yearly prices grouped by product, flow and year.
+
+Trade flows data cleaning steps:
+
+ * Add prices and conversion factors
+ * Shave prices
+
+### Reflections on prices and conversion factors
+I think prices and conversion factors can be storred in the same database
+table since they will beused at the same aggregation level. 
+I first added `` to the extractprices() function. 
+Then realised there were Inf et NaN values in the conversion factor. 
+Which were normally filtered in 
+This means I will keep the 2 functions separate. 
+I'll keep the 2 tables separate in the database too. 
+Since I can't think of an absolute necessary to keep them together.
+And there is a slight chance that I might need different aggregation level
+for the 2 informations in the future.
+
+
+## Extract prices and write them to the database
+
 ```{r}
+# wp stands for wood products
+wparchive <- tbl(con, archivetable) %>% 
+    filter(productcode == productanalysed) %>% 
+    collect()
+wprecent <- tbl(con, recenttable) %>% 
+    filter(productcode == productanalysed) %>% 
+    collect()
+# Reassamble recent and archive data in one data frame    
+wp <-  rbind(wparchive, wprecent)
+
+# Extract year with integer division
+wp$year <- wp$period %/% 100
+years <- unique(wp$year)
+# Are there any missing years?
+identical(min(years):max(years), as.integer(years))
+
 wp <- wp  %>% 
     addconversionfactorandprice() 
 
@@ -125,7 +178,61 @@ prices <- wp %>%
     # But it doesn't cost much to keep the product information in the grouping,
     # and it might prevent confusion in later data processing,
     # so keep "productcode" in the grouping.
-    extractprices(grouping = c("productcode", "flow", "year"))
+    extractprices(grouping = c("productcode", "flowcode", "year")) %>% 
+    # rename year to period
+    rename(period = year)
+
+
+# What DB is currently connected?
+message("Connected to the `", RMySQL::dbGetInfo(con)$dbname, "` database.")
+
+# Write prices to the database
+RMySQL::dbWriteTable(con, "vld_comext_price", prices,
+                     append = TRUE,
+                     row.names = FALSE)
+
+```
+
+
+```{r plotprices}
+prices %>% 
+    gather(key, value, -productcode, -flowcode, - year) %>% 
+    # Add flow names for the plot
+    left_join(data_frame(flowcode = c(1,2), flow = c("Import", "Export")),
+              by = "flowcode") %>%
+    ggplot(aes(x = year, y = value, color = key)) + 
+    geom_line() +
+    facet_wrap(~flow)
+```
+
+## Extract pricew and write them to the database
+
+```{r}
+pricew <- wp %>% 
+    extractpricew(grouping = c("productcode", "flowcode", "year")) %>% 
+    rename(period = year)
+RMySQL::dbWriteTable(con, "vld_comext_pricew", pricew,
+                     append = TRUE,
+                     row.names = FALSE)
+```
+
+
+## Extract conversion factors and write them to the database
+```{r}
+# current calculation has potentially 12 flows between 2 partner in each
+# flow direction for each product per year. 
+# I could also perform instead a year grouping before the calculation
+# so that there would only be one flow per year.
+# And then use the year variable in the grouping. 
+cv <- wp %>% 
+    extractconversionfactors(grouping = c("productcode", "flowcode", "year")) %>% 
+    rename(period = year)
+# Before using append=TRUE, you should empty the table
+RMySQL::dbSendQuery(con, "TRUNCATE table vld_comext_cv")
+RMySQL::dbWriteTable(con, "vld_comext_cv", cv,
+                     append = TRUE,
+                     row.names = FALSE)
+
 ```
 
 

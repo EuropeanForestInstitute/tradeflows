@@ -16,6 +16,8 @@ library(reshape2)
 
 
 #### Calculate price and conversion factors ####
+# add dummy column last changed
+dtf$lastchanged <- NA
 swd99 <- dtf %>%
     filter(year %in% c(2010,2011)) %>%
     removeduplicatedflows %>%
@@ -260,3 +262,4 @@ if(FALSE){
     saveRDS(swd99,"data-raw/comtrade/swd99.rds")
     saveRDS(pricedistri,"data-raw/comtrade/pricedistri.rds")
 }
+

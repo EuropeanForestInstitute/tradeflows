@@ -4,16 +4,12 @@
 \alias{extractconversionfactors}
 \title{Extract median conversion factor at a given geographical aggregation level}
 \usage{
-extractconversionfactors(dtf, geoaggregation = "region",
-  includeqwestimates = TRUE)
+extractconversionfactors(dtf, grouping = c("flow", "regionreporter", "year",
+  "unit"), includeqwestimates = TRUE)
 }
 \arguments{
 \item{dtf}{a dataframe containing all trade flows for one product
 and their individual conversion factors}
-
-\item{geoaggregation}{a character string specifying the regional aggregation
-level, "world" to extract world conversion factors,
- "region" to extract regional conversion factors.}
 
 \item{includeqwestimates}{logical TRUE when comtrade quantity and weight
 estimates can be included}

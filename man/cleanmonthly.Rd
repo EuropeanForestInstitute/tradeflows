@@ -4,9 +4,8 @@
 \alias{cleanmonthly}
 \title{Clean monthly trade flows}
 \usage{
-cleanmonthly(dtfmonthly, dtfyearly, geoaggregation = "region",
-  replacebypartnerquantity = TRUE, shaveprice = TRUE,
-  outputalltables = FALSE)
+cleanmonthly(dtfmonthly, dtfyearly, replacebypartnerquantity = TRUE,
+  shaveprice = TRUE, outputalltables = FALSE)
 }
 \arguments{
 \item{dtfmonthly}{data frame of monthly trade flows}

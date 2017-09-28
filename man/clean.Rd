@@ -4,8 +4,8 @@
 \alias{clean}
 \title{Combine cleaning functions}
 \usage{
-clean(dtf, geoaggregation = "region", replacebypartnerquantity = TRUE,
-  shaveprice = TRUE, addmissingmirrorflow = TRUE, outputalltables = FALSE,
+clean(dtf, replacebypartnerquantity = TRUE, shaveprice = TRUE,
+  addmissingmirrorflow = TRUE, outputalltables = FALSE,
   includeqestimates = TRUE)
 }
 \arguments{

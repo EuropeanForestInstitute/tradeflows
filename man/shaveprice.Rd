@@ -14,6 +14,7 @@ Upper and lower bound on prices have to be
 checked and quantity replaced accordingly
 This function comes after estimatequantity()
 and after addpartnerflow()
+so that the input data frame contains information on the price bounds
 check this order in the source of the clean() function.
 Check unit price for all flows
 recalculate unit price based on quantity estimate

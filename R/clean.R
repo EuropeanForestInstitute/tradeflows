@@ -89,6 +89,7 @@ addregion <- function(dtf, regioncolumn = "region"){
 addconversionfactorandprice <- function(dtf){
     dtf %>% mutate(conversion = weight / quantity,
                    price = tradevalue / quantity,
+                   pricew = tradevalue / weight,
                    # To avoid "integer overflow - use sum(as.numeric(.))" error
                    # on sum of all values
                    tradevalue = as.numeric(tradevalue),
@@ -132,7 +133,6 @@ filterworldeu28 <- function(dtf, verbose = FALSE){
 #' obtain a lower bound on prices
 #' @param uppercoef numeric multiplier of the third quartile to
 #' obtain an upper bound on prices
-#' @export
 #' @examples
 #' \dontrun{
 #' # tf a data frame of trade flows
@@ -140,7 +140,7 @@ filterworldeu28 <- function(dtf, verbose = FALSE){
 #' priceglobal <- tf %>%
 #'     extractprices(grouping = c("flow", "year", "unit"))
 #' }
-##'
+#' @export
 extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
                           grouping = c("flow", "regionreporter", "year", "unit"),
                           includeqestimates = TRUE){
@@ -155,13 +155,17 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
     # calculation
     dtf$price[is.infinite(dtf$price)] <- NA
 
+    # Comtrade specific
+    if ("flow" %in% names(dtf)){
+        dtf <- dtf %>%
+            # Keep only import and export prices, no re-export
+            filter(flow %in% c("Import", "Export") | flow %in% c(1,2)) %>%
+            # Remove world and EU28 values
+            filterworldeu28(verbose = TRUE)
+    }
 
     dtf %>%
-        # Keep only import and export prices, no re-export
-        filter(flow %in% c("Import", "Export") | flow %in% c(1,2)) %>%
-        # Remove world and EU28 values
-        filterworldeu28(verbose = TRUE) %>%
-        # Price whould not be NA and not be infinite
+        # Price should not be NA and not be infinite
         filter(!is.na(price) & !is.infinite(price)) %>%
         # Calculate yearly regional prices by unit and/or by other grouping variables
         group_by_(.dots = grouping) %>%
@@ -171,7 +175,7 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
                   # The average price often cannot be computed because there
                   # are infinite prices when quantity is = 0
                   averageprice = mean(price, na.rm=TRUE),
-                  weightedaverageprice = sum(tradevalue)/ sum(quantity) #,
+                  weightedaverageprice = sum(tradevalue)/ sum(quantity)
                   # Price weighted by the quantity, same value as above
                   # weightedaverageprice1 = sum(price * quantity, na.rm=TRUE)/
                   #  sum(quantity, na.rm=TRUE),
@@ -192,51 +196,61 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
 #' extract the median conversion factors.
 #' @param dtf a dataframe containing all trade flows for one product
 #' and their individual conversion factors
-#' @param geoaggregation a character string specifying the regional aggregation
-#'     level, "world" to extract world conversion factors,
-#'      "region" to extract regional conversion factors.
 #' @param  includeqwestimates logical TRUE when comtrade quantity and weight
 #'          estimates can be included
 #' @export
-extractconversionfactors <- function(dtf, geoaggregation="region",
+extractconversionfactors <- function(dtf,
+                                     grouping = c("flow", "regionreporter", "year", "unit"),
                                      includeqwestimates=TRUE){
     if(includeqwestimates==FALSE){
         dtf <- dtf %>% filter(flag==0)
     }
-    dtf <- dtf %>%
-        filter(flow %in% c("Import", "Export")) %>%
-        filterworldeu28() %>%
-        # Remove missing and infinite conversion factors
-        filter(!is.na(conversion) & !is.infinite(conversion) &
-                   !conversion == 0)
-
-    if(geoaggregation == "region"){
-        dtf <- dtf %>%  group_by(flow, regionreporter, year, unit)
-    } else {
-        dtf <- dtf %>% group_by(flow, year, unit)
+    # Comtrade specific
+    if ("flow" %in% names(dtf)){
+        dtf <- dtf %>%
+            filter(flow %in% c("Import", "Export")) %>%
+            filterworldeu28()
     }
     dtf %>%
-        summarise(medianconversion = round(median(conversion)))
+        # Remove missing, infinite and zero conversion factors
+        filter(!is.na(conversion) & !is.infinite(conversion) &
+                   !conversion == 0) %>%
+        # Calculate yearly regional conversion factors for each combination of the grouping variable
+        group_by_(.dots = grouping) %>%
+        summarise(medianconversion = median(conversion))
 }
 
 
 #' A function to calculate the percentage change on world imports and exports
 #' @param dtf0 a data frame of trade flows before the modification
 #' @param dtf1 a data frame of modified trade flows
+#' @param import code indicating import data, can be "Import" for Comtrade and
+#' 1 for Comext
+#' @param export code indicating export data, can be "Export" for Comtrade and
+#' 2 for Comext
 #'
 #' Note: Add a function changeflowmessage(dtf, dtfsplit) which will return a character
 #' string about both trade flows. This function could be defined in the main scope
 #' and reused in other parts of the workflow. Or maybe not because the quantity is
 #' not empty for addpartner flow and shaveprice.
 #' @export
-changeflowmessage <- function(dtf0, dtf1){
+changeflowmessage <- function(dtf0, dtf1,
+                              import = "Import",
+                              export = "Export"){
+    if (!import %in% head(dtf0$flow) &
+        (1 %in% head(dtf0$flow) | 2 %in% head(dtf0$flow))){
+        # In the case of Comext data, imported flow encoded as 1
+        # and export flow encoded as 2
+        import <- 1
+        export <- 2
+    }
     sumflow <- function(flow){
         sum0 <- sum(dtf0$quantity[dtf0$flow == flow], na.rm=TRUE)
         sum1 <- sum(dtf1$quantity[dtf1$flow == flow], na.rm=TRUE)
         signif(((sum1 - sum0) / sum0) * 100, 2)
     }
-    sentence <- paste("changed world exports by", sumflow("Export"),"%",
-                      "and world imports by", sumflow("Import"), "%",
+    sentence <- paste("changed world exports by", sumflow(export),"%",
+                      "and world imports by", sumflow(import), "%",
                       " (positive values imply an increase).")
     return(sentence)
 }
@@ -396,11 +410,19 @@ calculatediscrepancies <- function(dtf){
 #'      merged with dtf
 #' @export
 estimatequantity <- function(dtf, price, conversionfactor){
-    # check if at least 4 common columns are present in dtf
-    # for the merge with price (Flow, regionreporter, period, unit)
-    stopifnot(sum(names(price) %in% names(dtf))>=4)
+    ## Check common columns between dtf, price and conversionfactor
+    # column columns will be used to merge these data frames.
+    # check if at least 3 or 4 common columns are present in dtf
+    # 3 common columns for the merge with global prices
+    # (flow, period, unit)
+    stopifnot(sum(names(price) %in% names(dtf)) >= 3)
+    # 4 common columns for the merge with regional prices
+    # (flow, regionreporter, period, unit)
+    if("regionreporter" %in% names(price)){
+        stopifnot(sum(names(price) %in% names(dtf)) >= 4)
+    }
     # Check if at leat 3 common columns are present with dtf
-    # for the merge with conversionfactor
+    # for the merge with conversionfactor (flow, period, unit)
     stopifnot(sum(names(conversionfactor) %in% names(dtf))>=3)
 
     ### Specify quantity unit
@@ -416,9 +438,13 @@ estimatequantity <- function(dtf, price, conversionfactor){
     # Keep raw quantity for further analysis
     dtf <- dtf %>% mutate(quantityraw = quantity)
     # Estimate quantity based on the weight using a conversion factor
+    message("Merging prices by the following columns: ",
+            paste(intersect(names(conversionfactor), names(dtf)),collapse =", "))
     dtf <- merge(dtf, conversionfactor, all.x=TRUE) %>%
         mutate(quantity_cf = weight / medianconversion)
     # Estimate quantity based on the trade value, using a unit price
+    message("Merging conversion factors by the following columns: ",
+            paste(intersect(names(price), names(dtf)),collapse =", "))
     dtf <- merge(dtf, price, all.x=TRUE) %>%
         mutate(quantity_up = tradevalue / medianprice,
                havequantity = !is.na(quantity))
@@ -637,7 +663,6 @@ addmissingmirrorflow <- function(dtf){
 #' data frame. With columnes added by the various clean functions.
 #' @export
 clean <- function(dtf,
-                  geoaggregation = "region",
                   replacebypartnerquantity = TRUE,
                   shaveprice = TRUE,
                   addmissingmirrorflow = TRUE,
@@ -656,7 +681,7 @@ clean <- function(dtf,
 
     ### Prepare conversion factors and prices
     price <- extractprices(dtf, includeqestimates)
-    conversionfactor <- extractconversionfactors(dtf, geoaggregation = geoaggregation)
+    conversionfactor <- extractconversionfactors(dtf)
 
     ### Estimate quantity
     nrowbeforechange <- nrow(dtf)
@@ -710,7 +735,6 @@ clean <- function(dtf,
 #' @export
 cleanmonthly <- function(dtfmonthly,
                          dtfyearly,
-                         geoaggregation = "region",
                          replacebypartnerquantity = TRUE,
                          shaveprice = TRUE,
                          outputalltables = FALSE){
@@ -719,7 +743,7 @@ cleanmonthly <- function(dtfmonthly,
     message("\nIn an ideal world conversion factors, prices and choice table would be placed
 in a database table, and not recalculated each time from the raw_flow_yearly.
 We sacrificed a few seconds of execution time for an easier implementation.\n")
-    y <- clean(dtfyearly, geoaggregation = geoaggregation, outputalltables = TRUE)
+    y <- clean(dtfyearly, outputalltables = TRUE)
 
     ### Prepare monthly data
     # Keep only columns usefull for R,

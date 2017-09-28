@@ -4,12 +4,18 @@
 \alias{changeflowmessage}
 \title{A function to calculate the percentage change on world imports and exports}
 \usage{
-changeflowmessage(dtf0, dtf1)
+changeflowmessage(dtf0, dtf1, import = "Import", export = "Export")
 }
 \arguments{
 \item{dtf0}{a data frame of trade flows before the modification}
 
-\item{dtf1}{a data frame of modified trade flows
+\item{dtf1}{a data frame of modified trade flows}
+
+\item{import}{code indicating import data, can be "Import" for Comtrade and
+1 for Comext}
+
+\item{export}{code indicating export data, can be "Export" for Comtrade and
+2 for Comext
 
 Note: Add a function changeflowmessage(dtf, dtfsplit) which will return a character
 string about both trade flows. This function could be defined in the main scope
