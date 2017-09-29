@@ -4,8 +4,8 @@
 \alias{cleancomextmonthly1product}
 \title{Clean Comext Monthly data}
 \usage{
-cleancomextmonthly1product(RMySQLcon, tablearchive, tablerecent, tableprice,
-  tablecv)
+cleancomextmonthly1product(RMySQLcon, productanalysed, tablearchive,
+  tablerecent, tableprice, tablepricew, tablecv)
 }
 \arguments{
 \item{RMySQLcon}{database connection object created by RMySQL \code{\link[DBI]{dbConnect}}}
