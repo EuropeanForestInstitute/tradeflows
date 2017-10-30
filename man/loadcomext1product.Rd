@@ -27,6 +27,8 @@ dtf <- loadcomext1product(con,
                           tablerecent = "raw_comext_monthly_201709")
 head(dtf)
 unique(dtf$year)
+# Disconnect from the database
+RMySQL::dbDisconnect(con)
 }
 }
 

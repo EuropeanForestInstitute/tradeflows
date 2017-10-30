@@ -4,25 +4,23 @@
 \alias{estimatequantity}
 \title{Estimate quantity}
 \usage{
-estimatequantity(dtf, price, conversionfactor)
+estimatequantity(dtf)
 }
 \arguments{
 \item{dtf}{data frame}
-
-\item{price}{a data frame of unit prices which can be merge with dtf}
-
-\item{conversionfactor}{a data frame of conversion factors which can be
-merged with dtf}
 }
 \description{
+The data frame should contain median prices added by the
+joinpricecvfbounds function.
+}
+\details{
 Estimate missing quantity
 For each trade flow in the given data frame,
 compute quantity_cf from the weight using a conversion factor and
 comput quantity_up from the trade value using a unit price.
 These columns will be available in the data frame output of this function,
 but they will not be saved in the validated database.
-}
-\details{
+
 Split the data frame between flows which have a quantity from those which don't
 complete missing quantity from weight when available or from the
 tradevalue when the weight is not available

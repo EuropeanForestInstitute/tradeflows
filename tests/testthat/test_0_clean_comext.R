@@ -59,6 +59,32 @@ test_that("",{
 })
 
 
+
+context("joinpricecvfbounds")
+test_that("The price and conversion factor bounds are added
+          based on the gouping variables",{
+    dtf <- data_frame(key = c("a", "b", "b", "a"),
+                      year = c(2017, 2017, 2018, 2017),
+                      unit = 1,
+                      quantity = 1:4)
+    price <- data_frame(key = c("a", "b", "b"),
+                        year = c(2017, 2017, 2018),
+                        unit = 1,
+                        lowerprice = 1:3,
+                        upperprice = 7:9)
+    conversion <- data_frame(key = c("a", "b", "b"),
+                             year = c(2017, 2017, 2018),
+                             unit = 1,
+                             lowerconversion = 11:13,
+                             upperconversion = 17:19)
+    dtf <- joinpricecvfbounds(dtf, price, conversion)
+    # After the merge, dtf values will be
+    # rearranged by the merge variables: key, year, unit
+    expect_equal(dtf$lowerprice, c(1, 1, 2, 3))
+    expect_equal(dtf$lowerconversion, c(11, 11, 12, 13))
+})
+
+
 context("estimatequantity")
 test_that("the estimate quantity function merges prices and conversion factors
           with a simple key",{
@@ -84,8 +110,10 @@ test_that("the estimate quantity function merges prices and conversion factors
     intersect(names(dtf), names(conversionfactor))
     # merge is present in the current (as of September 2017) implementation of
     # the estimatequantity function
-    dtf2 <- estimatequantity(dtf, price, conversionfactor)
-    expect_equal(dtf2$quantity,c(1, 2, 1/30))
+    dtf2 <- dtf %>%
+        joinpricecvfbounds(price, conversionfactor) %>%
+        estimatequantity()
+    expect_equal(dtf2$quantity, c(1, 2, 1/30))
 })
 
 

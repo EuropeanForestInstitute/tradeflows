@@ -18,7 +18,7 @@ shaveconversion(dtf, verbose = getOption("tradeflows.verbose", TRUE))
 \description{
 Upper and lower bound on prices have to be
 checked and quantity replaced accordingly
-This function comes after estimatequantity()
+This function comes after joinpricecvfbounds(), estimatequantity()
 and after addpartnerflow()
 so that the input data frame contains information on the price bounds
 check this order in the source of the clean() function.
