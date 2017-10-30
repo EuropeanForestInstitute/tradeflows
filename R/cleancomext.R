@@ -98,6 +98,74 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
 }
 
 
+#' Load all archive and recent Comext data for one product
+#'
+#' The function will use the database connector provided as
+#' RMySQLcon argument.
+#' It will load the product from an archive table and a recent
+#' table. The function will combine the archive table and
+#' the recent table in one dataframe and will return a dataframe.
+#' @return a  data frame containing Comext trade flows for the given product
+#' @examples \dontrun{ # Clean product and country codes
+#' # Connect to the database
+#' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+#' # Load data for product 44079910
+#' dtf <- loadcomext1product(con,
+#'                           productanalysed = "44071091",
+#'                           tablearchive = "raw_comext_monthly_2016S1",
+#'                           tablerecent = "raw_comext_monthly_201709")
+#' head(dtf)
+#' unique(dtf$year)
+#' # Disconnect from the database
+#' RMySQL::dbDisconnect(con)
+#' }
+#' @export
+loadcomext1product <- function(RMySQLcon,
+                               productanalysed,
+                               tablearchive,
+                               tablerecent){
+    # load trade flows from the database into a data frame
+    message("Load recent data from ", tablerecent, "...")
+    dtfr <- tbl(RMySQLcon, tablerecent) %>%
+        filter(productcode == productanalysed) %>%
+        # Add quantity units
+        eutradeflows::addunit2tbl(RMySQLcon,
+                                  maintbl = .,
+                                  tableunit = "vld_comext_unit")  %>%
+        collect()
+    beginrecentdata <- min(dtfr$period)
+
+    # Load archive data, for periods before the begin of recent data
+    message("Load archive data from ",tablearchive, "...")
+    dtfa <- tbl(RMySQLcon, tablearchive) %>%
+        filter(productcode == productanalysed &
+                   period < beginrecentdata) %>%
+        # Add quantity units
+        eutradeflows::addunit2tbl(RMySQLcon,
+                                  maintbl = .,
+                                  tableunit = "vld_comext_unit")  %>%
+        collect()    # load trade flows from the database into a data frame
+
+    # Combine archive and recent data
+    dtf <- rbind(dtfa, dtfr)
+
+    # Extract year with integer division
+    dtf$year <- dtf$period %/% 100
+    years <- unique(dtf$year)
+    # Are there any missing years?
+    if(!identical(min(years):max(years), as.integer(years))){
+        warning("These years are missing from the data: ",
+                setdiff(min(years):max(years), years))
+    }
+
+    # Remove unnecessary objects
+    rm(dtfa)
+    rm(dtfr)
+
+    return(dtf)
+}
+
+
 #' Clean Comext Monthly data
 #'
 #' @param RMySQLcon database connection object created by RMySQL \code{\link[DBI]{dbConnect}}
@@ -141,47 +209,11 @@ cleancomextmonthly1product <- function(RMySQLcon,
     message("\n\nCleaning product code: ", productanalysed)
     message("Repetitive elements of this long function could be",
             " placed in several smaller functions.")
-    message("starting with data loading until the comment # Are there any missing years?")
 
-    # load trade flows from the database into a data frame
-    message("Load recent data from ", tablerecent, "...")
-    dtfr <- tbl(RMySQLcon, tablerecent) %>%
-        filter(productcode == productanalysed) %>%
-        # Add quantity units
-        eutradeflows::addunit2tbl(RMySQLcon,
-                                  maintbl = .,
-                                  tableunit = "vld_comext_unit")  %>%
-        collect()
-    beginrecentdata <- min(dtfr$period)
-
-    # Load archive data, for periods before the begin of recent data
-    message("Load archive data from ",tablearchive, "...")
-    dtfa <- tbl(RMySQLcon, tablearchive) %>%
-        filter(productcode == productanalysed &
-                   period < beginrecentdata) %>%
-        # Add quantity units
-        eutradeflows::addunit2tbl(RMySQLcon,
-                                  maintbl = .,
-                                  tableunit = "vld_comext_unit")  %>%
-        collect()    # load trade flows from the database into a data frame
-
-    # Combine archive and recent data
-    dtf <- rbind(dtfa, dtfr)
-
-    # Extract year with integer division
-    dtf$year <- dtf$period %/% 100
-    years <- unique(dtf$year)
-    # Are there any missing years?
-    if(!identical(min(years):max(years), as.integer(years))){
-        warning("These years are missing from the data: ",
-                setdiff(min(years):max(years), years))
-    }
-
-
-
-    # Remove unnecessary objects
-    rm(dtfa)
-    rm(dtfr)
+    dtf <- loadcomext1product(RMySQLcon = RMySQLcon,
+                              productanalysed = productanalysed,
+                              tablearchive = tablearchive,
+                              tablerecent = tablerecent)
 
     # Add prices and conversion factors to the data frame
     dtf <- addconversionfactorandprice(dtf)
