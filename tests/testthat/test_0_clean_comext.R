@@ -3,7 +3,6 @@
 
 require(dplyr, warn.conflicts = FALSE, quietly = TRUE)
 
-
 context("addconversionfactorandprice")
 test_that("Add prices works for both prices per quantity and prices per weight",{
     dtf <- data_frame(tradevalue = c(12, 24, 36),
@@ -44,12 +43,19 @@ test_that("",{
                       pricew = c(1,2,3,Inf,NA,1,2,3,Inf,NA),
                       tradevalue  = 1:10,
                       weight = 1:10) %>%
-        extractpricew(grouping = c("flow", "regionpartner", "year"))
+        extractpricew(grouping = c("flow", "regionpartner", "year"),
+                      lowercoef = 1, uppercoef = 1)
     # extractpricew doesn't rearange the data frame
     # (in contrast to extractprices)
-    expect_equal(dtf$lowerpricew, rep(c(1.5, 0.625),2))
-    expect_equal(dtf$medianpricew, rep(c(3, 1.5),2))
-    expect_equal(dtf$upperpricew, rep(c(6,3.5),2))
+    # extractpricew now uses 5th percentile and 95th percentile as
+    # lower and upper boundary on pricew.
+    lower <- c(quantile(3, 0.05, names=FALSE),   # Asia a long statement to write 3
+               quantile(1:2, 0.05, names=FALSE)) # Europe
+    upper <- c(quantile(3, 0.95, names=FALSE),   # Asia a long statement to write 3
+               quantile(1:2, 0.95, names=FALSE)) # Europe
+    expect_equal(dtf$lowerpricew, rep(lower, 2))
+    expect_equal(dtf$medianpricew, rep(c(3, 1.5), 2))
+    expect_equal(dtf$upperpricew, rep(upper, 2))
 })
 
 
@@ -96,6 +102,40 @@ test_that("",{
                       flow = 1) %>%
         shaveprice()
     expect_equal(dtf$quantity, c(1,5,6))
+})
+
+
+context("shavepricew")
+test_that("",{
+    dtf <- data_frame(key = 1:3,
+                      tradevalue = c(2, 4, 12),
+                      weight = c(1, 8, 3),
+                      pricew = c(2, 0.5, 4),
+                      lowerpricew = c(1, 1, 1),
+                      upperpricew = c(3, 3, 3),
+                      flag = 0,
+                      flow = 1) %>%
+        shavepricew()
+    # If pricew < lowerpricew, then weight = tradevalue / lowerpricew
+    # If pricew > upperpricew, then weight = tradevalue / upperpricew
+    expect_equal(dtf$weight, c(1, 4, 4))
+})
+
+
+context("shavecvf")
+test_that("",{
+    dtf<- data_frame(weight = c(2, 1, 4),
+                     quantity = c(1, 2, 1),
+                     conversion = c(2, 0.5, 4),
+                     lowerconversion = c(1, 1, 1),
+                     upperconversion = c(3, 3, 3),
+                     flag = 0,
+                     flow = 1) %>%
+        shaveconversion()
+
+    # If conversion < lowerconversion, then quantity = weight / lowerconversion
+    # If conversion > upperconversion, then quantity = weight / upperconversion
+    expect_equal(dtf$quantity, c(1, 1, 4/3))
 })
 
 

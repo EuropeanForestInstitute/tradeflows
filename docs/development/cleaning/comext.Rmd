@@ -248,7 +248,6 @@ RMySQL::dbWriteTable(con, "vld_comext_cv", cv,
 ```
 
 ## developt the cleancomextmonthly1product() function
-### Load archive and recent data into a data frame
 ```{r}
 # Assign variables which will be used as function parameters in the real function
 RMySQLcon <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows") 
@@ -314,6 +313,8 @@ price <- extractprices(dtf, grouping = c("productcode", "flowcode",
                                          "year", "unit")) 
 pricew <- extractpricew(dtf, grouping = c("productcode", "flowcode", 
                                           "year", "unit"))
+price <- price %>% 
+    left_join(pricew, by = c("productcode", "flowcode", "year", "unit"))
 cvf <- extractconversionfactors(dtf, grouping = c("productcode", "flowcode", 
                                           "year", "unit"))
 # Store rows before the change
@@ -360,7 +361,6 @@ RMySQL::dbWriteTable(con, name = tablepricew,
                      value = pricew, append=TRUE, row.names = FALSE)
 RMySQL::dbWriteTable(con, name = tablecv, 
                      value = cvf, append=TRUE, row.names = FALSE)
-
 ```
 
 
@@ -371,13 +371,39 @@ RMySQL::dbWriteTable(con, name = tablecv,
 # Another spruce
 # productanalysed <- 44071031
 
-cleancomextmonthly1product(con ,
-                           productanalysed = "44071091",
-                           tablearchive = "raw_comext_monthly_2016S1",
-                           tablerecent = "raw_comext_monthly_201709",
-                           tableprice = "vld_comext_price",
-                           tablepricew = "vld_comext_pricew",
-                           tablecv = "vld_comext_cv")
+# The function returns a data frame invisibly which can be storred here
+# in dtf for inspection
+dtf <- cleancomextmonthly1product(con ,
+                                  productanalysed = "44071091",
+                                  tablearchive = "raw_comext_monthly_2016S1",
+                                  tablerecent = "raw_comext_monthly_201709",
+                                  tablewrite = "vld_comext_monthly",
+                                  tableprice = "vld_comext_price",
+                                  tablepricew = "vld_comext_pricew",
+                                  tablecv = "vld_comext_cv")
+
+
+dtf %>% count(flag)
+
+# Plot quantity and quantity raw
+ggplot(dtf, aes(x = quantity, y = tradevalue)) +
+    geom_point() +
+    facet_wrap(~flag)
+
+ggplot(dtf, aes(x = weight, y = tradevalue)) +
+    geom_point() +
+    facet_wrap(~flag)
+
+ggplot(dtf, aes(x = weight, y = quantity)) +
+    geom_point() +
+    facet_wrap(~flag)
+prices <- dtf %>% group_by(year, flowcode, unit) %>% 
+    summarise(medianprice = unique(medianprice),
+              medianpricew = unique(medianpricew))
+
+p <- ggplot(prices, aes(x = year)) 
+p + geom_line(aes(y = medianprice))
+p + geom_line(aes(y = medianpricew))
 
 ```
 
@@ -385,19 +411,45 @@ cleancomextmonthly1product(con ,
 
 ### Develop clean comext function for many products
 ```{r}
+RMySQLcon <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows") 
+tablearchive <- "raw_comext_monthly_2016S1"
+tablerecent <- "raw_comext_monthly_201709"
+tablewrite <- "vld_comext_monthly" 
+
+# Create an new empty vld_monthly table by copying frmo the template
 
 
-# Get list of products available in the database
+# Get a vector of products available in the database
+# Products in the recent data
+dtfr <- tbl(RMySQLcon, tablerecent) %>% 
+    distinct(productcode) %>% collect()
+# Products in the archive data
+dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+    distinct(productcode) %>% collect()
+# Combine both in a vector
+products <- union(dtfr$productcode, dtfa$productcode)
 
+# Keep only 8 digit product codes
+# two digit products do not have a unit and it doesn't make sense to clean them
+products <- products[nchar(products)>2]
 
 # Loop on all products
+lapply(X = head(products), 
+       FUN = cleancomextmonthly1product,
+       RMySQLcon = RMySQLcon,
+       tablearchive = tablearchive,
+       tablerecent = tablerecent,
+       tablewrite = tablewrite # add ... here
+       )
 
 
-
-
-
-
+# There were several errors cleaning product code: 44011100, see below
+# 1. error concerning unit prefered 
+# 2. error concerning length of 'dimnames' [2] not equal to array extent
+#    this was due to a mistake in the if condition, 
+#    an inferior sign was inside nrow(price<0) instead of nrow(price)<0 
 ```
+
 
 
 # Issues
@@ -435,7 +487,7 @@ tbl(RMySQLcon, tablearchive) %>%
 
 ```
 
-## 20170928
+## 20170928 addunit2tbl function
 The addunit2tbl function was originally developped for 2 tbl objects, 
 Will it work for one data frame and one tbl object?
 The answer is no, it returns the error:
@@ -450,6 +502,45 @@ eutradeflows::addunit2tbl(RMySQLcon, maintbl = dtf,
 In the end I decided to add units during the data frame load statement.
 See above, under the comment:
 "load trade flows from the database into a data frame"
+
+
+
+## 20171005 product 44011100 unitprefered : replacement has length zero
+Instruction to reproduce the error below.
+Now fixed by checking `if(nrow(price)>0)` before extracting the prefered 
+quantity unit.
+```{r}
+cleancomextmonthly1product(con ,
+                           productanalysed = "44011100",
+                           tablearchive = "raw_comext_monthly_2016S1",
+                           tablerecent = "raw_comext_monthly_201709",
+                           tablewrite = "vld_comext_monthly",
+                           tableprice = "vld_comext_price",
+                           tablepricew = "vld_comext_pricew",
+                           tablecv = "vld_comext_cv")
+# Error:
+# no non-missing arguments to max; returning -InfError in dtf$unit[dtf$unit == "No Quantity"] <- unitprefered : 
+#   replacement has length zero
+
+# In debug mode, with a breakpoint in the cleancomextmonthly1product() function, 
+# I can see that the price data frame is empty because 
+# there are no quantities for that product.
+
+
+
+# Sum quantities for all produts
+# To find out if completely missing quantities appear frequently
+dtf <- tbl(RMySQLcon, tablerecent) %>% 
+    group_by(productcode) %>% 
+    summarise(quantity = sum(quantity)) %>% 
+    collect()
+
+dtf %>% filter(is.na(quantity))
+
+
+```
+
+
 
 
 ```{r dbDisconnect}

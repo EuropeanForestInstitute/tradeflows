@@ -200,6 +200,7 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
 #'          estimates can be included
 #' @export
 extractconversionfactors <- function(dtf,
+                                     lowercoef = 1, uppercoef = 1,
                                      grouping = c("flow", "regionreporter", "year", "unit"),
                                      includeqwestimates=TRUE){
     if(includeqwestimates==FALSE){
@@ -217,7 +218,13 @@ extractconversionfactors <- function(dtf,
                    !conversion == 0) %>%
         # Calculate yearly regional conversion factors for each combination of the grouping variable
         group_by_(.dots = grouping) %>%
-        summarise(medianconversion = median(conversion))
+        summarise(lowerconversion = lowercoef * quantile(conversion, 0.25, names=FALSE),
+                  medianconversion = median(conversion),
+                  upperconversion = uppercoef * quantile(conversion, 0.75, names=FALSE),
+                  # The average conversion often cannot be computed because there
+                  # are infinite conversions when quantity is = 0
+                  averageconversion = mean(conversion, na.rm=TRUE),
+                  weightedaverageconversion = sum(weight)/ sum(quantity))
 }
 
 
@@ -236,7 +243,8 @@ extractconversionfactors <- function(dtf,
 #' @export
 changeflowmessage <- function(dtf0, dtf1,
                               import = "Import",
-                              export = "Export"){
+                              export = "Export",
+                              variable = "quantity"){
     if (!import %in% head(dtf0$flow) &
         (1 %in% head(dtf0$flow) | 2 %in% head(dtf0$flow))){
         # In the case of Comext data, imported flow encoded as 1
@@ -245,12 +253,13 @@ changeflowmessage <- function(dtf0, dtf1,
         export <- 2
     }
     sumflow <- function(flow){
-        sum0 <- sum(dtf0$quantity[dtf0$flow == flow], na.rm=TRUE)
-        sum1 <- sum(dtf1$quantity[dtf1$flow == flow], na.rm=TRUE)
+        if (!flow %in% dtf0$flow) return(0)
+        sum0 <- sum(dtf0[dtf0$flow == flow, variable], na.rm=TRUE)
+        sum1 <- sum(dtf1[dtf1$flow == flow, variable], na.rm=TRUE)
         signif(((sum1 - sum0) / sum0) * 100, 2)
     }
-    sentence <- paste("changed world exports by", sumflow(export),"%",
-                      "and world imports by", sumflow(import), "%",
+    sentence <- paste("changed world export ", variable, " by", sumflow(export),"%",
+                      "and world import", variable, " by", sumflow(import), "%",
                       " (positive values imply an increase).")
     return(sentence)
 }
@@ -426,13 +435,18 @@ estimatequantity <- function(dtf, price, conversionfactor){
     stopifnot(sum(names(conversionfactor) %in% names(dtf))>=3)
 
     ### Specify quantity unit
-    # Extract the unit most present in the price data frame
-    unitprefered <-  price %>% group_by(unit) %>% summarise(n=n())
-    unitprefered <- unitprefered$unit[unitprefered$n==max(unitprefered$n)]
-    # Replace unit "No Quantity" and unit NA by the most prefered unit
-    # before merging price and conversion factor tables
-    dtf$unit[dtf$unit=="No Quantity"] <- unitprefered
-    dtf$unit[is.na(dtf$unit)] <- unitprefered
+    if(nrow(price)>0) {
+        # Extract the unit most present in the price data frame
+        unitprefered <-  price %>% group_by(unit) %>% summarise(n=n())
+        unitprefered <- unitprefered$unit[unitprefered$n==max(unitprefered$n)]
+        # Replace unit "No Quantity" and unit NA by the most prefered unit
+        # before merging price and conversion factor tables
+        dtf$unit[dtf$unit=="No Quantity"] <- unitprefered
+        dtf$unit[is.na(dtf$unit)] <- unitprefered
+    } else {
+        message("The price data frame is empty, ",
+                "skiping the creation of a most prefered quantity unit.")
+    }
 
     ### For all flows
     # Keep raw quantity for further analysis
@@ -448,6 +462,25 @@ estimatequantity <- function(dtf, price, conversionfactor){
     dtf <- merge(dtf, price, all.x=TRUE) %>%
         mutate(quantity_up = tradevalue / medianprice,
                havequantity = !is.na(quantity))
+
+    # Comext specific
+    # if medianpricew (median of the unit price per weight) is present
+    # it was added by the merge with price a few lines above
+    if("medianpricew" %in% names(dtf)){
+        dtf <- dtf %>%
+            mutate(
+                # Estimate weight based on the trade value, using a unit price of weight
+                weight_upw = tradevalue / medianpricew,
+                # Estimate quantity based on the new weight
+                quantity_cfupw = weight_upw / medianconversion)
+        # Split flows which have a weight from those which don't
+        dtfw <- dtf %>% filter(!is.na(weight))
+        dtfnow <- dtf %>% filter(is.na(weight))
+        stopifnot(identical(nrow(dtfw) + nrow(dtfnow), nrow(dtf)))
+        # Replace weight by weight_upw
+        dtfnow <- dtfnow %>% mutate(weight = weight_upw,
+                                      flag = flag + 30)
+    }
 
     # Split flows which have a quantity from those which don't
     dtfq <- dtf %>% filter(!is.na(quantity))

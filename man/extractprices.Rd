@@ -8,7 +8,7 @@
 extractprices(dtf, lowercoef = 0.5, uppercoef = 2, grouping = c("flow",
   "regionreporter", "year", "unit"), includeqestimates = TRUE)
 
-extractpricew(dtf, lowercoef = 0.5, uppercoef = 2, grouping = c("flow",
+extractpricew(dtf, lowercoef = 1, uppercoef = 1, grouping = c("flow",
   "regionreporter", "year", "unit"))
 }
 \arguments{

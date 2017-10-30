@@ -4,8 +4,9 @@
 \alias{extractconversionfactors}
 \title{Extract median conversion factor at a given geographical aggregation level}
 \usage{
-extractconversionfactors(dtf, grouping = c("flow", "regionreporter", "year",
-  "unit"), includeqwestimates = TRUE)
+extractconversionfactors(dtf, lowercoef = 1, uppercoef = 1,
+  grouping = c("flow", "regionreporter", "year", "unit"),
+  includeqwestimates = TRUE)
 }
 \arguments{
 \item{dtf}{a dataframe containing all trade flows for one product

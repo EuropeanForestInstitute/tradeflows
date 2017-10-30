@@ -4,7 +4,8 @@
 \alias{changeflowmessage}
 \title{A function to calculate the percentage change on world imports and exports}
 \usage{
-changeflowmessage(dtf0, dtf1, import = "Import", export = "Export")
+changeflowmessage(dtf0, dtf1, import = "Import", export = "Export",
+  variable = "quantity")
 }
 \arguments{
 \item{dtf0}{a data frame of trade flows before the modification}
