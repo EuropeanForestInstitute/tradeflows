@@ -10,7 +10,8 @@ cleancomextmonthly1product(RMySQLcon, productanalysed, tablearchive,
   tablepriceconversion = "vld_comext_priceconversion")
 
 cleancomextmonthly(RMySQLcon, productanalysed, tablearchive, tablerecent,
-  tablewrite, tablepriceconversion = "vld_comext_priceconversion",
+  tablewrite, tabletemplate = "vld_comext_monthly_template",
+  tablepriceconversion = "vld_comext_priceconversion",
   logfile = file.path("~", "comextcleaninglog.txt"))
 }
 \arguments{
@@ -63,6 +64,7 @@ cleancomextmonthly(con ,
                    tablearchive = "raw_comext_monthly_2016S1",
                    tablerecent = "raw_comext_monthly_201709",
                    tablewrite = "vld_comext_monthly",
+                   tabletemplate = "vld_comext_monthly_template",
                    tablepriceconversion = "vld_comext_priceconversion")
 # Disconnect from the database
 RMySQL::dbDisconnect(con)

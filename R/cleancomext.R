@@ -206,6 +206,7 @@ loadcomext1product <- function(RMySQLcon,
 #'                    tablearchive = "raw_comext_monthly_2016S1",
 #'                    tablerecent = "raw_comext_monthly_201709",
 #'                    tablewrite = "vld_comext_monthly",
+#'                    tabletemplate = "vld_comext_monthly_template",
 #'                    tablepriceconversion = "vld_comext_priceconversion")
 #' # Disconnect from the database
 #' RMySQL::dbDisconnect(con)
@@ -292,6 +293,12 @@ cleancomextmonthly1product <- function(RMySQLcon,
         left_join(conversion, by = c("productcode", "flowcode", "year", "unit")) %>%
         # Rename unit back to unit code
         rename(unitcode = unit)
+    # Delete existing price and conversion factors for the given product
+    query <- paste("DELETE FROM ", tablepriceconversion,
+                   "WHERE productcode = ", productanalysed)
+    res <- RMySQL::dbSendQuery(RMySQLcon, query)
+    RMySQL::dbClearResult(res)
+    # write price and conversion factors to the database
     RMySQL::dbWriteTable(con, name = tablepriceconversion,
                          value = priceconversion, append=TRUE, row.names = FALSE)
     return(invisible(dtf))
@@ -305,8 +312,18 @@ cleancomextmonthly <- function(RMySQLcon,
                                tablearchive,
                                tablerecent,
                                tablewrite,
+                               tabletemplate = "vld_comext_monthly_template",
                                tablepriceconversion = "vld_comext_priceconversion",
                                logfile = file.path("~", "comextcleaninglog.txt")){
+
+    # Create the table that will store validated data
+    message("If the database table ", tablewrite,
+            " already exists, all its content will be erased and replaced.")
+    RMySQL::dbSendQuery(RMySQLcon, sprintf("DROP TABLE IF EXISTS `%s`;",
+                                           tablewrite))
+    RMySQL::dbSendQuery(RMySQLcon, sprintf("CREATE TABLE %s LIKE %s;",
+                                           tablewrite, tabletemplate))
+
     # Find all products in the recent and archive table
     #  in the form of a a vector of products available
     dtfr <- tbl(RMySQLcon, tablerecent) %>%

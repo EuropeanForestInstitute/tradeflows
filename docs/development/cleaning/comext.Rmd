@@ -450,6 +450,33 @@ lapply(X = head(products),
 ```
 
 
+### Run cleancomextmonthly on the server
+```{r eval=FALSE}
+# Update packages 
+devtools::install_git('ssh://git@bitbucket.org/paul4forest/tradeharvester.git',install_vignettes = TRUE) 
+devtools::install_github("EuropeanForestInstitute/tradeflows")
+devtools::install_github("stix-global/eutradeflows")
+
+# Create the database structure for validated data
+eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "tradeflows")
+
+library(tradeflows)
+# Connect to the database
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+# Clean product 44079910
+
+# Clean all products available in the database
+cleancomextmonthly(con ,
+                   tablearchive = "raw_comext_monthly_2016S1",
+                   tablerecent = "raw_comext_monthly_201709",
+                   tablewrite = "vld_comext_monthly",
+                   tabletemplate = "vld_comext_monthly_template",
+                   tablepriceconversion = "vld_comext_priceconversion")
+
+# Disconnect from the database
+RMySQL::dbDisconnect(con)
+```
+
 
 # Issues
 ### 20170928 Speed of selecting archive data
