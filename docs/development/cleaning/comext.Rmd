@@ -404,7 +404,6 @@ prices <- dtf %>% group_by(year, flowcode, unit) %>%
 p <- ggplot(prices, aes(x = year)) 
 p + geom_line(aes(y = medianprice))
 p + geom_line(aes(y = medianpricew))
-
 ```
 
 

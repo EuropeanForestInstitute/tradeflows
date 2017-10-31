@@ -6,52 +6,64 @@
 \title{Clean Comext Monthly data}
 \usage{
 cleancomextmonthly1product(RMySQLcon, productanalysed, tablearchive,
-  tablerecent, tablewrite, tableprice = "vld_comext_price",
-  tablepricew = "vld_comext_pricew", tablecv = "vld_comext_cv")
+  tablerecent, tablewrite,
+  tablepriceconversion = "vld_comext_priceconversion")
 
 cleancomextmonthly(RMySQLcon, productanalysed, tablearchive, tablerecent,
-  tablewrite, ...)
+  tablewrite, tablepriceconversion = "vld_comext_priceconversion",
+  logfile = file.path("~", "comextcleaninglog.txt"))
 }
 \arguments{
 \item{RMySQLcon}{database connection object created by RMySQL \code{\link[DBI]{dbConnect}}}
+
+\item{productanalysed}{character code of the product to analyse}
 
 \item{tablearchive}{character name of a monthly archive table}
 
 \item{tablerecent}{character name of a monthly recent table}
 
-\item{tableprice}{character name of a price table}
+\item{tablewrite}{character name of the monthly table where output data will be written}
 
-\item{tablecv}{character name of a conversion factor table}
-
-\item{...}{parameters passed to cleancomextmonthly1product}
+\item{tablepriceconversion}{character name of a table which will store price
+and conversion factors}
 }
 \value{
 \code{cleancomextmonthly1product} invisibly returns a data frame
 with all columns generated during the cleaning process.
 }
 \description{
-Clean Comext Monthly data
+Loads all trade flows for the given product codes and
+pass them through the cleaning algorithm:
+extract prices and conversion factors,
+check if prices and conversion factors are within bounds,
+recalculated weight and quantity if needed.
+Estimate missing quantities.
+}
+\details{
+Note: periods are not storred in the priceconversion table,
+only years are storred in the price and conversion factors tables.
+years encoded as 2018, will be different to the period 201852
 }
 \examples{
 \dontrun{ # Clean product and country codes
 # Connect to the database
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 # Clean product 44079910
-cleancomextmonthly1product(con ,
+# clean to the database and also store the invisible output in a data frame
+
+dtf <- cleancomextmonthly1product(con ,
                            productanalysed = "44071091",
                            tablearchive = "raw_comext_monthly_2016S1",
                            tablerecent = "raw_comext_monthly_201709",
                            tablewrite = "vld_comext_monthly",
-                           tableprice = "vld_comext_price",
-                           tablepricew = "vld_comext_pricew",
-                           tablecv = "vld_comext_cv")
+                           tablepriceconversion = "vld_comext_priceconversion")
+count(dtf, flag)
+# Clean all products available in the database
 cleancomextmonthly(con ,
                    tablearchive = "raw_comext_monthly_2016S1",
                    tablerecent = "raw_comext_monthly_201709",
                    tablewrite = "vld_comext_monthly",
-                   tableprice = "vld_comext_price",
-                   tablepricew = "vld_comext_pricew",
-                   tablecv = "vld_comext_cv")
+                   tablepriceconversion = "vld_comext_priceconversion")
 # Disconnect from the database
 RMySQL::dbDisconnect(con)
 }

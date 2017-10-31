@@ -50,7 +50,7 @@ shavepricew <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE)){
         mutate(weight = ifelse(pricew < lowerpricew,
                                tradevalue / lowerpricew,
                                tradevalue / upperpricew),
-               flag = flag + 400)
+               flag = flag + 100)
     dtfresult <- rbind(dtfinbound, dtfoutbound, dtfnoboundpricew, dtfnopricew)
     stopifnot(nrow(dtf) == nrow(dtfresult))
     if (verbose){
@@ -86,7 +86,7 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
         mutate(quantity = ifelse(conversion < lowerconversion,
                                weight / lowerconversion,
                                weight / upperconversion),
-               flag = flag + 400)
+               flag = flag + 200)
     dtfresult <- rbind(dtfinbound, dtfoutbound, dtfnoboundconversion, dtfnoconversion)
     stopifnot(nrow(dtf) == nrow(dtfresult))
     if (verbose){
@@ -155,7 +155,8 @@ loadcomext1product <- function(RMySQLcon,
     # Are there any missing years?
     if(!identical(min(years):max(years), as.integer(years))){
         warning("These years are missing from the data: ",
-                setdiff(min(years):max(years), years))
+                paste(setdiff(min(years):max(years), years),
+                      collapse=","))
     }
 
     # Remove unnecessary objects
@@ -168,32 +169,44 @@ loadcomext1product <- function(RMySQLcon,
 
 #' Clean Comext Monthly data
 #'
+#' Loads all trade flows for the given product codes and
+#' pass them through the cleaning algorithm:
+#' extract prices and conversion factors,
+#' check if prices and conversion factors are within bounds,
+#' recalculated weight and quantity if needed.
+#' Estimate missing quantities.
+#'
+#' Note: periods are not storred in the priceconversion table,
+#' only years are storred in the price and conversion factors tables.
+#' years encoded as 2018, will be different to the period 201852
 #' @param RMySQLcon database connection object created by RMySQL \code{\link[DBI]{dbConnect}}
+#' @param productanalysed character code of the product to analyse
 #' @param tablearchive character name of a monthly archive table
 #' @param tablerecent character name of a monthly recent table
-#' @param tableprice character name of a price table
-#' @param tablecv character name of a conversion factor table
+#' @param tablewrite character name of the monthly table where output data will be written
+#' @param tablepriceconversion character name of a table which will store price
+#' and conversion factors
 #' @return \code{cleancomextmonthly1product} invisibly returns a data frame
 #' with all columns generated during the cleaning process.
 #' @examples \dontrun{ # Clean product and country codes
 #' # Connect to the database
 #' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 #' # Clean product 44079910
-#' cleancomextmonthly1product(con ,
+#' # clean to the database and also store the invisible output in a data frame
+#'
+#' dtf <- cleancomextmonthly1product(con ,
 #'                            productanalysed = "44071091",
 #'                            tablearchive = "raw_comext_monthly_2016S1",
 #'                            tablerecent = "raw_comext_monthly_201709",
 #'                            tablewrite = "vld_comext_monthly",
-#'                            tableprice = "vld_comext_price",
-#'                            tablepricew = "vld_comext_pricew",
-#'                            tablecv = "vld_comext_cv")
+#'                            tablepriceconversion = "vld_comext_priceconversion")
+#' count(dtf, flag)
+#' # Clean all products available in the database
 #' cleancomextmonthly(con ,
 #'                    tablearchive = "raw_comext_monthly_2016S1",
 #'                    tablerecent = "raw_comext_monthly_201709",
 #'                    tablewrite = "vld_comext_monthly",
-#'                    tableprice = "vld_comext_price",
-#'                    tablepricew = "vld_comext_pricew",
-#'                    tablecv = "vld_comext_cv")
+#'                    tablepriceconversion = "vld_comext_priceconversion")
 #' # Disconnect from the database
 #' RMySQL::dbDisconnect(con)
 #' }
@@ -203,12 +216,9 @@ cleancomextmonthly1product <- function(RMySQLcon,
                                        tablearchive,
                                        tablerecent,
                                        tablewrite,
-                                       tableprice = "vld_comext_price",
-                                       tablepricew = "vld_comext_pricew",
-                                       tablecv = "vld_comext_cv"){
+                                       tablepriceconversion =
+                                           "vld_comext_priceconversion"){
     message("\n\nCleaning product code: ", productanalysed)
-    message("Repetitive elements of this long function could be",
-            " placed in several smaller functions.")
 
     dtf <- loadcomext1product(RMySQLcon = RMySQLcon,
                               productanalysed = productanalysed,
@@ -223,7 +233,9 @@ cleancomextmonthly1product <- function(RMySQLcon,
     dtf <- mutate(dtf,
                   # `unit` column hardcoded in estimatequantity()
                   unit = unitcode,
-                  # Add the flag as it will be needed
+                  # Initiate the flag value to zero as it will be needed later.
+                  # The flag value starts at zero
+                  # and later flags will be added to each other.
                   flag = 0)
 
     # Extract prices and conversion factors
@@ -231,34 +243,31 @@ cleancomextmonthly1product <- function(RMySQLcon,
                                              "year", "unit"))
     pricew <- extractpricew(dtf, grouping = c("productcode", "flowcode",
                                               "year", "unit"))
-    # If price and pricew have the same number of lines, it should be
-    # possible to join them
+    # Join price and pricew in one data frame
     price <- price %>%
         left_join(pricew, by = c("productcode", "flowcode", "year", "unit"))
 
-    cvf <- extractconversionfactors(dtf, grouping = c("productcode", "flowcode",
+    conversion <- extractconversionfactors(dtf, grouping = c("productcode", "flowcode",
                                                       "year", "unit"))
+    # Join price and conversion factors to the main data frame
+    dtf <- joinpricecvfbounds(dtf, price, conversion)
+
     # Store rows before the change
     nrowbeforechange <- nrow(dtf)
 
+
+    # Shave pricew based on lower and upper prices added above
+    # by the joinpricecvfbounds() function
+    dtf <- shavepricew(dtf)
+    # Shave conversion based on the lower and upper conversion factors added above
+    # by the joinpricecvfbounds() function
+    dtf <- shaveconversion(dtf)
+
     # Estimate quantity
-    message("\n\n # Move the price and cvf adding part out of estimatequantity")
-    message("It might be more productive")
-    dtf <- estimatequantity(dtf, price, cvf)
+    dtf <- estimatequantity(dtf)
 
-    # Shave price
-    # based on upper and lower prices added above
-    # by the estimatequantity() function
-    dtf <- shaveprice(dtf)
-
-    # Place here shavepricew()
-    #       then shaveconversion()
-    # That's it
-
-    # count(dtf, flag)
 
     # Before writing prices back to the database, rename some columns
-
     dtf <- mutate(dtf,
                   unitcode = unit)
 
@@ -277,33 +286,59 @@ cleancomextmonthly1product <- function(RMySQLcon,
     RMySQL::dbWriteTable(con, name = tablewrite,
                          value = db_dtf, append=TRUE, row.names = FALSE)
 
-    # # Write prices and conversion factors to the database
-    # message("add units to the price and cv table structures, no need in pricew")
-    # Prices are encoded as years
-                  # years encoded as 2018, will be different to the period 201852
-                  # period = year,
-    # RMySQL::dbWriteTable(con, name = tableprice,
-    #                      value = price, append=TRUE, row.names = FALSE)
-    # RMySQL::dbWriteTable(con, name = tablepricew,
-    #                      value = pricew, append=TRUE, row.names = FALSE)
-    # RMySQL::dbWriteTable(con, name = tablecv,
-    #                      value = cvf, append=TRUE, row.names = FALSE)
+    ### Write prices and conversion factors to the database
+    # Join price and conversion factors in one data frame
+    priceconversion <- price %>%
+        left_join(conversion, by = c("productcode", "flowcode", "year", "unit")) %>%
+        # Rename unit back to unit code
+        rename(unitcode = unit)
+    RMySQL::dbWriteTable(con, name = tablepriceconversion,
+                         value = priceconversion, append=TRUE, row.names = FALSE)
     return(invisible(dtf))
 }
 
 
-#' @param ... parameters passed to cleancomextmonthly1product
 #' @rdname cleancomextmonthly1product
+#' @export
 cleancomextmonthly <- function(RMySQLcon,
                                productanalysed,
                                tablearchive,
                                tablerecent,
                                tablewrite,
-                               ...){
+                               tablepriceconversion = "vld_comext_priceconversion",
+                               logfile = file.path("~", "comextcleaninglog.txt")){
     # Find all products in the recent and archive table
-    dtfr <- tbl(RMySQLcon, tablerecent)
+    #  in the form of a a vector of products available
+    dtfr <- tbl(RMySQLcon, tablerecent) %>%
+        distinct(productcode) %>% collect()
+    dtfa <- tbl(RMySQLcon, tablearchive) %>%
+        distinct(productcode) %>% collect()
+    # Combine recent and archive products in one vector
+    products <- union(dtfr$productcode, dtfa$productcode)
 
-    # Clean all products in a loop
+    # Keep only 8 digit product codes
+    # two digit products do not have a unit and it doesn't make sense to clean them
+    # because they are aggregates of very different distributions
+    products <- products[nchar(products)>2]
 
+    # Try to apply the clean function to all products.
+    # When cleaning doesn't work for a product, write errors to a log file
+    for(productcode in products){
+        tryCatch({
+            cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+                                       productanalysed = productcode,
+                                       tablearchive = tablearchive,
+                                       tablerecent = tablerecent,
+                                       tablewrite = tablewrite,
+                                       tablepriceconversion = tablepriceconversion)
+        }, error = function(errorcondition){
+            write2log(errorcondition, logfile,
+                      paste("productcode:", productcode))
+        }, warning = function(warningcondition){
+            write2log(warningcondition, logfile,
+                      paste("productcode:", productcode))
+        }
+        )
+    }
 }
 
