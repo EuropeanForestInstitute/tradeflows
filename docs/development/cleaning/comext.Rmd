@@ -478,12 +478,17 @@ RMySQL::dbDisconnect(con)
 ```
 
 In the shell follow the log with
-
 ```
 less comextcleaninglog.txt 
 # Or check the mysql tables
-
 ```
+
+In thet shell start the call that will be used in crontab
+```
+Rscript -e "library(tradeflows); cleancomext('tradeflows')" 
+```
+
+
 
 # Issues
 ### 20170928 Speed of selecting archive data

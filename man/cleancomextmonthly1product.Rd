@@ -91,10 +91,10 @@ eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "test")
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 # Create an empty table based on the monthly table template
 RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `\%s`;",
-                                       "vld_comext_monthly_to_delete"))
+                                 "vld_comext_monthly_to_delete"))
 RMySQL::dbSendQuery(con, sprintf("CREATE TABLE \%s LIKE \%s;",
-                                       "vld_comext_monthly_to_delete",
-                                       "vld_comext_monthly_template"))
+                                 "vld_comext_monthly_to_delete",
+                                 "vld_comext_monthly_template"))
 
 # \\code{cleancomextmonthly1product()} is the main function
 # calling all other validation functions
@@ -119,9 +119,7 @@ cleancomextmonthly(con ,
                    tabletemplate = "vld_comext_monthly_template",
                    tablepriceconversion = "vld_comext_priceconversion")
 
-
 # Disconnect from the database
 RMySQL::dbDisconnect(con)
-
 }
 }

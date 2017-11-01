@@ -200,10 +200,10 @@ loadcomext1product <- function(RMySQLcon,
 #' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
 #' # Create an empty table based on the monthly table template
 #' RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
-#'                                        "vld_comext_monthly_to_delete"))
+#'                                  "vld_comext_monthly_to_delete"))
 #' RMySQL::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
-#'                                        "vld_comext_monthly_to_delete",
-#'                                        "vld_comext_monthly_template"))
+#'                                  "vld_comext_monthly_to_delete",
+#'                                  "vld_comext_monthly_template"))
 #'
 #' # \code{cleancomextmonthly1product()} is the main function
 #' # calling all other validation functions
@@ -228,10 +228,8 @@ loadcomext1product <- function(RMySQLcon,
 #'                    tabletemplate = "vld_comext_monthly_template",
 #'                    tablepriceconversion = "vld_comext_priceconversion")
 #'
-#'
 #' # Disconnect from the database
 #' RMySQL::dbDisconnect(con)
-#'
 #' }
 #' @export
 cleancomextmonthly1product <- function(RMySQLcon,
@@ -419,9 +417,10 @@ cleancomext <- function(dbname,
 
     # Connect to the database
     con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = dbname)
+    # List tables
+    tables <- RMySQL::dbListTables(con)
 
     # Extract the name of raw database tables
-    tables <- RMySQL::dbListTables(con)
     rawtablenaked <- gsub(templatecharacters, "", rawtabletemplate)
     recenttables <- grep(paste0(rawtablenaked,"[0-9]{6}"), tables, value = TRUE)
     archivetables <- grep(paste0(rawtablenaked,"[0-9]{4}S1"), tables, value = TRUE)
@@ -433,9 +432,16 @@ cleancomext <- function(dbname,
     # What is the last period in the most recent raw table?
     raw <- tbl(con, tablerecent) %>%
         summarise(lastperiod = max(period)) %>% collect()
+
     # What is the last period in the validated table?
-    vld <- tbl(con, tablewrite) %>%
-        summarise(lastperiod = max(period)) %>% collect()
+    if(tablewrite %in% tables){
+        vld <- tbl(con, tablewrite) %>%
+            summarise(lastperiod = max(period)) %>% collect()
+    } else {
+        # If tablewrite (the validated table) doesn't exist in the database
+        # vld$lastperiod is NULL
+        vld <- list()
+    }
 
     # Compare the last periods between raw and validated data
     if(identical(raw$lastperiod, vld$lastperiod)){
