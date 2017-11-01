@@ -20,4 +20,22 @@ write2log <- function(condition, logfile, optionaltext = NULL){
           logfile, append=TRUE)
 }
 
+#' Add a dot at the end of a text file
+#' while keeping a new line character at the end of the file
+#' so that it is valid for \code{readLines}.
+#' @param logfile character path to a log file
+#' @export
+adddot2logfile <- function(logfile){
+    if(file.exists(logfile)){
+        logfilecontent <- readLines(logfile)
+    } else {
+        logfilecontent <- ""
+    }
+    # Add a dot to the last line
+    logfilecontent[length(logfilecontent)] <- paste0(
+        logfilecontent[length(logfilecontent)],
+        ".")
+    # Write back to the file
+    writeLines(logfilecontent, logfile)
+}
 

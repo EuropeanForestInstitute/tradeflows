@@ -54,7 +54,7 @@ Note: periods are not storred in the priceconversion table,
 only years are storred in the price and conversion factors tables.
 years encoded as 2018, will be different to the period 201852
 
-#' To run \code{cleancomext} periodically as a cron job, edit crontab:
+To run \code{cleancomext} periodically as a cron job, edit crontab:
 
 \code{sudo vim /etc/crontab}
 

@@ -366,7 +366,7 @@ cleancomextmonthly <- function(RMySQLcon,
 
 #' @rdname cleancomextmonthly1product
 #' @details
-#' #' To run \code{cleancomext} periodically as a cron job, edit crontab:
+#' To run \code{cleancomext} periodically as a cron job, edit crontab:
 #'
 #' \code{sudo vim /etc/crontab}
 #'
@@ -409,7 +409,6 @@ cleancomext <- function(dbname,
     # Compare the last periods between raw and validated data
     if(identical(raw$lastperiod, vld$lastperiod)){
         # If the most recent period is available, just write a message
-        # Just write a message
         message("Data was already validated. ",
                 "The last period available in ",
                 tablerecent, ": `", raw$lastperiod,
@@ -421,8 +420,8 @@ cleancomext <- function(dbname,
     } else {
         # If the most recent period is not available in the validated data
         # clean the dataset again
-        write(sprintf("Validating monthly archives from the %s and %s tables.",
-                      tablearchive, tablerecent),
+        write(sprintf("%s\nValidating monthly archives from the %s and %s tables.\n\n",
+                      as.character(Sys.time()), tablearchive, tablerecent),
               logfile, append = TRUE)
         cleancomextmonthly(con ,
                            tablearchive = tablearchive,
