@@ -201,6 +201,7 @@ loadcomext1product <- function(RMySQLcon,
 #'                            tablewrite = "vld_comext_monthly",
 #'                            tablepriceconversion = "vld_comext_priceconversion")
 #' count(dtf, flag)
+#'
 #' # Clean all products available in the database
 #' cleancomextmonthly(con ,
 #'                    tablearchive = "raw_comext_monthly_2016S1",
@@ -210,6 +211,9 @@ loadcomext1product <- function(RMySQLcon,
 #'                    tablepriceconversion = "vld_comext_priceconversion")
 #' # Disconnect from the database
 #' RMySQL::dbDisconnect(con)
+#'
+#' # The cleancomext function creates its own database connection
+#' cleancomext(dbname = "test")
 #' }
 #' @export
 cleancomextmonthly1product <- function(RMySQLcon,
@@ -359,3 +363,77 @@ cleancomextmonthly <- function(RMySQLcon,
     }
 }
 
+
+#' @rdname cleancomextmonthly1product
+#' @details
+#' #' To run \code{cleancomext} periodically as a cron job, edit crontab:
+#'
+#' \code{sudo vim /etc/crontab}
+#'
+#' and enter:
+#'
+#' \code{
+#' 0 5 * * *    paul  Rscript -e "library(tradeflows); cleancomext('tradeflows')" >> ~/log/clean$(date +"\\\%Y\\\%m\\\%d").log 2>&1
+#' }
+#' @export
+cleancomext <- function(dbname,
+                        rawtabletemplate = "raw_comext_monthly_template",
+                        vldtabletemplate = "vld_comext_monthly_template",
+                        tablewrite = "vld_comext_monthly",
+                        tablepriceconversion = "vld_comext_priceconversion",
+                        templatecharacters = "template",
+                        logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')){
+    message("\n\nStarting to clean on ",
+            format(Sys.time(),"%Y.%m.%d at %H:%M"),"\n")
+
+    # Connect to the database
+    con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = dbname)
+
+    # Extract the name of raw database tables
+    tables <- RMySQL::dbListTables(con)
+    rawtablenaked <- gsub(templatecharacters, "", rawtabletemplate)
+    recenttables <- grep(paste0(rawtablenaked,"[0-9]{6}"), tables, value = TRUE)
+    archivetables <- grep(paste0(rawtablenaked,"[0-9]{4}S1"), tables, value = TRUE)
+    # Find the name of the latest "most recent" table
+    tablerecent <- sort(recenttables, decreasing = TRUE)[1]
+    # Find the name of the latest archive table
+    tablearchive <- sort(archivetables, decreasing = TRUE)[1]
+
+    # What is the last period in the most recent raw table?
+    raw <- tbl(con, tablerecent) %>%
+        summarise(lastperiod = max(period)) %>% collect()
+    # What is the last period in the validated table?
+    vld <- tbl(con, tablewrite) %>%
+        summarise(lastperiod = max(period)) %>% collect()
+
+    # Compare the last periods between raw and validated data
+    if(identical(raw$lastperiod, vld$lastperiod)){
+        # If the most recent period is available, just write a message
+        # Just write a message
+        message("Data was already validated. ",
+                "The last period available in ",
+                tablerecent, ": `", raw$lastperiod,
+                "` matches the last period available in ",
+                tablewrite, ": `", vld$lastperiod,"`.")
+        # Add a dot to the main logfile,
+        # showing that this function did check for updates in the raw data.
+        adddot2logfile(logfile)
+    } else {
+        # If the most recent period is not available in the validated data
+        # clean the dataset again
+        write(sprintf("Validating monthly archives from the %s and %s tables.",
+                      tablearchive, tablerecent),
+              logfile, append = TRUE)
+        cleancomextmonthly(con ,
+                           tablearchive = tablearchive,
+                           tablerecent = tablerecent,
+                           tablewrite = tablewrite,
+                           tabletemplate = vldtabletemplate,
+                           tablepriceconversion = tablepriceconversion)
+    }
+
+    # Disconnect from the database
+    RMySQL::dbDisconnect(con)
+
+    message("\nCleaning completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
+}
