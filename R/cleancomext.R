@@ -188,32 +188,50 @@ loadcomext1product <- function(RMySQLcon,
 #' and conversion factors
 #' @return \code{cleancomextmonthly1product} invisibly returns a data frame
 #' with all columns generated during the cleaning process.
-#' @examples \dontrun{ # Clean product and country codes
+#' @examples \dontrun{
+#' # The cleancomext() function creates its own database connection
+#' # It is a high level function meant to be called from a cron job
+#' cleancomext(dbname = "test")
+#'
+#' # If not loaded yet, load the table structure to store validated data
+#' eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "test")
+#'
 #' # Connect to the database
 #' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
-#' # Clean product 44079910
-#' # clean to the database and also store the invisible output in a data frame
+#' # Create an empty table based on the monthly table template
+#' RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
+#'                                        "vld_comext_monthly_to_delete"))
+#' RMySQL::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
+#'                                        "vld_comext_monthly_to_delete",
+#'                                        "vld_comext_monthly_template"))
 #'
+#' # \code{cleancomextmonthly1product()} is the main function
+#' # calling all other validation functions
+#' # Clean to the database and also store the invisible output in a data frame
+#' # \code{cleancomextmonthly1product()} will create a copy of the template table.
 #' dtf <- cleancomextmonthly1product(con ,
 #'                            productanalysed = "44071091",
 #'                            tablearchive = "raw_comext_monthly_2016S1",
-#'                            tablerecent = "raw_comext_monthly_201709",
-#'                            tablewrite = "vld_comext_monthly",
+#'                            tablerecent = "raw_comext_monthly_201708",
+#'                            tablewrite = "vld_comext_monthly_to_delete",
 #'                            tablepriceconversion = "vld_comext_priceconversion")
-#' count(dtf, flag)
+#' dplyr::count(dtf, flag)
+#' # Drop the temporary table
+#' RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
+#'                                        "vld_comext_monthly_to_delete"))
 #'
-#' # Clean all products available in the database
+#' # Loop on all products available in the database and clean them
 #' cleancomextmonthly(con ,
 #'                    tablearchive = "raw_comext_monthly_2016S1",
 #'                    tablerecent = "raw_comext_monthly_201709",
 #'                    tablewrite = "vld_comext_monthly",
 #'                    tabletemplate = "vld_comext_monthly_template",
 #'                    tablepriceconversion = "vld_comext_priceconversion")
+#'
+#'
 #' # Disconnect from the database
 #' RMySQL::dbDisconnect(con)
 #'
-#' # The cleancomext function creates its own database connection
-#' cleancomext(dbname = "test")
 #' }
 #' @export
 cleancomextmonthly1product <- function(RMySQLcon,
@@ -288,7 +306,7 @@ cleancomextmonthly1product <- function(RMySQLcon,
     RMySQL::dbClearResult(res)
     message(paste("Writing", nrow(dtf), "flows to the database."))
     # Write dtf
-    RMySQL::dbWriteTable(con, name = tablewrite,
+    RMySQL::dbWriteTable(RMySQLcon, name = tablewrite,
                          value = db_dtf, append=TRUE, row.names = FALSE)
 
     ### Write prices and conversion factors to the database
@@ -303,7 +321,7 @@ cleancomextmonthly1product <- function(RMySQLcon,
     res <- RMySQL::dbSendQuery(RMySQLcon, query)
     RMySQL::dbClearResult(res)
     # write price and conversion factors to the database
-    RMySQL::dbWriteTable(con, name = tablepriceconversion,
+    RMySQL::dbWriteTable(RMySQLcon, name = tablepriceconversion,
                          value = priceconversion, append=TRUE, row.names = FALSE)
     return(invisible(dtf))
 }
@@ -375,6 +393,19 @@ cleancomextmonthly <- function(RMySQLcon,
 #' \code{
 #' 0 5 * * *    paul  Rscript -e "library(tradeflows); cleancomext('tradeflows')" >> ~/log/clean$(date +"\\\%Y\\\%m\\\%d").log 2>&1
 #' }
+#'
+#' During the validation procedure,
+#' 3 nested function calls generated 3 log files containing various informations:
+#' * The \code{harvest()} function writes a time stamp to
+#' \code{~/public_html/log/validate2017.txt}.
+#' It is a very summarised, publicly acessible log file.
+#' *  The cron instuction redirects standard output to:
+#' \code{~/log/clean$(date +"\\\%Y\\\%m\\\%d").log}.
+#' It is a very verbose file giving the percentage change of
+#' world import and export value after each cleaning operation for each product code.
+#' * The \code{cleancomext1product()}function writes errors and warnings to
+#' \code{~/comextcleaninglog.txt}.
+#' @md
 #' @export
 cleancomext <- function(dbname,
                         rawtabletemplate = "raw_comext_monthly_template",
