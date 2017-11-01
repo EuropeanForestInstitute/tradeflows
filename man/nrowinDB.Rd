@@ -12,4 +12,3 @@ nrowinDB(tableread)
 \description{
 Number of rows in a database table
 }
-

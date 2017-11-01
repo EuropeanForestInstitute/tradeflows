@@ -20,4 +20,3 @@ Create overview reports for all countries available
 createalloverviewreports("validated_flow_yearly", "/tmp")
 }
 }
-

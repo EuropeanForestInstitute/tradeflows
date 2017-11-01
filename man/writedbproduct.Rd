@@ -14,4 +14,3 @@ writedbproduct(dtf, tablewrite)
 \description{
 Write data into the DB
 }
-

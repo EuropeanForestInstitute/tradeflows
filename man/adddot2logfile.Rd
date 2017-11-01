@@ -16,4 +16,3 @@ Add a dot at the end of a text file
 while keeping a new line character at the end of the file
 so that it is valid for \code{readLines}.
 }
-

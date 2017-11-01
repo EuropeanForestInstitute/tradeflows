@@ -23,4 +23,3 @@ To learn more about the tradeflows package,
 start with the vignettes:
 \code{browseVignettes(package = "tradeflows")}
 }
-

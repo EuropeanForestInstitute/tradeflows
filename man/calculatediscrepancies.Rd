@@ -17,4 +17,3 @@ but not to store it in the enddata
 as it is for plotting with ggplot,
 it might work best on a reshaped data frame
 }
-

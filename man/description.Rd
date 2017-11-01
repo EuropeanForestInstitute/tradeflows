@@ -14,4 +14,3 @@ To be used in a markdown formated document.
 Use:
 description(c(440799, 440795))
 }
-

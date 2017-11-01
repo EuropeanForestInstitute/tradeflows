@@ -15,4 +15,3 @@ database tables to check}
 Database connection parameters are given by the global option
 getOption("tradeflowsDB").
 }
-

@@ -20,4 +20,3 @@ Create a report from the database
 \details{
 For a given vector of product codes, create reports using a given template.
 }
-

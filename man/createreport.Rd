@@ -41,4 +41,3 @@ flows for one product.
 createreport(NULL, template="allproducts.Rmd", reporterinreport ="China")
 }
 }
-

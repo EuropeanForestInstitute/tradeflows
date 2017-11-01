@@ -25,4 +25,3 @@ othersawnwod <- readdbproduct(440799, "raw_flow_yearly")
 head(othersawnwod[c("year","reporter","partner","flow","tradevalue","quantity","weight")])
 }
 }
-

@@ -24,4 +24,3 @@ then to \code{\link{loadcomtradebycode}}}
 \description{
 Load all world trade flows for the vector of products.
 }
-

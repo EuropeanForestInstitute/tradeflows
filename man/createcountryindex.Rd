@@ -29,4 +29,3 @@ countries <- data_frame(reporter = c("Finland", "France"))
 createcountryindex(countries)
 }
 }
-

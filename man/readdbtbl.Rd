@@ -39,4 +39,3 @@ readdbtbl("raw_flow_yearly") \%>\%
     kable
 }
 }
-

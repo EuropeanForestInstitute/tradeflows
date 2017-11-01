@@ -31,4 +31,3 @@ unique(dtf$year)
 RMySQL::dbDisconnect(con)
 }
 }
-

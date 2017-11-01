@@ -17,4 +17,3 @@ This might be an issue if 2 flows have duplicated
 reportercode, partnercode, productcode, flow, period but
 their quantity column is different.
 }
-

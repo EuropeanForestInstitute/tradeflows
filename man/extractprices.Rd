@@ -42,4 +42,3 @@ priceglobal <- tf \%>\%
     extractprices(grouping = c("flow", "year", "unit"))
 }
 }
-

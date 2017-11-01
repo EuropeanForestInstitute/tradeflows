@@ -22,4 +22,3 @@ write.xlsx(USArrests, file="file.xlsx")}
 This function is not needed use xlsx::write.xlsx() directly
 But developing the function below might be usefull
 }
-

@@ -14,4 +14,3 @@ cleanmonthly(dtfmonthly, dtfyearly, replacebypartnerquantity = TRUE,
 The function uses regional conversion factors
 and unit prices generated from the yearly data frame.
 }
-

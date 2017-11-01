@@ -13,4 +13,3 @@ addconversionfactorandprice(dtf)
 Calculate unit prices in current currency
 Conversion factors in Quantity
 }
-

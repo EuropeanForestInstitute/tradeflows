@@ -22,4 +22,3 @@ loadcomtradeallreporters(productcode, year = "recent", path = "",
 \description{
 Data is saved in a RDATA file and optionally in a csv file.
 }
-

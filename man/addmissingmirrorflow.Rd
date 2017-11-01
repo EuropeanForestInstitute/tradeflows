@@ -12,4 +12,3 @@ addmissingmirrorflow(dtf)
 \description{
 When a flow does not have a mirror flow.
 }
-

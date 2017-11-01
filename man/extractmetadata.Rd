@@ -16,4 +16,3 @@ a list of metadata containing the productcode, reporter and unit elements
 This can be used to check that the given trade flow data has only
 one reporter and product or the empty string as expected by some reports.
 }
-

@@ -29,4 +29,3 @@ standard deviation of prices.
 Because of missing values in more recent years, the presence of missing data towards the end
 can be dealt with by choosing periodend 2 or 3 years before the last year available.
 }
-

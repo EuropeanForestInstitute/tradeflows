@@ -26,4 +26,3 @@ not empty for addpartner flow and shaveprice.}
 \description{
 A function to calculate the percentage change on world imports and exports
 }
-

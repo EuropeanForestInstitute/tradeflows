@@ -17,4 +17,3 @@ used for the merge}
 \description{
 Rename reporter to partner and partner to reporter
 }
-

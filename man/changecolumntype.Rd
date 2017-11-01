@@ -13,4 +13,3 @@ changecolumntype(dtf)
 Change to factors for easy plotting
  Change to large int or to floating point for some computations
 }
-

@@ -12,4 +12,3 @@ deletedbproduct(productcode, tabledelete)
 \description{
 Delete validated data for one product
 }
-

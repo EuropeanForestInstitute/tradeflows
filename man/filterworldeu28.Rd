@@ -13,4 +13,3 @@ filterworldeu28(dtf, verbose = FALSE)
 Remove EU28 reporter
 Remove EU-28 and World partner
 }
-

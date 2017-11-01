@@ -25,4 +25,3 @@ sourcedb and destdb.
 \examples{
 column_names
 }
-

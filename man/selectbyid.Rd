@@ -14,4 +14,3 @@ selectbyid(tableread, id)
 \description{
 Select rows by id
 }
-

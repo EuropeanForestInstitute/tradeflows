@@ -28,4 +28,3 @@ logfileexample <- file.path(tempdir(),"log.txt")
  # Read the log file
 readLines(logfileexample)
 }
-

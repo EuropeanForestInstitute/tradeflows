@@ -42,4 +42,3 @@ Use the argument file to specify where the Excel file will be located.
 \code{cleanrdata2excel} cleans from a raw data file to Excel and
 write the cleaned dataset to a csv file.
 }
-

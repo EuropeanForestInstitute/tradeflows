@@ -19,4 +19,3 @@ countries <- c("Finland","France")
 lapply(countries, trytocreateoverviewreports)
 }
 }
-

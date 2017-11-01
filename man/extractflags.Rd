@@ -12,4 +12,3 @@ extractflags(dtf)
 \description{
 Extract information from flag estimates
 }
-

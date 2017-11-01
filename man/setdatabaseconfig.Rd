@@ -18,4 +18,3 @@ Run this command to find the location of the configuration file on your machine:
 system.file("config/databaseconfig.R", package="tradeflows").
 Use reload=TRUE to force reloading the file after modification.
 }
-

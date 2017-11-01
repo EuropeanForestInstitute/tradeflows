@@ -13,4 +13,3 @@ tests for duplicated reportercode, partnercode, productcode, flow, period}
 \description{
 Return a dataframe of duplicated flows
 }
-

@@ -14,4 +14,3 @@ addregion(dtf, regioncolumn = "region")
 \description{
 Add regionreporter and regionpartner
 }
-

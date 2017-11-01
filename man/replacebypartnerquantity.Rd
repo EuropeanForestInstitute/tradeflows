@@ -17,4 +17,3 @@ replacebypartnerquantity(dtf, choice,
 Replace quantity by quantity partner when the price variation in
 recent periods was greater than that of the partner country for the same flow
 }
-

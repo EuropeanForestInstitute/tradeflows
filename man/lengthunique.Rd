@@ -20,4 +20,3 @@ lengthunique(airquality, "Month", "Day")
 lengthunique(airquality, "Month")
 lengthunique(airquality, "Day")
 }
-

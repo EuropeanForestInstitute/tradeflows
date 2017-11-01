@@ -19,4 +19,3 @@ estimates can be included}
 Group trade flows by the given geographical aggregation level and
 extract the median conversion factors.
 }
-

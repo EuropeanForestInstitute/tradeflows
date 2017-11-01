@@ -41,4 +41,3 @@ createoverviewreport("China", beginyear = 2010, endyear = 2013, outputdir = "/tm
 createoverviewreport("China", beginyear = 2010, endyear = 2013, inputpath = "inst/templates")
 }
 }
-
