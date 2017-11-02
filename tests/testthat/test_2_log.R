@@ -10,7 +10,7 @@ test_that("add dot also works when the file doesn't exist yet", {
 
 
 context("writeerror2log")
-test_that("writeerror2log can create a folder when the given logfile location folder doesn't exist",{
+test_that("writeerror2log creates a folder when the given logfile location folder doesn't exist",{
     logfile <- file.path(tempdir(), paste0("f",runif(1)), "error.log")
     writeerror2log("error", logfile)
 })

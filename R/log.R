@@ -15,6 +15,11 @@
 #' readLines(logfileexample)
 #' @export
 writeerror2log <- function(condition, logfile, optionaltext = NULL){
+    folder <- dirname(logfile)
+    if(!file.exists(folder)){
+        message("The folder ", folder, " doesn't exist, creating it.")
+        dir.create(folder, recursive = TRUE)
+    }
     write(paste(as.character(Sys.time()), optionaltext, "\n",
                 toString(condition)),
           logfile, append=TRUE)
