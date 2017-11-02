@@ -285,6 +285,9 @@ cleancomextmonthly1product <- function(RMySQLcon,
     dtf <- shaveconversion(dtf)
 
     # Estimate quantity
+    message("Beware that `quantityraw` created in estimatequantity() ",
+            "may already have been modified ",
+            "by the shaveconversion() function.")
     dtf <- estimatequantity(dtf)
 
 
@@ -295,7 +298,7 @@ cleancomextmonthly1product <- function(RMySQLcon,
     # Use database columns to select which columns to keep in the
     # data frame
     # get column names
-    columnswrite  <- RMySQL::dbListFields(RMySQLcon, "vld_comext_monthly_template")
+    columnswrite  <- RMySQL::dbListFields(RMySQLcon, tablewrite)
     db_dtf <- select_(dtf, .dots = columnswrite)
     # Delete existing data for the given product
     query <- paste("DELETE FROM ", tablewrite,
@@ -369,10 +372,10 @@ cleancomextmonthly <- function(RMySQLcon,
                                        tablewrite = tablewrite,
                                        tablepriceconversion = tablepriceconversion)
         }, error = function(errorcondition){
-            write2log(errorcondition, logfile,
+            writeerror2log(errorcondition, logfile,
                       paste("productcode:", productcode))
         }, warning = function(warningcondition){
-            write2log(warningcondition, logfile,
+            writeerror2log(warningcondition, logfile,
                       paste("productcode:", productcode))
         }
         )
