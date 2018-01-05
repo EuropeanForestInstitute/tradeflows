@@ -532,7 +532,7 @@ estimatequantity <- function(dtf){
     message("Using a conversion factor to estimate quantity from weight ",
             changeflowmessage(dtf,rbind(dtf,dtfnoqw)))
     nrow(dtfnoqnow) %>% message(" rows where neither quantity nor weight were available")
-    message("Using a unit price to estimate quantity from weight ",
+    message("Using a unit price to estimate quantity from the trade value",
             changeflowmessage(dtf,rbind(dtf,dtfnoqnow)))
 
     # Put data frames back together
