@@ -463,15 +463,26 @@ eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "tradeflows
 library(tradeflows)
 # Connect to the database
 con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
-# Clean product 44079910
+
+# Clean one product 44079910
+dtf <- cleancomextmonthly1product(con ,
+                                  productanalysed = "44071091",
+                                  tablearchive = "raw_comext_monthly_2016S1",
+                                  tablerecent = "raw_comext_monthly_201710",
+                                  tablewrite = "vld_comext_monthly",
+                                  tablepriceconversion =
+                                      "vld_comext_priceconversion")
+
 
 # Clean all products available in the database
-cleancomextmonthly(con ,
-                   tablearchive = "raw_comext_monthly_2016S1",
-                   tablerecent = "raw_comext_monthly_201709",
-                   tablewrite = "vld_comext_monthly",
-                   tabletemplate = "vld_comext_monthly_template",
-                   tablepriceconversion = "vld_comext_priceconversion")
+if(FALSE){
+    cleancomextmonthly(con ,
+                       tablearchive = "raw_comext_monthly_2016S1",
+                       tablerecent = "raw_comext_monthly_201710",
+                       tablewrite = "vld_comext_monthly",
+                       tabletemplate = "vld_comext_monthly_template",
+                       tablepriceconversion = "vld_comext_priceconversion")
+}
 
 # Disconnect from the database
 RMySQL::dbDisconnect(con)

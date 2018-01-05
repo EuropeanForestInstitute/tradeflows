@@ -123,15 +123,26 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
 loadcomext1product <- function(RMySQLcon,
                                productanalysed,
                                tablearchive,
-                               tablerecent){
+                               tablerecent,
+                               tableunit = "vld_comext_unit"){
     # load trade flows from the database into a data frame
     message("Load recent data from ", tablerecent, "...")
+
+    # Check if units are available
+    unit <- tbl(con, tableunit) %>%
+        filter(productcode == productanalysed) %>%
+        summarise(n = n()) %>% collect()
+    if(unit$n == 0){
+        stop("Cannot add units to the table because they are not available in ",
+             tableunit)
+    }
+
     dtfr <- tbl(RMySQLcon, tablerecent) %>%
         filter(productcode == productanalysed) %>%
         # Add quantity units
         eutradeflows::addunit2tbl(RMySQLcon,
                                   maintbl = .,
-                                  tableunit = "vld_comext_unit")  %>%
+                                  tableunit = tableunit)  %>%
         collect()
     beginrecentdata <- min(dtfr$period)
 
@@ -143,7 +154,7 @@ loadcomext1product <- function(RMySQLcon,
         # Add quantity units
         eutradeflows::addunit2tbl(RMySQLcon,
                                   maintbl = .,
-                                  tableunit = "vld_comext_unit")  %>%
+                                  tableunit = tableunit)  %>%
         collect()    # load trade flows from the database into a data frame
 
     # Combine archive and recent data
@@ -337,7 +348,7 @@ cleancomextmonthly <- function(RMySQLcon,
                                tablewrite,
                                tabletemplate = "vld_comext_monthly_template",
                                tablepriceconversion = "vld_comext_priceconversion",
-                               logfile = file.path("~", "comextcleaninglog.txt")){
+                               logfile = file.path("~/log", "cleaningerrorlog.txt")){
 
     # Create the table that will store validated data
     message("If the database table ", tablewrite,
@@ -405,7 +416,7 @@ cleancomextmonthly <- function(RMySQLcon,
 #' It is a very verbose file giving the percentage change of
 #' world import and export value after each cleaning operation for each product code.
 #' * The \code{cleancomext1product()}function writes errors and warnings to
-#' \code{~/comextcleaninglog.txt}.
+#' \code{~/log/cleaningerrorlog.txt}.
 #' @md
 #' @export
 cleancomext <- function(dbname,
@@ -420,8 +431,13 @@ cleancomext <- function(dbname,
 
     # Connect to the database
     con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = dbname)
+
     # List tables
     tables <- RMySQL::dbListTables(con)
+
+    # Clean product, reporter, partner and unit codes
+    eutradeflows::cleanallcomextcodes(con)
+    message("deal with missing unit in another way not only an error")
 
     # Extract the name of raw database tables
     rawtablenaked <- gsub(templatecharacters, "", rawtabletemplate)
@@ -470,6 +486,7 @@ cleancomext <- function(dbname,
                            tabletemplate = vldtabletemplate,
                            tablepriceconversion = tablepriceconversion)
     }
+
 
     # Disconnect from the database
     RMySQL::dbDisconnect(con)

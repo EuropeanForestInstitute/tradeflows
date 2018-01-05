@@ -1,0 +1,62 @@
+---
+title: "Using tradeflows function on the Comext data"
+author: "Paul Rougieux"
+date: "04/12/2014"
+output: html_document
+---
+
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+opts_knit$set(root.dir="../../..") # file paths are relative to the root of the project directory
+opts_chunk$set(echo=FALSE)
+library(tradeflows)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Comment out to pass tableanalysed as a parameter in the parent environment
+recenttable <- 'raw_comext_monthly_201709' 
+archivetable <- 'raw_comext_monthly_2016S1'
+# Use a product which doesn't have a zero quantity
+# Tropical product (data starts only in 2012)
+# productanalysed <- 44072960 
+# Spruce sawnwood sub-product with the most number of lines (data starts as early as  2000)
+productanalysed <- "44071091"
+# Another spruce
+# productanalysed <- 44071031
+con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+```
+
+
+# What are the volumnes under country codes 0 and 1000 ?
+```{r}
+swd <- loadcomext1product(con, productanalysed, archivetable, recenttable)
+
+# 
+swdreporter0 <- swd %>% filter(reportercode == 0)
+swdreporter1000 <- swd %>% filter(reportercode >= 1000  )
+swdpartner0 <- swd %>% filter(partnercode == 0)
+swdpartner1000 <- swd %>% filter(partnercode >= 1000)
+unique(swdpartner1000$partnercode)
+# It's one or the other but not both at the same time
+swdr0p1000 <- swd %>% filter(reportercode == 0  & partnercode >= 1000)
+
+# Keep main data without these codes
+swdwithout01000 <- swd %>% filter(reportercode>0 & partnercode <1000)
+
+# What are in these volumes?
+summary(swdwithout01000$tradevalue)
+sum(swdwithout01000$tradevalue, na.rm = TRUE)
+sum(swdpartner1000$tradevalue, na.rm = TRUE)
+sum(swdreporter0$tradevalue, na.rm = TRUE
+```
+
+
+# Visualise sawnwood prices
+```{r}
+
+
+
+```
+

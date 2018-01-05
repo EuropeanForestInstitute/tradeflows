@@ -13,7 +13,7 @@ cleancomextmonthly1product(RMySQLcon, productanalysed, tablearchive,
 cleancomextmonthly(RMySQLcon, productanalysed, tablearchive, tablerecent,
   tablewrite, tabletemplate = "vld_comext_monthly_template",
   tablepriceconversion = "vld_comext_priceconversion",
-  logfile = file.path("~", "comextcleaninglog.txt"))
+  logfile = file.path("~/log", "cleaningerrorlog.txt"))
 
 cleancomext(dbname, rawtabletemplate = "raw_comext_monthly_template",
   vldtabletemplate = "vld_comext_monthly_template",
@@ -75,7 +75,7 @@ It is a very summarised, publicly acessible log file.
 It is a very verbose file giving the percentage change of
 world import and export value after each cleaning operation for each product code.
 \item The \code{cleancomext1product()}function writes errors and warnings to
-\code{~/comextcleaninglog.txt}.
+\code{~/log/cleaningerrorlog.txt}.
 }
 }
 \examples{

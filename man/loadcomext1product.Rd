@@ -4,7 +4,8 @@
 \alias{loadcomext1product}
 \title{Load all archive and recent Comext data for one product}
 \usage{
-loadcomext1product(RMySQLcon, productanalysed, tablearchive, tablerecent)
+loadcomext1product(RMySQLcon, productanalysed, tablearchive, tablerecent,
+  tableunit = "vld_comext_unit")
 }
 \value{
 a  data frame containing Comext trade flows for the given product
