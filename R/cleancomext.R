@@ -271,10 +271,11 @@ cleancomextmonthly1product <- function(RMySQLcon,
                   flag = 0)
 
     # Extract prices and conversion factors
-    price <- extractprices(dtf, grouping = c("productcode", "flowcode",
-                                             "year", "unit"))
-    pricew <- extractpricew(dtf, grouping = c("productcode", "flowcode",
-                                              "year", "unit"))
+    price <- extractprices(dtf,
+                           grouping = c("productcode", "flowcode", "year", "unit"),
+                           lowercoef = 1, uppercoef = 1,
+                           lowerquantile = 0.05, upperquantile = 0.95)
+    pricew <- extractpricew(dtf, grouping = c("productcode", "flowcode", "year", "unit"))
     # Join price and pricew in one data frame
     price <- price %>%
         left_join(pricew, by = c("productcode", "flowcode", "year", "unit"))

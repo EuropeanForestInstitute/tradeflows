@@ -5,8 +5,9 @@
 \alias{extractpricew}
 \title{Extract median prices at a given geographical aggregation level}
 \usage{
-extractprices(dtf, lowercoef = 0.5, uppercoef = 2, grouping = c("flow",
-  "regionreporter", "year", "unit"), includeqestimates = TRUE)
+extractprices(dtf, grouping = c("flow", "regionreporter", "year", "unit"),
+  lowercoef = 0.5, uppercoef = 2, lowerquantile = 0.25,
+  upperquantile = 0.75, includeqestimates = TRUE)
 
 extractpricew(dtf, lowercoef = 1, uppercoef = 1, grouping = c("flow",
   "regionreporter", "year", "unit"))
@@ -15,13 +16,13 @@ extractpricew(dtf, lowercoef = 1, uppercoef = 1, grouping = c("flow",
 \item{dtf}{a dataframe containing all trade flows for one product
 and their individual prices}
 
+\item{grouping}{a character vector specifying the grouping variables}
+
 \item{lowercoef}{numeric multiplier of the first quartile to
 obtain a lower bound on prices}
 
 \item{uppercoef}{numeric multiplier of the third quartile to
 obtain an upper bound on prices}
-
-\item{grouping}{a character vector specifying the grouping variables}
 
 \item{includeqestimates}{logical TRUE when comtrade quantity estimates
 can be included}
