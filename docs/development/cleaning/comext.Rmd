@@ -590,6 +590,186 @@ dtf %>% filter(is.na(quantity))
 ```
 
 
+# 20180330 no validated data
+
+Raw data is present in the database. 
+The output of the cleancomext() function shows empty message for each product. 
+Cleaning one product individually seems to work but cleaning all products doesn't work.
+
+```{r}
+# I created a table dump on the server
+# dumptable("tradeflows", "raw_comext_monthly_201803")
+# Downloaded the file, now loading the dump
+
+# con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+# Create fake validation table
+RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
+                                 "vld_comext_monthly_to_delete"))
+RMySQL::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
+                                 "vld_comext_monthly_to_delete",
+                                 "vld_comext_monthly_template"))
+# Try to validate one product
+dtf <- cleancomextmonthly1product(con ,productanalysed = "44071091", tablearchive = "raw_comext_monthly_2016S1", tablerecent = "raw_comext_monthly_201803", tablewrite = "vld_comext_monthly_to_delete", tablepriceconversion = "vld_comext_priceconversion")
+
+# Other products
+# 44011000
+# 44011100
+# 44011200
+
+# All products
+cleancomextmonthly(con, tablearchive = "raw_comext_monthly_2016S1", tablerecent = "raw_comext_monthly_201803", tablewrite = "vld_comext_monthly", tabletemplate = "vld_comext_monthly_template", tablepriceconversion = "vld_comext_priceconversion")
+
+# Find the imm product code to load it in the timeseries and sankey interface
+eutradeflows::classificationimm %>%  filter(productcode == 44071091)
+
+# Run the cleancomext function by copy pasting its content at the R prompt
+# Feed the server with parameters of the cleancomext() function
+dbname <- "tradeflows"
+rawtabletemplate = "raw_comext_monthly_template"
+vldtabletemplate = "vld_comext_monthly_template"
+tablewrite = "vld_comext_monthly"
+tablepriceconversion = "vld_comext_priceconversion"
+templatecharacters = "template"
+logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')
+
+# Also run the cleancomextmonthly() function by pasting all its content at the R prompt
+RMySQLcon <- con
+tabletemplate = "vld_comext_monthly_template"
+tablepriceconversion = "vld_comext_priceconversion"
+tabletemplate = "vld_comext_monthly_template"
+logfile = file.path("~/log", "cleaningerrorlog.txt")
+
+# The function contains a loop on product codes 
+# which makes the following call for each product
+# this call works fine, the data is cleaned
+cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+                           productanalysed = productcode,
+                           tablearchive = tablearchive,
+                           tablerecent = tablerecent,
+                           tablewrite = tablewrite,
+                           tablepriceconversion = tablepriceconversion)
+
+# But the call is inside a try-catch statement
+# And running this try-catch statement doesn't work
+# Its seems to catche the warning and stop the execution
+# I added a message for debugging
+tryCatch({
+            cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+                                       productanalysed = productcode,
+                                       tablearchive = tablearchive,
+                                       tablerecent = tablerecent,
+                                       tablewrite = tablewrite,
+                                       tablepriceconversion = tablepriceconversion)
+        }, error = function(errorcondition){
+            writeerror2log(errorcondition, logfile,
+                      paste("productcode:", productcode))
+        }, warning = function(warningcondition){
+            message(warningcondition)
+            writeerror2log(warningcondition, logfile,
+                      paste("productcode:", productcode))
+        }
+        )
+
+# 
+# Lets try a few product codes
+productcode <- 44071091
+```
+
+
+
+# 2018 Update to the Comext data structure
+Since the update in comext data structure, unitcode are now part of the main table
+"raw_comext_monthly". It is thus not necessary anymore to add unit codes to the main table.
+The `cleancomext()` function needs to be updated to reflect that.
+```{r}
+# Output of an erroneous run before the change
+cleancomext("tradeflows")
+#
+# Starting to clean on 2018.06.29 at 09:52
+# 
+# Loading table definitions from:
+# /home/debian/R/x86_64-pc-linux-gnu-library/3.4/eutradeflows/config/vld_comext.sql
+# into the `tradeflows` database.
+# ERROR 1060 (42S21) at line 104: Duplicate column name 'unitcode'
+```
+
+Reproduce the bug locally.
+
+## Missing data in the raw codes table
+The lack of data inthe raw codes tables has to be addressed in the harvester package. 
+See ~/R/tradeharvester/docs/harvest.Rmd for details.
+
+## Get a backup of the raw database table
+```{r}
+# Dump codes tables
+eutradeflows::dumptable("tradeflows", "raw_comext_partner", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_product", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_reporter", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_unit", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_unit_description", "/mnt/sdb/public/sqldump/")
+# Dump main table
+eutradeflows::dumptable("tradeflows", "raw_comext_monthly", "/mnt/sdb/public/sqldump/")
+# The main table takes a long time try to load data for one product instead
+
+# load data for one product only
+# Dump by queru SO question
+# export from the Mysql CLI
+# $ mysql -e "select * from raw_comext_monthly where productcode = 44071091" tradeflows > swd44071091.sql
+# The result is not an SQL file
+# Export using the mysqldump tool
+# mysqldump --databases tradeflows --tables raw_comext_monthly --where="productcode = 44071091" > swd44071091.sql
+
+```
+
+## Load the dumps into the local database on my laptop
+
+```{r}
+library(eutradeflows)
+# Codes tables
+loadtabledump("tradeflows", "~/downloads/raw_comext_partner.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_product.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_reporter.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_unit.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_unit_description.sql.7z")
+# Main table
+loadtabledump("tradeflows", "~/downloads/raw_comext_monthly.sql.7z")
+```
+
+Now the raw data is in my local database and I can reproduct the error.
+```{r}
+cleancomext("tradeflows")
+# Recreate the error with a function further down the nest 
+dbname = "tradeflows"
+rawtabletemplate = "raw_comext_monthly_template"
+vldtabletemplate = "vld_comext_monthly_template"
+tablewrite = "vld_comext_monthly"
+tablepriceconversion = "vld_comext_priceconversion"
+templatecharacters = "template"
+logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')
+cleancomextmonthly(con ,
+                   tablearchive = tablearchive,
+                   tablerecent = tablerecent,
+                   tablewrite = tablewrite,
+                   tabletemplate = vldtabletemplate,
+                   tablepriceconversion = tablepriceconversion)
+
+# Now replace all RMySQL connection objects with  RMariaDB
+cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+                           productanalysed = productcode,
+                           tablearchive = tablearchive,
+                           tablerecent = tablerecent,
+                           tablewrite = tablewrite,
+                           tablepriceconversion = tablepriceconversion)
+```
+
+
+## Modifications to the cleancomext function
+Reproduce the error
+```{r}
+productanalysed <- "44071091"
+
+```
+
 
 
 ```{r dbDisconnect}
