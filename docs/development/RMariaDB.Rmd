@@ -1,0 +1,33 @@
+---
+title: "RMariaDB"
+author: "Paul Rougieux"
+date: "6/29/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+Replace RMySQL with RMariaDB
+
+Bash command to replace all `RMySQL::` function calls to `RMariaDB::`. 
+```
+# Replace the special function
+git grep -lz 'RMySQL::mysqlHasDefault'| xargs -0 perl -i'' -pE "s/RMySQL::mysqlHasDefault/RMariaDB::mariadbHasDefault/g"
+
+# Replace all other functions
+git grep -lz 'RMySQL::'| xargs -0 perl -i'' -pE "s/RMySQL::/RMariaDB::/g"
+
+# Replace the mistaken dbconnect statement
+# R> con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+# has now become
+# R> con <- RMariaDB::dbConnect(RMariaDB::MySQL(), dbname = "test")
+# The driver should be RMariaDB::MariaDB()
+git grep -lz '::MySQL'| xargs -0 perl -i'' -pE "s/::MySQL/::MariaDB/g"
+
+# Replace the connection parameter
+git grep -lz 'RMySQLcon'| xargs -0 perl -i'' -pE "s/RMySQLcon/RMariaDBcon/g"
+```

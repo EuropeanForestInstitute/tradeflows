@@ -43,7 +43,7 @@ cat validated_flow_yearly.sql | mysql -u paul -p  tradeflows
 * [a newsgroup](https://groups.google.com/forum/#!topic/manipulatr/IsRVJWoMPe4). 
    explained the purpose of the function `dplyr::copy_to`.
    It is intended to create temporary test tables.
-   The email exchange ends by suggesting to to use `RMySQL::dbWriteTable()` 
+   The email exchange ends by suggesting to to use `RMariaDB::dbWriteTable()` 
    to append data to an existing table.
 
 
@@ -205,11 +205,11 @@ charcoal90 <- loadrawdata(440290)
 # Data types
 Data types are infered from the function `dbDataType`, for example
 ```{r datatypes, eval=TRUE}
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
-RMySQL::dbDataType(con, 1)
-RMySQL::dbDataType(con, 1L)
-RMySQL::dbDataType(con, Sys.Date())
-RMySQL::dbDisconnect(con)
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "test")
+RMariaDB::dbDataType(con, 1)
+RMariaDB::dbDataType(con, 1L)
+RMariaDB::dbDataType(con, Sys.Date())
+RMariaDB::dbDisconnect(con)
 ```
 
 

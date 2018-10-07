@@ -25,7 +25,7 @@ archivetable <- 'raw_comext_monthly_2016S1'
 productanalysed <- "44071091"
 # Another spruce
 # productanalysed <- 44071031
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 ```
 
 This document first tries to run the existing clean function 
@@ -197,10 +197,10 @@ prices <- wp %>%
 
 
 # What DB is currently connected?
-message("Connected to the `", RMySQL::dbGetInfo(con)$dbname, "` database.")
+message("Connected to the `", RMariaDB::dbGetInfo(con)$dbname, "` database.")
 
 # Write prices to the database
-RMySQL::dbWriteTable(con, "vld_comext_price", prices,
+RMariaDB::dbWriteTable(con, "vld_comext_price", prices,
                      append = TRUE,
                      row.names = FALSE)
 
@@ -224,7 +224,7 @@ prices %>%
 pricew <- wp %>% 
     extractpricew(grouping = c("productcode", "flowcode", "year")) %>% 
     rename(period = year)
-RMySQL::dbWriteTable(con, "vld_comext_pricew", pricew,
+RMariaDB::dbWriteTable(con, "vld_comext_pricew", pricew,
                      append = TRUE,
                      row.names = FALSE)
 ```
@@ -241,8 +241,8 @@ cv <- wp %>%
     extractconversionfactors(grouping = c("productcode", "flowcode", "year")) %>% 
     rename(period = year)
 # Before using append=TRUE, you should empty the table
-RMySQL::dbSendQuery(con, "TRUNCATE table vld_comext_cv")
-RMySQL::dbWriteTable(con, "vld_comext_cv", cv,
+RMariaDB::dbSendQuery(con, "TRUNCATE table vld_comext_cv")
+RMariaDB::dbWriteTable(con, "vld_comext_cv", cv,
                      append = TRUE,
                      row.names = FALSE)
 ```
@@ -250,7 +250,7 @@ RMySQL::dbWriteTable(con, "vld_comext_cv", cv,
 ## developt the cleancomextmonthly1product() function
 ```{r}
 # Assign variables which will be used as function parameters in the real function
-RMySQLcon <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows") 
+RMariaDBcon <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows") 
 tablearchive <- "raw_comext_monthly_2016S1"
 tablerecent <- "raw_comext_monthly_201709"
 tableprice <- "vld_comext_price"
@@ -262,21 +262,21 @@ productanalysed
 
 # load trade flows from the database into a data frame
 # Load recent data
-dtfr <- tbl(RMySQLcon, tablerecent) %>% 
+dtfr <- tbl(RMariaDBcon, tablerecent) %>% 
     filter(productcode == productanalysed) %>% 
     # Add quantity units
-    eutradeflows::addunit2tbl(RMySQLcon, 
+    eutradeflows::addunit2tbl(RMariaDBcon, 
                               maintbl = ., 
                               tableunit = "vld_comext_unit")  %>% 
     collect()
 beginrecentdata <- min(dtfr$period)
 
 # Load archive data, for periods before the begin of recent data
-dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+dtfa <- tbl(RMariaDBcon, tablearchive) %>% 
     filter(productcode == productanalysed & 
                period < beginrecentdata) %>% 
     # Add quantity units
-    eutradeflows::addunit2tbl(RMySQLcon, 
+    eutradeflows::addunit2tbl(RMariaDBcon, 
                               maintbl = ., 
                               tableunit = "vld_comext_unit")  %>% 
     collect()
@@ -340,26 +340,26 @@ dtf <- mutate(dtf,
 # Use database columns to select which columns to keep in the 
 # data frame
 # get column names
-columnswrite  <- RMySQL::dbListFields(RMySQLcon, "vld_comext_monthly_template")
+columnswrite  <- RMariaDB::dbListFields(RMariaDBcon, "vld_comext_monthly_template")
 dtf <- select_(dtf, .dots = columnswrite)
 # Delete existing data for the given product
 query <- paste("DELETE FROM ", tablewrite,
                "WHERE productcode = ", productanalysed)
-res <- RMySQL::dbSendQuery(RMySQLcon, query)
-RMySQL::dbClearResult(res)
+res <- RMariaDB::dbSendQuery(RMariaDBcon, query)
+RMariaDB::dbClearResult(res)
 message(paste("Writing", nrow(dtf), "flows to the database."))
 # Write dtf
-RMySQL::dbWriteTable(con, name = tablewrite, 
+RMariaDB::dbWriteTable(con, name = tablewrite, 
                      value = dtf, append=TRUE, row.names = FALSE)
 
 # Write prices and conversion factors
 price <- rename(price, period = year)
 
-RMySQL::dbWriteTable(con, name = tableprice, 
+RMariaDB::dbWriteTable(con, name = tableprice, 
                      value = price, append=TRUE, row.names = FALSE)
-RMySQL::dbWriteTable(con, name = tablepricew, 
+RMariaDB::dbWriteTable(con, name = tablepricew, 
                      value = pricew, append=TRUE, row.names = FALSE)
-RMySQL::dbWriteTable(con, name = tablecv, 
+RMariaDB::dbWriteTable(con, name = tablecv, 
                      value = cvf, append=TRUE, row.names = FALSE)
 ```
 
@@ -410,7 +410,7 @@ p + geom_line(aes(y = medianpricew))
 
 ### Develop clean comext function for many products
 ```{r}
-RMySQLcon <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows") 
+RMariaDBcon <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows") 
 tablearchive <- "raw_comext_monthly_2016S1"
 tablerecent <- "raw_comext_monthly_201709"
 tablewrite <- "vld_comext_monthly" 
@@ -420,10 +420,10 @@ tablewrite <- "vld_comext_monthly"
 
 # Get a vector of products available in the database
 # Products in the recent data
-dtfr <- tbl(RMySQLcon, tablerecent) %>% 
+dtfr <- tbl(RMariaDBcon, tablerecent) %>% 
     distinct(productcode) %>% collect()
 # Products in the archive data
-dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+dtfa <- tbl(RMariaDBcon, tablearchive) %>% 
     distinct(productcode) %>% collect()
 # Combine both in a vector
 products <- union(dtfr$productcode, dtfa$productcode)
@@ -435,7 +435,7 @@ products <- products[nchar(products)>2]
 # Loop on all products
 lapply(X = head(products), 
        FUN = cleancomextmonthly1product,
-       RMySQLcon = RMySQLcon,
+       RMariaDBcon = RMariaDBcon,
        tablearchive = tablearchive,
        tablerecent = tablerecent,
        tablewrite = tablewrite # add ... here
@@ -462,7 +462,7 @@ eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "tradeflows
 
 library(tradeflows)
 # Connect to the database
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 
 # Clean one product 44079910
 dtf <- cleancomextmonthly1product(con ,
@@ -485,7 +485,7 @@ if(FALSE){
 }
 
 # Disconnect from the database
-RMySQL::dbDisconnect(con)
+RMariaDB::dbDisconnect(con)
 ```
 
 In the shell follow the log with
@@ -508,14 +508,14 @@ is the filtering on productcode faster when productcode is a character,
 instead of a numeric value? 
 ```{r}
 # numeric
-system.time(dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+system.time(dtfa <- tbl(RMariaDBcon, tablearchive) %>% 
     filter(productcode == 44071091) %>% 
     collect())
 #  user  system elapsed 
 # 0.180   0.004  47.816 
 
 # character
-system.time(dtfa <- tbl(RMySQLcon, tablearchive) %>% 
+system.time(dtfa <- tbl(RMariaDBcon, tablearchive) %>% 
     filter(productcode == "44071091") %>% 
     collect())
 #  user  system elapsed 
@@ -528,7 +528,7 @@ encoded as a numeric variable.
 ## 20170928 Sum trade values works also with na.rm=TRUE 
 ```{r}
 # In the database, sumarise is translated to SQL
-tbl(RMySQLcon, tablearchive) %>%
+tbl(RMariaDBcon, tablearchive) %>%
     summarise(n = sum(tradevalue, na.rm = TRUE)) %>% 
     explain() %>% collect()
 # On a data frame
@@ -545,7 +545,7 @@ Error: `x` and `y` must share the same src, set `copy` = TRUE (may be slow)
 ```
 
 ```{r eval=FALSE}
-eutradeflows::addunit2tbl(RMySQLcon, maintbl = dtf, 
+eutradeflows::addunit2tbl(RMariaDBcon, maintbl = dtf, 
                           tableunit = "vld_comext_unit") 
 ```
 In the end I decided to add units during the data frame load statement.
@@ -579,7 +579,7 @@ cleancomextmonthly1product(con ,
 
 # Sum quantities for all produts
 # To find out if completely missing quantities appear frequently
-dtf <- tbl(RMySQLcon, tablerecent) %>% 
+dtf <- tbl(RMariaDBcon, tablerecent) %>% 
     group_by(productcode) %>% 
     summarise(quantity = sum(quantity)) %>% 
     collect()
@@ -601,11 +601,11 @@ Cleaning one product individually seems to work but cleaning all products doesn'
 # dumptable("tradeflows", "raw_comext_monthly_201803")
 # Downloaded the file, now loading the dump
 
-# con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+# con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 # Create fake validation table
-RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
+RMariaDB::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
                                  "vld_comext_monthly_to_delete"))
-RMySQL::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
+RMariaDB::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
                                  "vld_comext_monthly_to_delete",
                                  "vld_comext_monthly_template"))
 # Try to validate one product
@@ -633,7 +633,7 @@ templatecharacters = "template"
 logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')
 
 # Also run the cleancomextmonthly() function by pasting all its content at the R prompt
-RMySQLcon <- con
+RMariaDBcon <- con
 tabletemplate = "vld_comext_monthly_template"
 tablepriceconversion = "vld_comext_priceconversion"
 tabletemplate = "vld_comext_monthly_template"
@@ -642,7 +642,7 @@ logfile = file.path("~/log", "cleaningerrorlog.txt")
 # The function contains a loop on product codes 
 # which makes the following call for each product
 # this call works fine, the data is cleaned
-cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+cleancomextmonthly1product(RMariaDBcon = RMariaDBcon,
                            productanalysed = productcode,
                            tablearchive = tablearchive,
                            tablerecent = tablerecent,
@@ -654,7 +654,7 @@ cleancomextmonthly1product(RMySQLcon = RMySQLcon,
 # Its seems to catche the warning and stop the execution
 # I added a message for debugging
 tryCatch({
-            cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+            cleancomextmonthly1product(RMariaDBcon = RMariaDBcon,
                                        productanalysed = productcode,
                                        tablearchive = tablearchive,
                                        tablerecent = tablerecent,
@@ -755,7 +755,7 @@ cleancomextmonthly(con ,
                    tablepriceconversion = tablepriceconversion)
 
 # Now replace all RMySQL connection objects with  RMariaDB
-cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+cleancomextmonthly1product(RMariaDBcon = RMariaDBcon,
                            productanalysed = productcode,
                            tablearchive = tablearchive,
                            tablerecent = tablerecent,
@@ -791,6 +791,6 @@ eutradeflows::dumptable("tradeflows", "vld_comext_monthly", sqldumpfolder)
 
 
 ```{r dbDisconnect}
-RMySQL::dbDisconnect(con)
+RMariaDB::dbDisconnect(con)
 ```
 

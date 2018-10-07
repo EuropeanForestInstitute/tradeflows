@@ -38,7 +38,7 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
     require(dplyr)
     setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
-    DBread <- RMySQL::dbConnect(RMySQL::MySQL(), user=db["user"], host=db["host"],
+    DBread <- RMariaDB::dbConnect(RMariaDB::MariaDB(), user=db["user"], host=db["host"],
                          password=db["password"], dbname=db["dbname"])
     for(tableread in tables){
         print(str(tableread))
@@ -49,8 +49,8 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
                             "FROM `INFORMATION_SCHEMA`.`COLUMNS` ",
                             "WHERE `TABLE_SCHEMA`='tradeflows' ",
                             "AND `TABLE_NAME`='",tableread,"';"), collapse = "")
-        res <- RMySQL::dbSendQuery(DBread, sqlquery)
-        columnname <- RMySQL::dbFetch(res)
+        res <- RMariaDB::dbSendQuery(DBread, sqlquery)
+        columnname <- RMariaDB::dbFetch(res)
         columnname <- columnname$COLUMN_NAME
         # For that table, find the efi column names which are supposed to
         # be in there, but which are not in the data frame
@@ -62,7 +62,7 @@ checkdbcolumns <- function(tables = c("raw_flow_yearly", "validated_flow_yearly"
                     paste(missingcolumns, collapse=", "))
         }
     }
-    RMySQL::dbDisconnect(DBread)
+    RMariaDB::dbDisconnect(DBread)
 }
 
 
@@ -127,13 +127,13 @@ writedbproduct <- function(dtf, tablewrite){
     stopifnot(tablewrite %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
-    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+    DBwrite <- RMariaDB::dbConnect(RMariaDB::MariaDB(),
                                  user=db["user"], host=db["host"],
                                  password=db["password"], dbname=db["dbname"])
     dtf <- data.frame(dtf)
-    result <- RMySQL::dbWriteTable(DBwrite, name = tablewrite,
+    result <- RMariaDB::dbWriteTable(DBwrite, name = tablewrite,
                                    value=dtf, append=TRUE, row.names = FALSE)
-    RMySQL::dbDisconnect(DBwrite)
+    RMariaDB::dbDisconnect(DBwrite)
     return(result)
 }
 
@@ -146,16 +146,16 @@ deletedbproduct <- function(productcode, tabledelete){
     stopifnot(tabledelete %in% c("validated_flow_yearly", "validated_flow_monthly"))
     setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
-    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+    DBwrite <- RMariaDB::dbConnect(RMariaDB::MariaDB(),
                                  user=db["user"], host=db["host"],
                                  password=db["password"], dbname=db["dbname"])
     sqlproduct <- paste("DELETE FROM ",tabledelete,
                          "WHERE productcode = ", productcode)
-    res <- RMySQL::dbSendQuery(DBwrite, sqlproduct)
-    nbrowsdeleted <- RMySQL::dbGetRowsAffected(res)
+    res <- RMariaDB::dbSendQuery(DBwrite, sqlproduct)
+    nbrowsdeleted <- RMariaDB::dbGetRowsAffected(res)
     message(nbrowsdeleted," rows were deleted.")
-    RMySQL::dbClearResult(res)
-    RMySQL::dbDisconnect(DBwrite)
+    RMariaDB::dbClearResult(res)
+    RMariaDB::dbDisconnect(DBwrite)
     return(nbrowsdeleted)
 }
 
@@ -189,9 +189,9 @@ nrowinDB <- function(tableread){
 #' @examples
 #'\dontrun{
 #' # From 2017 onwards, use
-#' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+#' con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 #' prod <- tbl(con, "raw_comext_product")
-#' RMySQL::dbDisconnect(con)
+#' RMariaDB::dbDisconnect(con)
 #' # Deprecated, before 2017
 #' readdbtbl("raw_flow_yearly") %>%
 #'     group_by(productcode) %>%
@@ -238,15 +238,15 @@ if (FALSE){
     setdatabaseconfig()
     db <- getOption("tradeflowsDB")
     library(RMySQL) # Just here, make full RMySQL calls in the functions
-    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+    DBwrite <- RMariaDB::dbConnect(RMariaDB::MariaDB(),
                                  user=db["user"], host=db["host"],
                                  password=db["password"], dbname=db["dbname"])
-    res <- RMySQL::dbSendQuery(DBwrite,"show variables like 'character_set_%'")
+    res <- RMariaDB::dbSendQuery(DBwrite,"show variables like 'character_set_%'")
     dbFetch(res)
     dbGetQuery(DBwrite,"set names utf8")
     res <- dbSendQuery(DBwrite,"show variables like 'character_set_%'")
     dbFetch(res)
-    RMySQL::dbDisconnect(DBwrite)
+    RMariaDB::dbDisconnect(DBwrite)
 
     # Can the same be done with a dplyr connection?
     db <- getOption("tradeflowsDB")

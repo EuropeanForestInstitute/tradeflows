@@ -4,7 +4,7 @@
 \alias{loadcomext1product}
 \title{Load all archive and recent Comext data for one product}
 \usage{
-loadcomext1product(RMySQLcon, productanalysed, tablearchive, tablerecent,
+loadcomext1product(RMariaDBcon, productanalysed, tablearchive, tablerecent,
   tableunit = "vld_comext_unit")
 }
 \value{
@@ -12,7 +12,7 @@ a  data frame containing Comext trade flows for the given product
 }
 \description{
 The function will use the database connector provided as
-RMySQLcon argument.
+RMariaDBcon argument.
 It will load the product from an archive table and a recent
 table. The function will combine the archive table and
 the recent table in one dataframe and will return a dataframe.
@@ -20,7 +20,7 @@ the recent table in one dataframe and will return a dataframe.
 \examples{
 \dontrun{ # Clean product and country codes
 # Connect to the database
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 # Load data for product 44079910
 dtf <- loadcomext1product(con,
                           productanalysed = "44071091",
@@ -29,6 +29,6 @@ dtf <- loadcomext1product(con,
 head(dtf)
 unique(dtf$year)
 # Disconnect from the database
-RMySQL::dbDisconnect(con)
+RMariaDB::dbDisconnect(con)
 }
 }

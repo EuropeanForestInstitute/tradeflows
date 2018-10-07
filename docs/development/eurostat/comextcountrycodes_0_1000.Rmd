@@ -25,7 +25,7 @@ archivetable <- 'raw_comext_monthly_2016S1'
 productanalysed <- "44071091"
 # Another spruce
 # productanalysed <- 44071031
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 ```
 
 

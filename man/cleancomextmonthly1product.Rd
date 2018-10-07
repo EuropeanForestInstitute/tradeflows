@@ -6,11 +6,11 @@
 \alias{cleancomext}
 \title{Clean Comext Monthly data}
 \usage{
-cleancomextmonthly1product(RMySQLcon, productanalysed, tablearchive,
+cleancomextmonthly1product(RMariaDBcon, productanalysed, tablearchive,
   tablerecent, tablewrite,
   tablepriceconversion = "vld_comext_priceconversion")
 
-cleancomextmonthly(RMySQLcon, productanalysed, tablearchive, tablerecent,
+cleancomextmonthly(RMariaDBcon, productanalysed, tablearchive, tablerecent,
   tablewrite, tabletemplate = "vld_comext_monthly_template",
   tablepriceconversion = "vld_comext_priceconversion",
   logfile = file.path("~/log", "cleaningerrorlog.txt"))
@@ -24,7 +24,7 @@ cleancomext(dbname, rawtabletemplate = "raw_comext_monthly_template",
   ".txt"))
 }
 \arguments{
-\item{RMySQLcon}{database connection object created by RMySQL \code{\link[DBI]{dbConnect}}}
+\item{RMariaDBcon}{database connection object created by RMySQL \code{\link[DBI]{dbConnect}}}
 
 \item{productanalysed}{character code of the product to analyse}
 
@@ -88,11 +88,11 @@ cleancomext(dbname = "test")
 eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "test")
 
 # Connect to the database
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "test")
 # Create an empty table based on the monthly table template
-RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `\%s`;",
+RMariaDB::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `\%s`;",
                                  "vld_comext_monthly_to_delete"))
-RMySQL::dbSendQuery(con, sprintf("CREATE TABLE \%s LIKE \%s;",
+RMariaDB::dbSendQuery(con, sprintf("CREATE TABLE \%s LIKE \%s;",
                                  "vld_comext_monthly_to_delete",
                                  "vld_comext_monthly_template"))
 
@@ -108,7 +108,7 @@ dtf <- cleancomextmonthly1product(con ,
                            tablepriceconversion = "vld_comext_priceconversion")
 dplyr::count(dtf, flag)
 # Drop the temporary table
-RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `\%s`;",
+RMariaDB::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `\%s`;",
                                        "vld_comext_monthly_to_delete"))
 
 # Loop on all products available in the database and clean them
@@ -120,6 +120,6 @@ cleancomextmonthly(con ,
                    tablepriceconversion = "vld_comext_priceconversion")
 
 # Disconnect from the database
-RMySQL::dbDisconnect(con)
+RMariaDB::dbDisconnect(con)
 }
 }
