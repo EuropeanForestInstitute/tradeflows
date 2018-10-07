@@ -426,6 +426,7 @@ cleancomext <- function(dbname,
                         tablewrite = "vld_comext_monthly",
                         tablepriceconversion = "vld_comext_priceconversion",
                         templatecharacters = "template",
+                        sqldumpfolder = "/mnt/sdb/public/sqldump/",
                         logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')){
     message("\n\nStarting to clean on ",
             format(Sys.time(),"%Y.%m.%d at %H:%M"),"\n")
@@ -486,11 +487,19 @@ cleancomext <- function(dbname,
                            tablewrite = tablewrite,
                            tabletemplate = vldtabletemplate,
                            tablepriceconversion = tablepriceconversion)
-    }
+        message("\nCleaning completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
 
+        # Save the cleaned data to dump files
+        try({ # Dump all raw tables to the rawdatafolder
+            vldtables <- RMariaDB::dbListTables(con)
+            vldtables <- vldtables[grepl("^vld", vldtables)]
+            lapply(vldtables,
+                   function(tablename) eutradeflows::dumptable("tradeflows", tablename, dumpfolder = sqldumpfolder))
+            message("\nDatabase dump completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
+        })
+    }
 
     # Disconnect from the database
     RMySQL::dbDisconnect(con)
 
-    message("\nCleaning completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
 }

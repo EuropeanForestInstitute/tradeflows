@@ -700,6 +700,7 @@ The lack of data inthe raw codes tables has to be addressed in the harvester pac
 See ~/R/tradeharvester/docs/harvest.Rmd for details.
 
 ## Get a backup of the raw database table
+See also backup of the validated data below
 ```{r}
 # Dump codes tables
 eutradeflows::dumptable("tradeflows", "raw_comext_partner", "/mnt/sdb/public/sqldump/")
@@ -769,6 +770,23 @@ Reproduce the error
 productanalysed <- "44071091"
 
 ```
+
+## Backup of the validated data
+```{r}
+sqldumpfolder <- "/mnt/sdb/public/sqldump/"
+eutradeflows::dumptable("tradeflows", "vld_comext_partner", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_product", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_reporter", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_unit", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_unit_description", sqldumpfolder)
+# Dump main table
+eutradeflows::dumptable("tradeflows", "vld_comext_monthly", sqldumpfolder)
+
+
+
+```
+
+
 
 
 
