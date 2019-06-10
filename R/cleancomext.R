@@ -113,7 +113,7 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
 #' dtf <- loadcomext1product(con,
 #'                           productanalysed = "44071091",
 #'                           tablearchive = "raw_comext_monthly_2016S1",
-#'                           tablerecent = "raw_comext_monthly_201709")
+#'                           rawtable = "raw_comext_monthly_201709")
 #' head(dtf)
 #' unique(dtf$year)
 #' # Disconnect from the database
@@ -169,7 +169,7 @@ loadcomext1product <- function(RMariaDBcon,
 #' @param RMariaDBcon database connection object created by RMySQL \code{\link[DBI]{dbConnect}}
 #' @param productanalysed character code of the product to analyse
 #' @param tablearchive character name of a monthly archive table
-#' @param tablerecent character name of a monthly recent table
+#' @param rawtable character name of a monthly recent table
 #' @param tablewrite character name of the monthly table where output data will be written
 #' @param tablepriceconversion character name of a table which will store price
 #' and conversion factors
@@ -199,7 +199,7 @@ loadcomext1product <- function(RMariaDBcon,
 #' dtf <- cleancomextmonthly1product(con ,
 #'                            productanalysed = "44071091",
 #'                            tablearchive = "raw_comext_monthly_2016S1",
-#'                            tablerecent = "raw_comext_monthly_201708",
+#'                            rawtable = "raw_comext_monthly_201708",
 #'                            tablewrite = "vld_comext_monthly_to_delete",
 #'                            tablepriceconversion = "vld_comext_priceconversion")
 #' dplyr::count(dtf, flag)
@@ -210,7 +210,7 @@ loadcomext1product <- function(RMariaDBcon,
 #' # Loop on all products available in the database and clean them
 #' cleancomextmonthly(con ,
 #'                    tablearchive = "raw_comext_monthly_2016S1",
-#'                    tablerecent = "raw_comext_monthly_201709",
+#'                    rawtable = "raw_comext_monthly_201709",
 #'                    tablewrite = "vld_comext_monthly",
 #'                    tabletemplate = "vld_comext_monthly_template",
 #'                    tablepriceconversion = "vld_comext_priceconversion")
@@ -428,7 +428,7 @@ cleancomext <- function(dbname,
         # If the most recent period is available, just write a message
         message("Data was already validated. ",
                 "The last period available in ",
-                tablerecent, ": `", raw$lastperiod,
+                rawtable, ": `", raw$lastperiod,
                 "` matches the last period available in ",
                 tablewrite, ": `", vld$lastperiod,"`.")
         # Add a dot to the main logfile,
