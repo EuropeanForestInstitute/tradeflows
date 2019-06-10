@@ -101,14 +101,14 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
 #' Load all archive and recent Comext data for one product
 #'
 #' The function will use the database connector provided as
-#' RMySQLcon argument.
+#' RMariaDBcon argument.
 #' It will load the product from an archive table and a recent
 #' table. The function will combine the archive table and
 #' the recent table in one dataframe and will return a dataframe.
 #' @return a  data frame containing Comext trade flows for the given product
 #' @examples \dontrun{ # Clean product and country codes
 #' # Connect to the database
-#' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+#' con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 #' # Load data for product 44079910
 #' dtf <- loadcomext1product(con,
 #'                           productanalysed = "44071091",
@@ -117,33 +117,44 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
 #' head(dtf)
 #' unique(dtf$year)
 #' # Disconnect from the database
-#' RMySQL::dbDisconnect(con)
+#' RMariaDB::dbDisconnect(con)
 #' }
 #' @export
-loadcomext1product <- function(RMySQLcon,
+loadcomext1product <- function(RMariaDBcon,
                                productanalysed,
                                tablearchive,
-                               tablerecent){
+                               tablerecent,
+                               tableunit = "vld_comext_unit"){
     # load trade flows from the database into a data frame
     message("Load recent data from ", tablerecent, "...")
-    dtfr <- tbl(RMySQLcon, tablerecent) %>%
+
+    # Check if units are available
+    unit <- tbl(con, tableunit) %>%
+        filter(productcode == productanalysed) %>%
+        summarise(n = n()) %>% collect()
+    if(unit$n == 0){
+        stop("Cannot add units to the table because they are not available in ",
+             tableunit)
+    }
+
+    dtfr <- tbl(RMariaDBcon, tablerecent) %>%
         filter(productcode == productanalysed) %>%
         # Add quantity units
-        eutradeflows::addunit2tbl(RMySQLcon,
+        eutradeflows::addunit2tbl(RMariaDBcon,
                                   maintbl = .,
-                                  tableunit = "vld_comext_unit")  %>%
+                                  tableunit = tableunit)  %>%
         collect()
     beginrecentdata <- min(dtfr$period)
 
     # Load archive data, for periods before the begin of recent data
     message("Load archive data from ",tablearchive, "...")
-    dtfa <- tbl(RMySQLcon, tablearchive) %>%
+    dtfa <- tbl(RMariaDBcon, tablearchive) %>%
         filter(productcode == productanalysed &
                    period < beginrecentdata) %>%
         # Add quantity units
-        eutradeflows::addunit2tbl(RMySQLcon,
+        eutradeflows::addunit2tbl(RMariaDBcon,
                                   maintbl = .,
-                                  tableunit = "vld_comext_unit")  %>%
+                                  tableunit = tableunit)  %>%
         collect()    # load trade flows from the database into a data frame
 
     # Combine archive and recent data
@@ -179,7 +190,7 @@ loadcomext1product <- function(RMySQLcon,
 #' Note: periods are not storred in the priceconversion table,
 #' only years are storred in the price and conversion factors tables.
 #' years encoded as 2018, will be different to the period 201852
-#' @param RMySQLcon database connection object created by RMySQL \code{\link[DBI]{dbConnect}}
+#' @param RMariaDBcon database connection object created by RMySQL \code{\link[DBI]{dbConnect}}
 #' @param productanalysed character code of the product to analyse
 #' @param tablearchive character name of a monthly archive table
 #' @param tablerecent character name of a monthly recent table
@@ -197,11 +208,11 @@ loadcomext1product <- function(RMySQLcon,
 #' eutradeflows::createdbstructure(sqlfile = "vld_comext.sql", dbname = "test")
 #'
 #' # Connect to the database
-#' con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "test")
+#' con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "test")
 #' # Create an empty table based on the monthly table template
-#' RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
+#' RMariaDB::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
 #'                                  "vld_comext_monthly_to_delete"))
-#' RMySQL::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
+#' RMariaDB::dbSendQuery(con, sprintf("CREATE TABLE %s LIKE %s;",
 #'                                  "vld_comext_monthly_to_delete",
 #'                                  "vld_comext_monthly_template"))
 #'
@@ -217,7 +228,7 @@ loadcomext1product <- function(RMySQLcon,
 #'                            tablepriceconversion = "vld_comext_priceconversion")
 #' dplyr::count(dtf, flag)
 #' # Drop the temporary table
-#' RMySQL::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
+#' RMariaDB::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `%s`;",
 #'                                        "vld_comext_monthly_to_delete"))
 #'
 #' # Loop on all products available in the database and clean them
@@ -229,10 +240,10 @@ loadcomext1product <- function(RMySQLcon,
 #'                    tablepriceconversion = "vld_comext_priceconversion")
 #'
 #' # Disconnect from the database
-#' RMySQL::dbDisconnect(con)
+#' RMariaDB::dbDisconnect(con)
 #' }
 #' @export
-cleancomextmonthly1product <- function(RMySQLcon,
+cleancomextmonthly1product <- function(RMariaDBcon,
                                        productanalysed,
                                        tablearchive,
                                        tablerecent,
@@ -241,7 +252,7 @@ cleancomextmonthly1product <- function(RMySQLcon,
                                            "vld_comext_priceconversion"){
     message("\n\nCleaning product code: ", productanalysed)
 
-    dtf <- loadcomext1product(RMySQLcon = RMySQLcon,
+    dtf <- loadcomext1product(RMariaDBcon = RMariaDBcon,
                               productanalysed = productanalysed,
                               tablearchive = tablearchive,
                               tablerecent = tablerecent)
@@ -260,10 +271,11 @@ cleancomextmonthly1product <- function(RMySQLcon,
                   flag = 0)
 
     # Extract prices and conversion factors
-    price <- extractprices(dtf, grouping = c("productcode", "flowcode",
-                                             "year", "unit"))
-    pricew <- extractpricew(dtf, grouping = c("productcode", "flowcode",
-                                              "year", "unit"))
+    price <- extractprices(dtf,
+                           grouping = c("productcode", "flowcode", "year", "unit"),
+                           lowercoef = 1, uppercoef = 1,
+                           lowerquantile = 0.05, upperquantile = 0.95)
+    pricew <- extractpricew(dtf, grouping = c("productcode", "flowcode", "year", "unit"))
     # Join price and pricew in one data frame
     price <- price %>%
         left_join(pricew, by = c("productcode", "flowcode", "year", "unit"))
@@ -285,6 +297,9 @@ cleancomextmonthly1product <- function(RMySQLcon,
     dtf <- shaveconversion(dtf)
 
     # Estimate quantity
+    message("Beware that `quantityraw` created in estimatequantity() ",
+            "may already have been modified ",
+            "by the shaveconversion() function.")
     dtf <- estimatequantity(dtf)
 
 
@@ -295,16 +310,16 @@ cleancomextmonthly1product <- function(RMySQLcon,
     # Use database columns to select which columns to keep in the
     # data frame
     # get column names
-    columnswrite  <- RMySQL::dbListFields(RMySQLcon, "vld_comext_monthly_template")
+    columnswrite  <- RMariaDB::dbListFields(RMariaDBcon, tablewrite)
     db_dtf <- select_(dtf, .dots = columnswrite)
     # Delete existing data for the given product
     query <- paste("DELETE FROM ", tablewrite,
                    "WHERE productcode = ", productanalysed)
-    res <- RMySQL::dbSendQuery(RMySQLcon, query)
-    RMySQL::dbClearResult(res)
+    res <- RMariaDB::dbSendQuery(RMariaDBcon, query)
+    RMariaDB::dbClearResult(res)
     message(paste("Writing", nrow(dtf), "flows to the database."))
     # Write dtf
-    RMySQL::dbWriteTable(RMySQLcon, name = tablewrite,
+    RMariaDB::dbWriteTable(RMariaDBcon, name = tablewrite,
                          value = db_dtf, append=TRUE, row.names = FALSE)
 
     ### Write prices and conversion factors to the database
@@ -316,10 +331,10 @@ cleancomextmonthly1product <- function(RMySQLcon,
     # Delete existing price and conversion factors for the given product
     query <- paste("DELETE FROM ", tablepriceconversion,
                    "WHERE productcode = ", productanalysed)
-    res <- RMySQL::dbSendQuery(RMySQLcon, query)
-    RMySQL::dbClearResult(res)
+    res <- RMariaDB::dbSendQuery(RMariaDBcon, query)
+    RMariaDB::dbClearResult(res)
     # write price and conversion factors to the database
-    RMySQL::dbWriteTable(RMySQLcon, name = tablepriceconversion,
+    RMariaDB::dbWriteTable(RMariaDBcon, name = tablepriceconversion,
                          value = priceconversion, append=TRUE, row.names = FALSE)
     return(invisible(dtf))
 }
@@ -327,28 +342,28 @@ cleancomextmonthly1product <- function(RMySQLcon,
 
 #' @rdname cleancomextmonthly1product
 #' @export
-cleancomextmonthly <- function(RMySQLcon,
+cleancomextmonthly <- function(RMariaDBcon,
                                productanalysed,
                                tablearchive,
                                tablerecent,
                                tablewrite,
                                tabletemplate = "vld_comext_monthly_template",
                                tablepriceconversion = "vld_comext_priceconversion",
-                               logfile = file.path("~", "comextcleaninglog.txt")){
+                               logfile = file.path("~/log", "cleaningerrorlog.txt")){
 
     # Create the table that will store validated data
     message("If the database table ", tablewrite,
             " already exists, all its content will be erased and replaced.")
-    RMySQL::dbSendQuery(RMySQLcon, sprintf("DROP TABLE IF EXISTS `%s`;",
+    RMariaDB::dbSendQuery(RMariaDBcon, sprintf("DROP TABLE IF EXISTS `%s`;",
                                            tablewrite))
-    RMySQL::dbSendQuery(RMySQLcon, sprintf("CREATE TABLE %s LIKE %s;",
+    RMariaDB::dbSendQuery(RMariaDBcon, sprintf("CREATE TABLE %s LIKE %s;",
                                            tablewrite, tabletemplate))
 
     # Find all products in the recent and archive table
     #  in the form of a a vector of products available
-    dtfr <- tbl(RMySQLcon, tablerecent) %>%
+    dtfr <- tbl(RMariaDBcon, tablerecent) %>%
         distinct(productcode) %>% collect()
-    dtfa <- tbl(RMySQLcon, tablearchive) %>%
+    dtfa <- tbl(RMariaDBcon, tablearchive) %>%
         distinct(productcode) %>% collect()
     # Combine recent and archive products in one vector
     products <- union(dtfr$productcode, dtfa$productcode)
@@ -362,17 +377,17 @@ cleancomextmonthly <- function(RMySQLcon,
     # When cleaning doesn't work for a product, write errors to a log file
     for(productcode in products){
         tryCatch({
-            cleancomextmonthly1product(RMySQLcon = RMySQLcon,
+            cleancomextmonthly1product(RMariaDBcon = RMariaDBcon,
                                        productanalysed = productcode,
                                        tablearchive = tablearchive,
                                        tablerecent = tablerecent,
                                        tablewrite = tablewrite,
                                        tablepriceconversion = tablepriceconversion)
         }, error = function(errorcondition){
-            write2log(errorcondition, logfile,
+            writeerror2log(errorcondition, logfile,
                       paste("productcode:", productcode))
         }, warning = function(warningcondition){
-            write2log(warningcondition, logfile,
+            writeerror2log(warningcondition, logfile,
                       paste("productcode:", productcode))
         }
         )
@@ -402,7 +417,7 @@ cleancomextmonthly <- function(RMySQLcon,
 #' It is a very verbose file giving the percentage change of
 #' world import and export value after each cleaning operation for each product code.
 #' * The \code{cleancomext1product()}function writes errors and warnings to
-#' \code{~/comextcleaninglog.txt}.
+#' \code{~/log/cleaningerrorlog.txt}.
 #' @md
 #' @export
 cleancomext <- function(dbname,
@@ -411,14 +426,20 @@ cleancomext <- function(dbname,
                         tablewrite = "vld_comext_monthly",
                         tablepriceconversion = "vld_comext_priceconversion",
                         templatecharacters = "template",
+                        sqldumpfolder = "/mnt/sdb/public/sqldump/",
                         logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')){
     message("\n\nStarting to clean on ",
             format(Sys.time(),"%Y.%m.%d at %H:%M"),"\n")
 
     # Connect to the database
-    con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = dbname)
+    con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = dbname)
+
     # List tables
-    tables <- RMySQL::dbListTables(con)
+    tables <- RMariaDB::dbListTables(con)
+
+    # Clean product, reporter, partner and unit codes
+    eutradeflows::cleanallcomextcodes(con)
+    message("deal with missing unit in another way not only an error")
 
     # Extract the name of raw database tables
     rawtablenaked <- gsub(templatecharacters, "", rawtabletemplate)
@@ -466,10 +487,19 @@ cleancomext <- function(dbname,
                            tablewrite = tablewrite,
                            tabletemplate = vldtabletemplate,
                            tablepriceconversion = tablepriceconversion)
+        message("\nCleaning completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
+
+        # Save the cleaned data to dump files
+        try({ # Dump all raw tables to the rawdatafolder
+            vldtables <- RMariaDB::dbListTables(con)
+            vldtables <- vldtables[grepl("^vld", vldtables)]
+            lapply(vldtables,
+                   function(tablename) eutradeflows::dumptable("tradeflows", tablename, dumpfolder = sqldumpfolder))
+            message("\nDatabase dump completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
+        })
     }
 
     # Disconnect from the database
-    RMySQL::dbDisconnect(con)
+    RMariaDB::dbDisconnect(con)
 
-    message("\nCleaning completed on ", format(Sys.time(),"%Y.%m.%d at %H:%M"))
 }

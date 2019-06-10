@@ -141,8 +141,10 @@ filterworldeu28 <- function(dtf, verbose = FALSE){
 #'     extractprices(grouping = c("flow", "year", "unit"))
 #' }
 #' @export
-extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
+extractprices <- function(dtf,
                           grouping = c("flow", "regionreporter", "year", "unit"),
+                          lowercoef= 0.5, uppercoef=2,
+                          lowerquantile = 0.25, upperquantile = 0.75,
                           includeqestimates = TRUE){
     # Grouping variables should be present in the data frame
     stopifnot(grouping %in% names(dtf))
@@ -169,9 +171,9 @@ extractprices <- function(dtf, lowercoef= 0.5, uppercoef=2,
         filter(!is.na(price) & !is.infinite(price)) %>%
         # Calculate yearly regional prices by unit and/or by other grouping variables
         group_by_(.dots = grouping) %>%
-        summarise(lowerprice = lowercoef * quantile(price, 0.25, names=FALSE),
+        summarise(lowerprice = lowercoef * quantile(price, lowerquantile, names=FALSE),
                   medianprice = median(price),
-                  upperprice = uppercoef * quantile(price, 0.75, names=FALSE),
+                  upperprice = uppercoef * quantile(price, upperquantile, names=FALSE),
                   # The average price often cannot be computed because there
                   # are infinite prices when quantity is = 0
                   averageprice = mean(price, na.rm=TRUE),
@@ -532,7 +534,7 @@ estimatequantity <- function(dtf){
     message("Using a conversion factor to estimate quantity from weight ",
             changeflowmessage(dtf,rbind(dtf,dtfnoqw)))
     nrow(dtfnoqnow) %>% message(" rows where neither quantity nor weight were available")
-    message("Using a unit price to estimate quantity from weight ",
+    message("Using a unit price to estimate quantity from the trade value",
             changeflowmessage(dtf,rbind(dtf,dtfnoqnow)))
 
     # Put data frames back together

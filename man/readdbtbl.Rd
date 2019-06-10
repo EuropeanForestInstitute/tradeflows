@@ -28,9 +28,9 @@ Therefore they will not be available for a merge within the database.
 \examples{
 \dontrun{
 # From 2017 onwards, use
-con <- RMySQL::dbConnect(RMySQL::MySQL(), dbname = "tradeflows")
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 prod <- tbl(con, "raw_comext_product")
-RMySQL::dbDisconnect(con)
+RMariaDB::dbDisconnect(con)
 # Deprecated, before 2017
 readdbtbl("raw_flow_yearly") \%>\%
     group_by(productcode) \%>\%

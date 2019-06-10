@@ -21,7 +21,7 @@ library(reshape2)
 
 
 ```{r loadcomextdata}
-dtf <- readdbtbl("raw_comext_monthly_201707") 
+dtf <- readdbtbl("raw_comext_monthly_201709") 
 # All columns are numeric
 dtf %>% head() %>% collect() %>% str()
 productcodes44 <- dtf %>% 
@@ -36,6 +36,12 @@ productcodes44 <- dtf %>%
 [Stackoverflow question](https://stackoverflow.com/questions/45299043/how-to-reproduce-this-moving-distribution-plot-with-r?noredirect=1#comment77562559_45299043)
 
 ## UK import prices 
+
+
+```{r}
+
+```
+
 
 ### Most recent data
 ```{r}

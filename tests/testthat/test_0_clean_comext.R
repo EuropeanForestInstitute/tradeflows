@@ -16,19 +16,29 @@ test_that("Add prices works for both prices per quantity and prices per weight",
 
 context("extractprices")
 test_that("",{
-    dtf <- data_frame(flow = c(1,1,1,2,2,2),
+    dtf <- data_frame(flowcode = c(1,1,1,2,2,2),
                       regionpartner = c("Europe","Europe","Asia",
                                         "Europe","Europe","Asia"),
                       year = 2017,
                       price = c(1,2,3,1,2,3),
                       tradevalue  = 1:6,
-                      quantity = 1:6) %>%
-        extractprices(grouping = c("flow", "regionpartner", "year"))
+                      quantity = 1:6)
+
+    # Default settings of the extractprices() function
+    dtf_default <- dtf %>%
+        extractprices(grouping = c("flowcode", "regionpartner", "year"))
     # extractprices() arranges the data frame
     # by decreasing order of median price
-    expect_equal(dtf$lowerprice, rep(c(1.5, 0.625), each = 2))
-    expect_equal(dtf$medianprice, rep(c(3, 1.5), each = 2))
-    expect_equal(dtf$upperprice, rep(c(6,3.5), each = 2))
+    expect_equal(dtf_default$lowerprice, rep(c(1.5, 0.625), each = 2))
+    expect_equal(dtf_default$medianprice, rep(c(3, 1.5), each = 2))
+    expect_equal(dtf_default$upperprice, rep(c(6,3.5), each = 2))
+
+    # Comext settings of the extractprices() function
+    dtf_comext <- dtf %>%
+        extractprices(grouping = c("flowcode", "regionpartner", "year"),
+                      lowercoef = 1, uppercoef = 1,
+                      lowerquantile = 0.05, upperquantile = 0.95)
+
 })
 
 

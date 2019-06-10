@@ -117,13 +117,13 @@ nc2 <- nc %>%
 writedbcomextraw <- function(dtf, tablewrite){
     setdatabaseconfig(silent=TRUE)
     db <- getOption("tradeflowsDB")
-    DBwrite <- RMySQL::dbConnect(RMySQL::MySQL(),
+    DBwrite <- RMariaDB::dbConnect(RMariaDB::MariaDB(),
                                  user=db["user"], host=db["host"],
                                  password=db["password"], dbname=db["dbname"])
     dtf <- data.frame(dtf)
-    result <- RMySQL::dbWriteTable(DBwrite, name = tablewrite,
+    result <- RMariaDB::dbWriteTable(DBwrite, name = tablewrite,
                            value=dtf, append=TRUE, row.names = FALSE)
-    RMySQL::dbDisconnect(DBwrite)
+    RMariaDB::dbDisconnect(DBwrite)
     return(result)
 }
 writedbcomextraw(nc2,"raw_flow_monthly_comext")
