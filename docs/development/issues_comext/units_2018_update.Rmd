@@ -44,7 +44,7 @@ cleancomext("tradeflows")
 # ERROR 1060 (42S21) at line 104: Duplicate column name 'unitcode'
 ```
 
-Reproduce the bug locally.
+# Reproduce the bug locally.
 
 ## Missing data in the raw codes table
 The lack of data inthe raw codes tables has to be addressed in the harvester package. 
@@ -70,8 +70,8 @@ eutradeflows::dumptable("tradeflows", "raw_comext_monthly", "/mnt/sdb/public/sql
 # The result is not an SQL file
 # Export using the mysqldump tool
 # mysqldump --databases tradeflows --tables raw_comext_monthly --where="productcode = 44071091" > swd44071091.sql
-
 ```
+
 
 ## Load the dumps into the local database on my laptop
 

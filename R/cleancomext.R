@@ -221,8 +221,7 @@ loadcomext1product <- function(RMariaDBcon,
 #' @export
 cleancomextmonthly1product <- function(RMariaDBcon,
                                        productanalysed,
-                                       tablearchive,
-                                       tablerecent,
+                                       rawtable,
                                        tablewrite,
                                        tablepriceconversion =
                                            "vld_comext_priceconversion"){
@@ -230,8 +229,7 @@ cleancomextmonthly1product <- function(RMariaDBcon,
 
     dtf <- loadcomext1product(RMariaDBcon = RMariaDBcon,
                               productanalysed = productanalysed,
-                              tablearchive = tablearchive,
-                              tablerecent = tablerecent)
+                              monthlytable = rawtable)
 
     # Add prices and conversion factors to the data frame
     dtf <- addconversionfactorandprice(dtf)
@@ -320,8 +318,7 @@ cleancomextmonthly1product <- function(RMariaDBcon,
 #' @export
 cleancomextmonthly <- function(RMariaDBcon,
                                productanalysed,
-                               tablearchive,
-                               tablerecent,
+                               rawtable,
                                tablewrite,
                                tabletemplate = "vld_comext_monthly_template",
                                tablepriceconversion = "vld_comext_priceconversion",
@@ -337,12 +334,9 @@ cleancomextmonthly <- function(RMariaDBcon,
 
     # Find all products in the recent and archive table
     #  in the form of a a vector of products available
-    dtfr <- tbl(RMariaDBcon, tablerecent) %>%
+    dtf <- tbl(RMariaDBcon, rawtable) %>%
         distinct(productcode) %>% collect()
-    dtfa <- tbl(RMariaDBcon, tablearchive) %>%
-        distinct(productcode) %>% collect()
-    # Combine recent and archive products in one vector
-    products <- union(dtfr$productcode, dtfa$productcode)
+    products <- dtf$productcode
 
     # Keep only 8 digit product codes
     # two digit products do not have a unit and it doesn't make sense to clean them
@@ -355,8 +349,7 @@ cleancomextmonthly <- function(RMariaDBcon,
         tryCatch({
             cleancomextmonthly1product(RMariaDBcon = RMariaDBcon,
                                        productanalysed = productcode,
-                                       tablearchive = tablearchive,
-                                       tablerecent = tablerecent,
+                                       rawtable = rawtable,
                                        tablewrite = tablewrite,
                                        tablepriceconversion = tablepriceconversion)
         }, error = function(errorcondition){
@@ -397,7 +390,7 @@ cleancomextmonthly <- function(RMariaDBcon,
 #' @md
 #' @export
 cleancomext <- function(dbname,
-                        rawtabletemplate = "raw_comext_monthly_template",
+                        rawtable = "raw_comext_monthly",
                         vldtabletemplate = "vld_comext_monthly_template",
                         tablewrite = "vld_comext_monthly",
                         tablepriceconversion = "vld_comext_priceconversion",
@@ -415,19 +408,9 @@ cleancomext <- function(dbname,
 
     # Clean product, reporter, partner and unit codes
     eutradeflows::cleanallcomextcodes(con)
-    message("deal with missing unit in another way not only an error")
 
-    # Extract the name of raw database tables
-    rawtablenaked <- gsub(templatecharacters, "", rawtabletemplate)
-    recenttables <- grep(paste0(rawtablenaked,"[0-9]{6}"), tables, value = TRUE)
-    archivetables <- grep(paste0(rawtablenaked,"[0-9]{4}S1"), tables, value = TRUE)
-    # Find the name of the latest "most recent" table
-    tablerecent <- sort(recenttables, decreasing = TRUE)[1]
-    # Find the name of the latest archive table
-    tablearchive <- sort(archivetables, decreasing = TRUE)[1]
-
-    # What is the last period in the most recent raw table?
-    raw <- tbl(con, tablerecent) %>%
+    # What is the last period in the raw table?
+    raw <- tbl(con, rawtable) %>%
         summarise(lastperiod = max(period)) %>% collect()
 
     # What is the last period in the validated table?
@@ -454,12 +437,11 @@ cleancomext <- function(dbname,
     } else {
         # If the most recent period is not available in the validated data
         # clean the dataset again
-        write(sprintf("%s\nValidating monthly archives from the %s and %s tables.\n\n",
-                      as.character(Sys.time()), tablearchive, tablerecent),
+        write(sprintf("%s\nValidating monthly archives from the %s table.\n\n",
+                      as.character(Sys.time()), rawtable),
               logfile, append = TRUE)
         cleancomextmonthly(con ,
-                           tablearchive = tablearchive,
-                           tablerecent = tablerecent,
+                           rawtable = rawtable,
                            tablewrite = tablewrite,
                            tabletemplate = vldtabletemplate,
                            tablepriceconversion = tablepriceconversion)
