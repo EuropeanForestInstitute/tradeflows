@@ -14,14 +14,114 @@ opts_knit$set(root.dir="../..") # file paths are relative to the root of the pro
 library(dplyr)
 library(ggplot2)
 library(tidyr)
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 ``` 
 
 
-# Description of the issue
+# Introduction / Description of the issue
+
+Since the update in comext data structure, unitcode are now part of the main table
+"raw_comext_monthly". It is thus not necessary anymore to add unit codes to the main table.
+The `cleancomext()` function needs to be updated to reflect that.
+ 
 
 In 2018 there was an update to the Comext data structure.
 The update requires a modification of the database structure and of
 the way units are dealt with in the cleaning functions. 
+The issue lies in the `loadcomext1product()` function, 
+itself calling the `eutradeflows::addunit2tbl()` function.
+The table already has a unit code, we only need to add the unit description. 
+
+```{r}
+# Output of an erroneous run before the change
+cleancomext("tradeflows")
+#
+# Starting to clean on 2018.06.29 at 09:52
+# 
+# Loading table definitions from:
+# /home/debian/R/x86_64-pc-linux-gnu-library/3.4/eutradeflows/config/vld_comext.sql
+# into the `tradeflows` database.
+# ERROR 1060 (42S21) at line 104: Duplicate column name 'unitcode'
+```
+
+Reproduce the bug locally.
+
+## Missing data in the raw codes table
+The lack of data inthe raw codes tables has to be addressed in the harvester package. 
+See ~/R/tradeharvester/docs/harvest.Rmd for details.
+
+## Get a backup of the raw database table
+See also backup of the validated data below
+```{r}
+# Dump codes tables
+eutradeflows::dumptable("tradeflows", "raw_comext_partner", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_product", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_reporter", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_unit", "/mnt/sdb/public/sqldump/")
+eutradeflows::dumptable("tradeflows", "raw_comext_unit_description", "/mnt/sdb/public/sqldump/")
+# Dump main table
+eutradeflows::dumptable("tradeflows", "raw_comext_monthly", "/mnt/sdb/public/sqldump/")
+# The main table takes a long time try to load data for one product instead
+
+# load data for one product only
+# Dump by queru SO question
+# export from the Mysql CLI
+# $ mysql -e "select * from raw_comext_monthly where productcode = 44071091" tradeflows > swd44071091.sql
+# The result is not an SQL file
+# Export using the mysqldump tool
+# mysqldump --databases tradeflows --tables raw_comext_monthly --where="productcode = 44071091" > swd44071091.sql
+
+```
+
+## Load the dumps into the local database on my laptop
+
+```{r}
+library(eutradeflows)
+# Codes tables
+loadtabledump("tradeflows", "~/downloads/raw_comext_partner.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_product.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_reporter.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_unit.sql.7z")
+loadtabledump("tradeflows", "~/downloads/raw_comext_unit_description.sql.7z")
+# Main table
+loadtabledump("tradeflows", "~/downloads/raw_comext_monthly.sql.7z")
+```
+
+Now the raw data is in my local database and I can reproduct the error.
+```{r}
+cleancomext("tradeflows")
+# Recreate the error with a function further down the nest 
+dbname = "tradeflows"
+rawtabletemplate = "raw_comext_monthly_template"
+vldtabletemplate = "vld_comext_monthly_template"
+tablewrite = "vld_comext_monthly"
+tablepriceconversion = "vld_comext_priceconversion"
+templatecharacters = "template"
+logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')
+
+# Now replace all RMySQL connection objects with  RMariaDB
+cleancomextmonthly1product(RMariaDBcon = RMariaDBcon,
+                           productanalysed = productcode,
+                           tablearchive = tablearchive,
+                           tablerecent = tablerecent,
+                           tablewrite = tablewrite,
+                           tablepriceconversion = tablepriceconversion)
+```
+
+
+## Backup of the validated data
+```{r}
+sqldumpfolder <- "/mnt/sdb/public/sqldump/"
+eutradeflows::dumptable("tradeflows", "vld_comext_partner", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_product", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_reporter", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_unit", sqldumpfolder)
+eutradeflows::dumptable("tradeflows", "vld_comext_unit_description", sqldumpfolder)
+# Dump main table
+eutradeflows::dumptable("tradeflows", "vld_comext_monthly", sqldumpfolder)
+```
+
+
 
 
 ## Sample code
@@ -32,8 +132,7 @@ con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 # The issue is within that code:
 dtf <- loadcomext1product(con,
                           productanalysed = "44071091",
-                          tablearchive = "raw_comext_monthly_2016S1",
-                          tablerecent = "raw_comext_monthly")
+                          table = "raw_comext_monthly")
 # which itself calls `eutradeflows::addunit2tbl`
 # The problem is that the unit code is already there. 
 
@@ -41,9 +140,38 @@ head(dtf)
 unique(dtf$year)
 ```
 
-## InNvestigate
+## Investigate
 
 ```{r}
-
+productanalysed <- "44071091"
+dtfr <- tbl(con, "raw_comext_monthly") %>%
+    filter(productcode == productanalysed) %>%
+    collect()
 ```
+
+
+### Load missing metadata
+Units seem to be missing from the database. 
+Trying to reload them directly on the server with the R harvest function below
+```
+# I copied the following R commants to the server directly 
+con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
+tradeharvester::harvestcomextmetadata(RMariaDBcon=con, rawdatafolder='/mnt/sdb/public', pause=0)
+```
+
+It worked, then dump the corresponding metadata tables with:
+```{r}
+dumptable("tradeflows", "raw_comext_partner", "/mnt/sdb/public/sqldump/")
+dumptable("tradeflows", "raw_comext_product", "/mnt/sdb/public/sqldump/")
+dumptable("tradeflows", "raw_comext_reporter", "/mnt/sdb/public/sqldump/")
+dumptable("tradeflows", "raw_comext_unit", "/mnt/sdb/public/sqldump/")
+dumptable("tradeflows", "raw_comext_unit_description", "/mnt/sdb/public/sqldump/")
+```
+
+
+
+```{r dbDisconnect}
+RMariaDB::dbDisconnect(con)
+```
+
 

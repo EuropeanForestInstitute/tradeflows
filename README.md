@@ -33,6 +33,19 @@ devtools::install_github("EuropeanForestInstitute/tradeflows")
 devtools::install_github("EuropeanForestInstitute/tradeflows", build_vignettes = TRUE)
 ```
 
+dependencies:
+```
+install.packages("dbplyr")
+install.packages("Rcpp")
+install.packages("RMariaDB")
+install.packages("jsonlite")
+install.packages("knitr")
+install.packages("ggplot")
+install.packages("ggplot2")
+install.packages("tidyr")
+```
+
+
 ## Input
 
 ### Loading data from the Comtrade API

@@ -122,43 +122,23 @@ shaveconversion <- function(dtf, verbose = getOption("tradeflows.verbose",TRUE))
 #' @export
 loadcomext1product <- function(RMariaDBcon,
                                productanalysed,
-                               tablearchive,
-                               tablerecent,
+                               monthlytable = "raw_comext_monthly",
                                tableunit = "vld_comext_unit"){
     # load trade flows from the database into a data frame
-    message("Load recent data from ", tablerecent, "...")
+    message("Load data from ", monthlytable, "...")
 
-    # Check if units are available
-    unit <- tbl(con, tableunit) %>%
-        filter(productcode == productanalysed) %>%
-        summarise(n = n()) %>% collect()
-    if(unit$n == 0){
-        stop("Cannot add units to the table because they are not available in ",
-             tableunit)
-    }
+    # # Check if units are available
+    # unit <- tbl(con, tableunit) %>%
+    #     filter(productcode == productanalysed) %>%
+    #     summarise(n = n()) %>% collect()
+    # if(unit$n == 0){
+    #     stop("Cannot add units to the table because they are not available in ",
+    #          tableunit)
+    # }
 
-    dtfr <- tbl(RMariaDBcon, tablerecent) %>%
+    dtf <- tbl(RMariaDBcon, monthlytable) %>%
         filter(productcode == productanalysed) %>%
-        # Add quantity units
-        eutradeflows::addunit2tbl(RMariaDBcon,
-                                  maintbl = .,
-                                  tableunit = tableunit)  %>%
         collect()
-    beginrecentdata <- min(dtfr$period)
-
-    # Load archive data, for periods before the begin of recent data
-    message("Load archive data from ",tablearchive, "...")
-    dtfa <- tbl(RMariaDBcon, tablearchive) %>%
-        filter(productcode == productanalysed &
-                   period < beginrecentdata) %>%
-        # Add quantity units
-        eutradeflows::addunit2tbl(RMariaDBcon,
-                                  maintbl = .,
-                                  tableunit = tableunit)  %>%
-        collect()    # load trade flows from the database into a data frame
-
-    # Combine archive and recent data
-    dtf <- rbind(dtfa, dtfr)
 
     # Extract year with integer division
     dtf$year <- dtf$period %/% 100
@@ -169,10 +149,6 @@ loadcomext1product <- function(RMariaDBcon,
                 paste(setdiff(min(years):max(years), years),
                       collapse=","))
     }
-
-    # Remove unnecessary objects
-    rm(dtfa)
-    rm(dtfr)
 
     return(dtf)
 }
