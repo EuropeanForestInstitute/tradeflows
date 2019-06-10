@@ -396,7 +396,7 @@ cleancomext <- function(dbname,
                         tablepriceconversion = "vld_comext_priceconversion",
                         templatecharacters = "template",
                         sqldumpfolder = "/mnt/sdb/public/sqldump/",
-                        logfile = paste0('~/public_html/log/validate',format(Sys.Date(), '%Y'),'.txt')){
+                        logfile = paste0('/mnt/sdb/public/log/validate',format(Sys.Date(), '%Y'),'.txt')){
     message("\n\nStarting to clean on ",
             format(Sys.time(),"%Y.%m.%d at %H:%M"),"\n")
 
