@@ -6,36 +6,36 @@
 \alias{cleancomext}
 \title{Clean Comext Monthly data}
 \usage{
-cleancomextmonthly1product(RMariaDBcon, productanalysed, tablearchive,
-  tablerecent, tablewrite,
-  tablepriceconversion = "vld_comext_priceconversion")
+cleancomextmonthly1product(RMariaDBcon, productanalysed, rawtable,
+  tablewrite, tablepriceconversion = "vld_comext_priceconversion")
 
-cleancomextmonthly(RMariaDBcon, productanalysed, tablearchive, tablerecent,
-  tablewrite, tabletemplate = "vld_comext_monthly_template",
+cleancomextmonthly(RMariaDBcon, productanalysed, rawtable, tablewrite,
+  tabletemplate = "vld_comext_monthly_template",
   tablepriceconversion = "vld_comext_priceconversion",
   logfile = file.path("~/log", "cleaningerrorlog.txt"))
 
-cleancomext(dbname, rawtabletemplate = "raw_comext_monthly_template",
+cleancomext(dbname, rawtable = "raw_comext_monthly",
   vldtabletemplate = "vld_comext_monthly_template",
   tablewrite = "vld_comext_monthly",
   tablepriceconversion = "vld_comext_priceconversion",
   templatecharacters = "template",
-  logfile = paste0("~/public_html/log/validate", format(Sys.Date(), "\%Y"),
-  ".txt"))
+  sqldumpfolder = "/mnt/sdb/public/sqldump/",
+  logfile = paste0("/mnt/sdb/public/log/validate", format(Sys.Date(),
+  "\%Y"), ".txt"))
 }
 \arguments{
 \item{RMariaDBcon}{database connection object created by RMySQL \code{\link[DBI]{dbConnect}}}
 
 \item{productanalysed}{character code of the product to analyse}
 
-\item{tablearchive}{character name of a monthly archive table}
-
-\item{tablerecent}{character name of a monthly recent table}
+\item{rawtable}{character name of a monthly recent table}
 
 \item{tablewrite}{character name of the monthly table where output data will be written}
 
 \item{tablepriceconversion}{character name of a table which will store price
 and conversion factors}
+
+\item{tablearchive}{character name of a monthly archive table}
 }
 \value{
 \code{cleancomextmonthly1product} invisibly returns a data frame
@@ -103,7 +103,7 @@ RMariaDB::dbSendQuery(con, sprintf("CREATE TABLE \%s LIKE \%s;",
 dtf <- cleancomextmonthly1product(con ,
                            productanalysed = "44071091",
                            tablearchive = "raw_comext_monthly_2016S1",
-                           tablerecent = "raw_comext_monthly_201708",
+                           rawtable = "raw_comext_monthly_201708",
                            tablewrite = "vld_comext_monthly_to_delete",
                            tablepriceconversion = "vld_comext_priceconversion")
 dplyr::count(dtf, flag)
@@ -114,7 +114,7 @@ RMariaDB::dbSendQuery(con, sprintf("DROP TABLE IF EXISTS `\%s`;",
 # Loop on all products available in the database and clean them
 cleancomextmonthly(con ,
                    tablearchive = "raw_comext_monthly_2016S1",
-                   tablerecent = "raw_comext_monthly_201709",
+                   rawtable = "raw_comext_monthly_201709",
                    tablewrite = "vld_comext_monthly",
                    tabletemplate = "vld_comext_monthly_template",
                    tablepriceconversion = "vld_comext_priceconversion")

@@ -4,8 +4,8 @@
 \alias{loadcomtradebycode}
 \title{load raw data from the COMTRADE API}
 \usage{
-loadcomtradebycode(productcode, reportercode, year, freq = "A", px = "HS",
-  max = 50000, logfile = FALSE)
+loadcomtradebycode(productcode, reportercode, year, freq = "A",
+  px = "HS", max = 50000, logfile = FALSE)
 }
 \arguments{
 \item{productcode}{code of the product}
@@ -25,13 +25,16 @@ a dataframe
 }
 \description{
 load a JSON file from the comtrade API in the temp directory
-The API is documented at http://comtrade.un.org/data/doc/api/
+The API is documented at \url{http://comtrade.un.org/data/doc/api/}
 Converts the file to a dataframe
+Further information for developers is available at
+\url{https://comtrade.un.org/Data/Doc/API}
 }
 \examples{
 \dontrun{
 library(tradeflows)
-# Load "other sawnwood" in France for the last 5 years available in comtrade
-loadcomtradebycode(440799, 251, "recent")
+# Load trade data from Comtrade
+# "other sawnwood" trade France in 2018
+loadcomtradebycode(440799, 251, 2018)
 }
 }

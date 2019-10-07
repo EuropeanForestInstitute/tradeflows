@@ -5,8 +5,8 @@
 \alias{extractpricew}
 \title{Extract median prices at a given geographical aggregation level}
 \usage{
-extractprices(dtf, grouping = c("flow", "regionreporter", "year", "unit"),
-  lowercoef = 0.5, uppercoef = 2, lowerquantile = 0.25,
+extractprices(dtf, grouping = c("flow", "regionreporter", "year",
+  "unit"), lowercoef = 0.5, uppercoef = 2, lowerquantile = 0.25,
   upperquantile = 0.75, includeqestimates = TRUE)
 
 extractpricew(dtf, lowercoef = 1, uppercoef = 1, grouping = c("flow",

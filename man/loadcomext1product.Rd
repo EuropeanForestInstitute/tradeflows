@@ -4,8 +4,8 @@
 \alias{loadcomext1product}
 \title{Load all archive and recent Comext data for one product}
 \usage{
-loadcomext1product(RMariaDBcon, productanalysed, tablearchive, tablerecent,
-  tableunit = "vld_comext_unit")
+loadcomext1product(RMariaDBcon, productanalysed,
+  monthlytable = "raw_comext_monthly", tableunit = "vld_comext_unit")
 }
 \value{
 a  data frame containing Comext trade flows for the given product
@@ -25,7 +25,7 @@ con <- RMariaDB::dbConnect(RMariaDB::MariaDB(), dbname = "tradeflows")
 dtf <- loadcomext1product(con,
                           productanalysed = "44071091",
                           tablearchive = "raw_comext_monthly_2016S1",
-                          tablerecent = "raw_comext_monthly_201709")
+                          rawtable = "raw_comext_monthly_201709")
 head(dtf)
 unique(dtf$year)
 # Disconnect from the database
