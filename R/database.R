@@ -100,7 +100,7 @@ readdbproduct <- function(productcode_, tableread, convcountrynames = FALSE){
                 mutate(reporter = iconv(reporter, "latin1", "utf-8"),
                    partner = iconv(partner, "latin1", "utf-8"))
         message("Changed reporter and partner encoding from latin1 to utf8.",
-                "(check reportercode or partnercode 384 côte d'ivoire)")
+                "(check reportercode or partnercode 384 cte d'ivoire)")
     }
     # Comment out this check which might break for unnecessary reasons
     # if EFI developers decide to add extra columns in the database
