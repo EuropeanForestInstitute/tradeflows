@@ -1,8 +1,10 @@
 #' load raw data from the COMTRADE API
 #'
 #'@description load a JSON file from the comtrade API in the temp directory
-#' The API is documented at http://comtrade.un.org/data/doc/api/
+#' The API is documented at \url{http://comtrade.un.org/data/doc/api/}
 #' Converts the file to a dataframe
+#' Further information for developers is available at
+#' \url{https://comtrade.un.org/Data/Doc/API}
 #'@param productcode  code of the product
 #'@param reportercode  geographical area or country code
 #'@param year a vector of years (maximum 5), or the chain of character "recent"
@@ -13,8 +15,9 @@
 #'@examples
 #' \dontrun{
 #'library(tradeflows)
-#' # Load "other sawnwood" in France for the last 5 years available in comtrade
-#'loadcomtradebycode(440799, 251, "recent")
+#' # Load trade data from Comtrade
+#' # "other sawnwood" trade France in 2018
+#'loadcomtradebycode(440799, 251, 2018)
 #'}
 #'@export
 loadcomtradebycode <- function(productcode, reportercode,
