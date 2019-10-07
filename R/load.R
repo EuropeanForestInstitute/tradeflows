@@ -4,7 +4,7 @@
 #' The API is documented at \url{http://comtrade.un.org/data/doc/api/}
 #' Converts the file to a dataframe
 #' Further information for developers is available at
-#' \url{https://comtrade.un.org/Data/Doc/API}
+#' \url{https://comtrade.un.org/data/dev/portal/}
 #'@param productcode  code of the product
 #'@param reportercode  geographical area or country code
 #'@param year a vector of years (maximum 5), or the chain of character "recent"
